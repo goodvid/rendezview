@@ -6,7 +6,7 @@ function Quiz() {
   const [minSelected, setMinSelected] = useState(false);
   const [selected, setSelected] = useState([]);
   const [tags, setTags] = useState([
-    //TODO: add more categories
+    //TODO: fix categories
     "Comedy",
     "Food",
     "Film",
@@ -60,11 +60,13 @@ function Quiz() {
           direction="row"
           gap="1rem"
           justifyContent="space-start"
+          flexWrap="wrap"
           width="100%"
         >
           {tags.map((name) => (
             <div>
               <Chip
+                key={name}
                 label={name}
                 variant={new Set(selected).has(name) ? "filled" : "outlined"}
                 onClick={() => handleSelect(name)}
