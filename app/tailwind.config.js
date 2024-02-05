@@ -8,6 +8,7 @@ module.exports = {
         'navbar-blue': '#171b26',
         'light-blue': '#f2faff',
         'light-gray': '#ebebeb',
+        'login-blue': '#02407f',
       },
     },
   },
