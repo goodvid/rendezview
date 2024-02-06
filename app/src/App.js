@@ -5,15 +5,15 @@ import {
   Routes,
   Route,
 } from "react-router-dom";
-import Login from "./pages/login";
+import Settings from "./pages/Settings"
 
 function App() {
   return (
     <div className="App">
       <BrowserRouter>
         <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/" element={<Homepage />} />
+          <Route path = "/" element = {<Settings />} />
+          <Route path = "/Settings" element = {<Settings />} />
         </Routes>
       </BrowserRouter>
     </div>
