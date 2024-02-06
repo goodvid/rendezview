@@ -24,7 +24,7 @@ function Login() {
                     <span className='font-normal text-gray-500 mt-4'>Don't have an account?</span>
                     <Link
                     id="sign-up"
-                    to='register'
+                    to='/register'
                     className='text-login-blue font-bold'>Sign Up</Link>
                     <button
                     href='/events'
