@@ -1,15 +1,13 @@
-import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
-import Login from "./pages/login";
+import Login from "./views/Login/Login";
 import React from "react";
+import "./App.css";
 import Main from "./views/Main";
-// import Login from './views/Login/Login';
+import Username from "./views/Username/Username";
 import Register from "./views/Register/Register";
-import Quiz from "./pages/Quiz";
-import Homepage from "./pages/Homepage";
-import Profile from "./pages/Profile";
-import EventDetails from "./pages/EventDetails";
+import Profile from "./views/Profile/Profile";
+import Quiz from "./views/Quiz/Quiz";
+import EventDetails from "./views/EventDetails/EventDetails";
 
 function App() {
   return (
@@ -19,6 +17,7 @@ function App() {
           <Route path="/" element={<Main />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/username" element={<Username />} />
           <Route path="/quiz" element={<Quiz />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/eventdetails" element={<EventDetails />} />
