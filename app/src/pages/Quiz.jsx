@@ -1,6 +1,7 @@
 import React from "react";
 import { useState, useCallback } from "react";
 import { Alert, Box, Button, Chip, Stack, Snackbar } from "@mui/material";
+import Navbar from "../components/Navbar/Navbar";
 
 function Quiz() {
   const [minSelected, setMinSelected] = useState(false);
@@ -88,10 +89,11 @@ function Quiz() {
         left: "0px",
       }}
     >
+      <Navbar />
       <Stack margin="3rem" gap="1rem">
         <Stack justifyContent="flex-start" textAlign="left">
           <h1>Tell us what you like</h1>
-          <h3>
+          <h3 style={{ color: "#818181" }}>
             Select 3 or more interests to get event suggestions based on what
             you like
           </h3>
