@@ -1,7 +1,8 @@
 import React from "react";
 import { useState, useCallback } from "react";
 import { Alert, Box, Button, Chip, Stack, Snackbar } from "@mui/material";
-import Navbar from "../components/Navbar/Navbar";
+import Navbar from "../../components/Navbar/Navbar";
+import "../../styles.css";
 
 function Quiz() {
   const [minSelected, setMinSelected] = useState(false);

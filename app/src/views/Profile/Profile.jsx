@@ -1,15 +1,18 @@
 import React from "react";
-import "./styles.css";
+import "./Profile.css";
 import { useState } from "react";
 import { Card, Avatar, Box, Chip, Stack, Rating } from "@mui/material";
-import { YellowCard, BlueCard } from "../components/StyledComponents";
+import {
+  YellowCard,
+  BlueCard,
+} from "../../components/StyledComponents/StyledComponents";
 
 import SettingsIcon from "@mui/icons-material/Settings";
 import NearMeIcon from "@mui/icons-material/NearMe";
 import LocalActivityIcon from "@mui/icons-material/LocalActivity";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
-import concertPhoto from "../media/concert.jpg";
-import Navbar from "../components/Navbar/Navbar";
+import concertPhoto from "../../media/concert.jpg";
+import Navbar from "../../components/Navbar/Navbar";
 
 function Profile() {
   const [friendsNum, setFriendsNum] = useState(0);
