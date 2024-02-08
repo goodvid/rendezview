@@ -2,6 +2,7 @@ import React from "react";
 import "./styles.css";
 import { useState } from "react";
 import { Card, Avatar, Box, Chip, Stack, Rating } from "@mui/material";
+import { YellowCard, BlueCard } from "../components/StyledComponents";
 
 import SettingsIcon from "@mui/icons-material/Settings";
 import NearMeIcon from "@mui/icons-material/NearMe";
@@ -99,7 +100,7 @@ function Profile() {
     return (
       <Stack
         width="50vh"
-        height="100vh"
+        // height="100vh"
         style={{ backgroundColor: "#171B26", color: "white" }}
         alignItems={"center"}
       >
@@ -168,7 +169,7 @@ function Profile() {
   }) => {
     return (
       <>
-        <Card variant="outlined" overflow="scroll">
+        <YellowCard variant="outlined">
           <Stack
             padding="1rem"
             direction="row"
@@ -212,7 +213,7 @@ function Profile() {
               <p>{date}</p>
             </Stack>
           </Stack>
-        </Card>
+        </YellowCard>
       </>
     );
   };
@@ -243,7 +244,7 @@ function Profile() {
   const PastEventCard = ({ id, name, stars, location, date, picture }) => {
     return (
       <>
-        <Card variant="outlined">
+        <YellowCard variant="outlined">
           <Stack
             padding="1rem"
             direction="row"
@@ -276,7 +277,7 @@ function Profile() {
               )}
             </Stack>
           </Stack>
-        </Card>
+        </YellowCard>
       </>
     );
   };
@@ -285,7 +286,7 @@ function Profile() {
     return (
       <Stack className="profile-components">
         <h2>Blogs</h2>
-        <Box sx={{ overflowX: "auto", overflowY: "visible", width: "100%" }}>
+        <Box sx={{ overflowX: "auto", width: "100%" }}>
           <Stack
             direction="row"
             gap={2}
@@ -310,7 +311,7 @@ function Profile() {
   const BlogCard = ({ id, name, contents, date, pictures }) => {
     return (
       <>
-        <Card variant="outlined">
+        <BlueCard variant="outlined">
           <Stack alignItems="flex-end" marginInline="1rem">
             <p>{date}</p>
           </Stack>
@@ -345,7 +346,7 @@ function Profile() {
               <div width="0px"></div>
             )}
           </Stack>
-        </Card>
+        </BlueCard>
       </>
     );
   };
@@ -361,12 +362,11 @@ function Profile() {
       }}
     >
       <Stack
-        height="100vh"
+        // height="100vh"
         width="100vw"
         direction="row"
         gap="2rem"
         justifyContent="space-between"
-        overflow="auto"
       >
         <LeftInfoStack />
         <RightEventStack />
