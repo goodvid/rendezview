@@ -2,26 +2,23 @@ import React from "react";
 
 import Navbar from "../../components/Navbar/Navbar";
 import { Link } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
-    const [inputData, setInputData] = useState({
-      // Initial state, adjust based on your form fields
-      profile: ""
-      
-    });
+  const navigate = useNavigate();
+    const [inputData, setInputData] = useState('');
 
      const handleChange = (event) => {
        // Update the inputData state when form fields change
-       setInputData({
-         ...inputData,
-         [event.target.name]: event.target.value,
-       });
+       setInputData(event.target.value);
      };
      const handleSubmit = (event) => {
+      console.log(inputData)
        event.preventDefault();
 
        // Send data to Flask server
-       fetch("http://localhost:5000/submit-data", {
+       fetch("http://localhost:5000/set-username", {
          method: "POST",
          headers: {
            "Content-Type": "application/json",
@@ -37,6 +34,8 @@ function Login() {
            console.error("Error:", error);
            // Handle errors
          });
+         navigate("/")
+
      };
   return (
     <div className="w-full h-full">
@@ -47,17 +46,16 @@ function Login() {
           <span className="w-[360px] text-gray-500 text-left mt-[40px]">
             Profile Name
           </span>
-          <input className="w-[360px] h-[45px] border-login-blue outline rounded-md pl-2" />
-          
-          
-          <button
-            onChange="/events"
-            className="w-[360px] h-[45px] bg-login-blue text-white font-bold rounded-lg mt-[30px]"
-          >
-            Set profile name
+          <input
+            className="w-[360px] h-[45px] border-login-blue outline rounded-md pl-2"
+            value={inputData.name}
+            onChange={handleChange}
+          />
+
+          <button onClick={handleSubmit}  type="submit"
+            className="w-[360px] h-[45px] bg-login-blue text-white font-bold
+            rounded-lg mt-[30px]" > Set profile name
           </button>
-         
-       
         </div>
       </div>
     </div>

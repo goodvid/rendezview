@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 function Login() {
     return (
         <div className='w-full h-full'>
-            <Navbar />
+            
             <div className='w-[100%] h-[100%] flex flex-col justify-center items-center'>
                 <span className='text-3xl font-bold mt-[7%]'>Sign In</span>
                 <div className='w-[40%] h-[70%] flex flex-col justify-center items-center gap-1'>
