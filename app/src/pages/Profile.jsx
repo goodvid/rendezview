@@ -9,6 +9,7 @@ import NearMeIcon from "@mui/icons-material/NearMe";
 import LocalActivityIcon from "@mui/icons-material/LocalActivity";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import concertPhoto from "../media/concert.jpg";
+import Navbar from "../components/Navbar/Navbar";
 
 function Profile() {
   const [friendsNum, setFriendsNum] = useState(0);
@@ -100,8 +101,11 @@ function Profile() {
     return (
       <Stack
         width="50vh"
-        // height="100vh"
-        style={{ backgroundColor: "#171B26", color: "white" }}
+        style={{
+          backgroundColor: "#171B26",
+          color: "white",
+          margin: "0.75rem",
+        }}
         alignItems={"center"}
       >
         <Box
@@ -361,8 +365,8 @@ function Profile() {
         left: "0px",
       }}
     >
+      <Navbar />
       <Stack
-        // height="100vh"
         width="100vw"
         direction="row"
         gap="2rem"
