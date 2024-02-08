@@ -9,6 +9,7 @@ import Register from "./views/Register/Register";
 import Quiz from "./pages/Quiz";
 import Homepage from "./pages/Homepage";
 import Profile from "./pages/Profile";
+import EventDetails from "./pages/EventDetails";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/quiz" element={<Quiz />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/eventdetails" element={<EventDetails />} />
         </Routes>
       </BrowserRouter>
     </div>

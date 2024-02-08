@@ -1,5 +1,5 @@
 import React from "react";
-import "./styles.css";
+import "../styles.css";
 import { useState } from "react";
 import { Card, Avatar, Box, Chip, Stack, Rating } from "@mui/material";
 import { YellowCard, BlueCard } from "../components/StyledComponents";
