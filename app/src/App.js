@@ -4,11 +4,10 @@ import {
   Routes,
   Route,
 } from "react-router-dom";
-import Login from "./pages/login";
 import React from 'react';
 import './App.css';
 import Main from './views/Main';
-// import Login from './views/Login/Login';
+import Login from './views/Login/Login';
 import Register from './views/Register/Register';
 
 
