@@ -1,9 +1,7 @@
 import React from "react";
 import { useState } from "react";
-
 import Navbar from "../../components/Navbar/Navbar";
-import { Link } from "react-router-dom";
-import { useState } from "react";
+
 import { useNavigate } from "react-router-dom";
 
 function Login() {
@@ -35,7 +33,7 @@ function Login() {
            console.error("Error:", error);
            // Handle errors
          });
-         navigate("/")
+         navigate("/quiz")
 
      };
   return (
