@@ -11,3 +11,11 @@ export const BlueCard = styled(Card)({
   border: "3px solid #1C3659",
   borderRadius: "10px",
 });
+
+export const ReadMoreButton = styled(Button)({
+  textTransform: "none",
+  border: "0px",
+  "&:hover": {
+    backgroundColor: "transparent",
+  },
+});
