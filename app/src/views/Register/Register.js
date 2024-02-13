@@ -58,7 +58,7 @@ function Register() {
                     <span className='w-[360px] text-gray-500 text-left mt-[10px] mr-[525px]'>Select Preferences</span>
                     <div className='w-[680px] flex flex-row justify-center items-center mt-1 gap-[50px] mr-[210px]'>
                         <button
-                        href='/preference_quiz'
+                        href='/quiz'
                         className='w-[360px] h-[45px] bg-login-blue text-white font-bold rounded-lg'>Take Preference Quiz</button>
                         <span className='text-gray-500'>OR</span>
                         <span className='text-gray-500 font-bold'>Manually Add Preferences</span>
@@ -77,7 +77,7 @@ function Register() {
                 </div>
             </div>
         </div>
-    )
+    );
 };
 
 export default Register;
