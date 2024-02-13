@@ -1,6 +1,6 @@
 from flask import Flask,  request, jsonify, redirect,url_for
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user
-from models import db  # Importing the db instance and models
+from models import db, User  # Importing the db instance and models
 from flask_cors import CORS
 from models import User
 import os
@@ -29,26 +29,12 @@ def register():
     email = data['email']
     password = data['password']
 
-    print(email)
-    print(password)
+    new_user = User(email=email,
+                    username=email,
+                    password=password)
 
-    id = 1
-
-    while (db.query("select * from users where userID=" + str(id)) != None):
-        id += 1
-
-    db.query("insert into users values (" + str(id)
-                + "," + email
-                + "," + email
-                + "," + password
-                + "," + "None"
-                + "," + "None"
-                + "," + "None"
-                + "," + "None"
-                + "," + "None"
-                + "," + "None"
-                + "," + "None"
-                + "," + "None" + ")")
+    db.session.add(new_user)
+    db.session.commit()
 
     return {'200': 'success'}
 

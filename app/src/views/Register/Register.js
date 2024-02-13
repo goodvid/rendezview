@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import './Register.css'
-import Navbar from '../../components/Navbar/Navbar';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 
@@ -23,7 +22,7 @@ function Register() {
     };
 
     const register = () => {
-        axios.post("http://localhost:3000/user/register", {
+        axios.post("http://localhost:5000/user/register", {
             email: email,
             password: password
         })
@@ -39,7 +38,6 @@ function Register() {
 
     return (
         <div className='w-full h-full'>
-            <Navbar />
             <div className='w-[100%] h-[100%] flex flex-col justify-center items-center'>
                 <span className='text-3xl font-bold mt-[7%]'>Create a RendezView Account</span>
                 <div className='w-[40%] h-[70%] flex flex-col justify-center items-center gap-1'>
