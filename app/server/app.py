@@ -29,9 +29,9 @@ def register():
     email = data['email']
     password = data['password']
 
-    cur_users = db.session.query(User).filter(User.email == email).all()
+    cur_users = db.session.query(User.email).filter_by(email = email).first()
 
-    if (len(cur_users) != 0):
+    if (cur_users != None):
         return {'status': '400', 'message': 'This email belongs to an existing account.'}
 
     if (len(password) < 7):

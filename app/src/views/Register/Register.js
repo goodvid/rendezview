@@ -36,7 +36,6 @@ function Register() {
             if (status === '200') {
                 setFlag(2);
             } else {
-                console.log(message);
                 setFlag(1);
             }
 
@@ -48,6 +47,10 @@ function Register() {
         setEmail("");
         setPassword("");
         setFlag(1);
+
+        Array.from(document.querySelectorAll("input")).forEach(
+            input => (input.value = "")
+        );
     }
 
     return (
