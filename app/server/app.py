@@ -29,6 +29,14 @@ def register():
     email = data['email']
     password = data['password']
 
+    cur_users = db.session.query(User).filter(User.email == email).all()
+
+    if (len(cur_users) != 0):
+        return {'status': '400', 'message': 'This email belongs to an existing account.'}
+
+    if (len(password) < 7):
+        return {'status': '400', 'message': 'Please choose a password that is greater than 6.'}
+
     new_user = User(email=email,
                     username=email,
                     password=password)
@@ -36,7 +44,7 @@ def register():
     db.session.add(new_user)
     db.session.commit()
 
-    return {'200': 'success'}
+    return {'status': '200', 'message': 'Account created!'}
 
 @app.route('/set-username', methods=['POST'])
 def receive_data():

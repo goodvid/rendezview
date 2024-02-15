@@ -6,6 +6,8 @@ import axios from 'axios';
 function Register() {
 
     const [email, setEmail] = useState("");
+    const [flag, setFlag] = useState(0);
+    const [message, setMessage] = useState("");
 
     const updateEmail = (event) => {
         if (event != null) {
@@ -27,13 +29,25 @@ function Register() {
             password: password
         })
         .then(res => {
-            console.log(res)
+            console.log(res);
+            const status = res.data['status'];
+            const message = res.data['message'];
+
+            if (status === '200') {
+                setFlag(2);
+            } else {
+                console.log(message);
+                setFlag(1);
+            }
+
+            setMessage(message)
         })
         .catch(err => {
             console.log(err)
         });
         setEmail("");
         setPassword("");
+        setFlag(1);
     }
 
     return (
@@ -61,12 +75,10 @@ function Register() {
                         <span className='text-gray-500'>OR</span>
                         <span className='text-gray-500 font-bold'>Manually Add Preferences</span>
                     </div>
-                    <Link
-                    to='/login'>
-                        <button
-                        className='w-[260px] h-[45px] bg-login-blue text-white font-medium rounded-lg mt-[80px]'
-                        onClick={register}>Create Account</button>
-                    </Link>
+                    {flag == 0 ? <div className='mt-[70px]' /> : <div className={flag == 1 ? 'mt-[70px] text-red-600' : 'mt-[70px] text-green-500'}>{message}</div>}
+                    <button
+                    className='w-[260px] h-[45px] bg-login-blue text-white font-medium rounded-lg mt-2'
+                    onClick={register}>Create Account</button>
                     <span className='font-normal text-gray-500 mt-4'>Already have an account?</span>
                     <Link
                     id="log-in"
