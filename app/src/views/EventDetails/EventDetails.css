@@ -1,0 +1,6 @@
+.section {
+  justify-content: flex-start;
+  text-align: left;
+  gap: 1rem;
+  margin-block: 1rem;
+}
