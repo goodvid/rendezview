@@ -9,7 +9,10 @@ import ShareIcon from "@mui/icons-material/Share";
 import Navbar from "../../components/Navbar/Navbar";
 import testImage from "../../media/testImage.jpeg";
 import "./EventDetails.css";
-import { ReadMoreButton } from "../../components/StyledComponents/StyledComponents";
+import {
+  ReadMoreButton,
+  YellowButton,
+} from "../../components/StyledComponents/StyledComponents";
 
 function EventDetails() {
   // TODO: replace hard coded names
@@ -63,6 +66,11 @@ function EventDetails() {
         </Stack>
         <Stack>
           <img src={testImage} style={{ borderRadius: "1rem" }} />
+        </Stack>
+        <Stack alignItems="flex-start" marginTop="1rem">
+          <YellowButton textAlign="left" variant="contained">
+            Join Event
+          </YellowButton>
         </Stack>
       </div>
     );
