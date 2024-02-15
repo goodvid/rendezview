@@ -19,3 +19,14 @@ export const ReadMoreButton = styled(Button)({
     backgroundColor: "transparent",
   },
 });
+
+export const YellowButton = styled(Button)({
+  backgroundColor: "#F2C879",
+  paddingInline: "1.5rem",
+  boxShadow: "none",
+  textTransform: "none",
+  "&:hover": {
+    backgroundColor: "#E2B662",
+    boxShadow: "none",
+  },
+});
