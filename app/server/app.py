@@ -1,15 +1,160 @@
-from flask import Flask
-from models import db, User, Event, Blog, PrivateEvent  # Importing the db instance and models
+from flask import Flask,  request, jsonify, session
+from flask_session import Session
+from models import db  # Importing the db instance and models
+from flask_cors import CORS
+from models import User, Event
+from types import SimpleNamespace
+
+from flask_jwt_extended import create_access_token
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import jwt_required
+from flask_jwt_extended import JWTManager
+
+from config import ApplicationConfig
+
+
+import os
+import json
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'  # or your actual database URI
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+CORS(app, supports_credentials=True)
+
+app.secret_key = "super secret essay"
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config.from_object(ApplicationConfig)
+jwt = JWTManager(app)
+
 
 db.init_app(app)  # Initialize db with your Flask app
 
 @app.route('/')
 def index():
     return "Hello, World!"
+
+
+@app.route('/user/login', methods=['POST'])
+def create_token():
+    email = request.json["email"]
+    password = request.json["password"]
+
+    user = User.query.filter_by(email=email).first()
+
+    if user and password == user.password:
+        access_token = create_access_token(identity=email)
+        return jsonify(access_token=access_token)
+    else:
+        return jsonify({"message":"bad username or password"}), 401
+
+
+@app.route("/user/username", methods=["POST"])
+@jwt_required()
+def username():
+    current_user = get_jwt_identity()
+    
+    print(current_user, request.json)
+    user = User.query.filter_by(email=current_user).first()
+    check = User.query.filter_by(username=request.json["username"]).first()
+    if not check:
+        user.username = request.json["username"]
+    
+        db.session.commit()
+    else:
+        return jsonify({"message": "duplicate username not allowed"}), 401
+    return jsonify(logged_in_as=current_user), 200
+
+@app.route('/user/register', methods=["POST"])
+def register():
+    data = request.json
+    email = data['email']
+    password = data['password']
+
+    cur_users = User.query.filter_by(email=email).first()
+
+    if (cur_users != None):
+        return {'status': '400', 'message': 'This email belongs to an existing account.'}
+
+    if (len(password) < 7):
+        return {'status': '400', 'message': 'Please choose a password that is greater than 6.'}
+    new_user = User(email=email,
+                    username=email,
+                    password=password)
+    db.session.add(new_user)
+    db.session.commit()
+    access_token = create_access_token(identity=email)
+    return jsonify({"message": "Account created!", "status": 200, "access_token": access_token})
+    # return jsonify(access_token), 200
+
+
+@app.route("/profile/clearhistory", methods=["GET"])
+@jwt_required()
+def deleteEventHistory():
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(email=current_user).first()
+    user.saved_events.clear()
+    db.session.commit()
+
+    return jsonify({"message": "events deleted"}), 200
+
+@app.route("/profile/preferences", methods=["POST"])
+@jwt_required()
+def set_preferences():
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(email=current_user).first()
+    user.preferences = str(request.json["results"])
+    db.session.commit()
+    return jsonify({"message": "prefs set"}), 200
+
+@app.route("/profile/join-event", methods=["POST"])
+@jwt_required()
+def join_event():
+
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(email=current_user).first()
+
+    eventID = request.json["event id"]
+
+    event = Event.query.filter_by(eventID=eventID).first()
+
+    if event and user:
+        user.saved_events.append(event)
+        db.session.commit()
+        print(user.saved_events)
+        return jsonify({"message": "event joined"}), 200
+
+@app.route("/event/create", methods = ["POST"])
+@jwt_required()
+def create_event():
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(email=current_user).first()
+
+    name = request.json["eventName"]
+    eventDesc = request.json["eventDesc"]
+    hostName = request.json["hostName"]
+    category = request.json["tags"]
+    eventType = request.json["eventType"]
+    location = request.json["location"]
+    userID = user.id
+
+    new_event = Event(name=name, desc=eventDesc, location=location, hostName=hostName, userID=userID, category=category, type=eventType)
+    print(new_event)
+    db.session.add(new_event)
+    user.saved_events.append(new_event)
+    db.session.commit()
+    return jsonify({"message": "event set", "eventID": new_event.eventID}), 200
+
+@app.route("/event/details", methods = ["POST"])
+def get_details():
+    id = request.json["id"]
+    print("eheheh", request.json)
+    event = Event.query.filter_by(eventID=id).first()
+    event_json = event.as_dict()
+    print(event_json)
+
+    if not event:
+        return jsonify({"message": "event not found"}), 404
+
+    return jsonify(event_json=event_json)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
