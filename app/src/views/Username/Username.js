@@ -14,8 +14,9 @@ function Login() {
        setInputData(event.target.value);
      };
      const handleSubmit = (event) => {
-      console.log(inputData)
+       console.log(inputData);
        event.preventDefault();
+       
 
        // Send data to Flask server
        fetch("http://localhost:5000/user/username", {
@@ -24,28 +25,29 @@ function Login() {
            Authorization: "Bearer " + sessionStorage.getItem("token"),
            "Content-Type": "application/json",
          },
-         body: JSON.stringify({"username": inputData}),
+         body: JSON.stringify({ username: inputData }),
        })
          .then((response) => {
            if (response.status === 200) {
              resp = response;
              return response.json();
+           } else if (response.status == 401) {
+             alert("choose unique username");
+             return false;
            } else {
-             alert("unathorized");
+             alert("unauthorizeds");
              return false;
            }
          })
          .then((data) => {
            if (resp.status == 200) {
-             console.log(sessionStorage.getItem("token"))
-             navigate("/");
+             console.log(sessionStorage.getItem("token"));
+             navigate("/quiz");
            }
          })
          .catch((error) => {
            console.log("error", error);
          });
-        
-
      };
   
   return (

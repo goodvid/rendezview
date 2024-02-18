@@ -2,7 +2,8 @@ from flask import Flask,  request, jsonify, session
 from flask_session import Session
 from models import db  # Importing the db instance and models
 from flask_cors import CORS
-from models import User
+from models import User, Event
+from types import SimpleNamespace
 
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import get_jwt_identity
@@ -13,7 +14,7 @@ from config import ApplicationConfig
 
 
 import os
-
+import json
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -52,20 +53,107 @@ def username():
     
     print(current_user, request.json)
     user = User.query.filter_by(email=current_user).first()
-    user.username = request.json["username"]
-    db.session.commit()
-
+    check = User.query.filter_by(username=request.json["username"]).first()
+    if not check:
+        user.username = request.json["username"]
+    
+        db.session.commit()
+    else:
+        return jsonify({"message": "duplicate username not allowed"}), 401
     return jsonify(logged_in_as=current_user), 200
+
+@app.route('/user/register', methods=["POST"])
+def register():
+    data = request.json
+    email = data['email']
+    password = data['password']
+
+    cur_users = User.query.filter_by(email=email).first()
+
+    if (cur_users != None):
+        return {'status': '400', 'message': 'This email belongs to an existing account.'}
+
+    if (len(password) < 7):
+        return {'status': '400', 'message': 'Please choose a password that is greater than 6.'}
+    new_user = User(email=email,
+                    username=email,
+                    password=password)
+    db.session.add(new_user)
+    db.session.commit()
+    access_token = create_access_token(identity=email)
+    return jsonify({"message": "Account created!", "status": 200, "access_token": access_token})
+    # return jsonify(access_token), 200
+
 
 @app.route("/profile/clearhistory", methods=["GET"])
 @jwt_required()
 def deleteEventHistory():
     current_user = get_jwt_identity()
     user = User.query.filter_by(email=current_user).first()
-    user.events = None
+    user.saved_events.clear()
     db.session.commit()
-    
+
     return jsonify({"message": "events deleted"}), 200
+
+@app.route("/profile/preferences", methods=["POST"])
+@jwt_required()
+def set_preferences():
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(email=current_user).first()
+    user.preferences = str(request.json["results"])
+    db.session.commit()
+    return jsonify({"message": "prefs set"}), 200
+
+@app.route("/profile/join-event", methods=["POST"])
+@jwt_required()
+def join_event():
+
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(email=current_user).first()
+
+    eventID = request.json["event id"]
+
+    event = Event.query.filter_by(eventID=eventID).first()
+
+    if event and user:
+        user.saved_events.append(event)
+        db.session.commit()
+        print(user.saved_events)
+        return jsonify({"message": "event joined"}), 200
+
+@app.route("/event/create", methods = ["POST"])
+@jwt_required()
+def create_event():
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(email=current_user).first()
+
+    name = request.json["eventName"]
+    eventDesc = request.json["eventDesc"]
+    hostName = request.json["hostName"]
+    category = request.json["tags"]
+    eventType = request.json["eventType"]
+    location = request.json["location"]
+    userID = user.id
+
+    new_event = Event(name=name, desc=eventDesc, location=location, hostName=hostName, userID=userID, category=category, type=eventType)
+    print(new_event)
+    db.session.add(new_event)
+    user.saved_events.append(new_event)
+    db.session.commit()
+    return jsonify({"message": "event set", "eventID": new_event.eventID}), 200
+
+@app.route("/event/details", methods = ["POST"])
+def get_details():
+    id = request.json["id"]
+    print("eheheh", request.json)
+    event = Event.query.filter_by(eventID=id).first()
+    event_json = event.as_dict()
+    print(event_json)
+
+    if not event:
+        return jsonify({"message": "event not found"}), 404
+
+    return jsonify(event_json=event_json)
 
 
 if __name__ == '__main__':

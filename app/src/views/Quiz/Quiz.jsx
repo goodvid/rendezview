@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import "../../styles.css";
 
 function Quiz() {
+  let resp = false
   const navigate = useNavigate();
   const [minSelected, setMinSelected] = useState(false);
   const [selected, setSelected] = useState([]);
@@ -52,23 +53,25 @@ function Quiz() {
   const handleNext = useCallback(() => {
     if (minSelected) {
       // TODO add send to backend
-      // fetch("http://localhost:5000/set-pref", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify(inputData),
-      // })
-      //   .then((response) => response.json())
-      //   .then((data) => {
-      //     console.log("Success:", data);
-      //     // Handle success
-      //   })
-      //   .catch((error) => {
-      //     console.error("Error:", error);
-      //     // Handle errors
-      //   });
-      navigate('/')
+      fetch("http://localhost:5000/profile/preferences", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ results: selected.toString() }),
+      }).then((response) => {
+        if (response.status === 200) {
+          resp = response;
+          navigate("/");
+          return response.json();
+        } else {
+          alert("unathorized");
+          return false;
+        }
+      });
+        
+      
     } else {
       handleAlertClick();
     }
