@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 function Login() {
   const navigate = useNavigate();
+  let resp = ""
     const [inputData, setInputData] = useState('');
 
      const handleChange = (event) => {
@@ -17,25 +18,36 @@ function Login() {
        event.preventDefault();
 
        // Send data to Flask server
-       fetch("http://localhost:5000/set-username", {
+       fetch("http://localhost:5000/user/username", {
          method: "POST",
          headers: {
+           Authorization: "Bearer " + sessionStorage.getItem("token"),
            "Content-Type": "application/json",
          },
-         body: JSON.stringify(inputData),
+         body: JSON.stringify({"username": inputData}),
        })
-         .then((response) => response.json())
+         .then((response) => {
+           if (response.status === 200) {
+             resp = response;
+             return response.json();
+           } else {
+             alert("unathorized");
+             return false;
+           }
+         })
          .then((data) => {
-           console.log("Success:", data);
-           // Handle success
+           if (resp.status == 200) {
+             console.log(sessionStorage.getItem("token"))
+             navigate("/");
+           }
          })
          .catch((error) => {
-           console.error("Error:", error);
-           // Handle errors
+           console.log("error", error);
          });
-         navigate("/quiz")
+        
 
      };
+  
   return (
     <div className="w-full h-full">
       <Navbar />
