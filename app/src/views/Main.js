@@ -1,8 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import MainNavbar from '../components/MainNavbar/MainNavbar';
 import Event from '../components/Event/Event';
+import axios from 'axios';
 
 function Main() {
+
+    const [events, setEvents] = useState([]);
+
+    useEffect(() => {
+        console.log("hi");
+        axios.get("http://localhost:5000/events")
+        .then(res => {
+            console.log(res.data['status']);
+            setEvents(res.data['events']);
+        })
+        .catch(err => {
+            console.log(err)
+        });
+    }, []);
+
     return (
         <div className='w-full h-full'>
             <MainNavbar />
@@ -25,14 +41,15 @@ function Main() {
                     <div className='bg-light-gray w-[150px] h-[100px]'> Category</div>
                 </div>
                 <div className='flex flex-row flex-wrap gap-5 pl-10 pt-10'>
-                    <Event />
-                    <Event />
-                    <Event />
-                    <Event />
-                    <Event />
-                    <Event />
-                    <Event />
-                    <Event />
+                    {events.map((event, i) => {
+                        return (
+                            <Event
+                            name={event.name}
+                            date={event.time}
+                            location={event.location}
+                            key={i} />
+                        );
+                    })}
                 </div>
             </div>
         </div>

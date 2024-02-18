@@ -2,7 +2,7 @@ from flask import Flask,  request, jsonify, redirect,url_for
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user
 from models import db, User  # Importing the db instance and models
 from flask_cors import CORS
-from models import User
+from models import User, Event
 import os
 
 
@@ -45,6 +45,21 @@ def register():
     db.session.commit()
 
     return {'status': '200', 'message': 'Account created!'}
+
+@app.route('/events', methods=['GET'])
+def get_events():
+
+    events = Event.query.all()
+
+    event_values = []
+
+    for event in events:
+        values = {'name': event.name,
+                    'time': event.event_datetime,
+                    'location': event.location}
+        event_values.append(values)
+
+    return {'status': '200', 'events': event_values}
 
 @app.route('/set-username', methods=['POST'])
 def receive_data():

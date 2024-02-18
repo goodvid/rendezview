@@ -35,9 +35,6 @@ class Event(db.Model):
     host = db.Column(db.String(50))
     rating = db.Column(db.Float)
     category = db.Column(db.String(50))
-    
-    
-    
 
 class Blog(db.Model):
     blogID = db.Column(db.Integer, primary_key = True)
