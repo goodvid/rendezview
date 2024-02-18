@@ -7,6 +7,7 @@ import Username from "./views/Username/Username";
 import Register from "./views/Register/Register";
 import Profile from "./views/Profile/Profile";
 import Quiz from "./views/Quiz/Quiz";
+import EventDetails from "./views/EventDetails/EventDetails";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path="/username" element={<Username />} />
           <Route path="/quiz" element={<Quiz />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/eventdetails" element={<EventDetails />} />
         </Routes>
       </BrowserRouter>
     </div>

@@ -12,14 +12,13 @@ likes_table = db.Table('likes',
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String(50), unique=True)
-    email = db.Column(db.String(50), unique=True)
     password = db.Column(db.String(50))
     picture = db.Column(db.String(50))
     friends = db.Column(db.String(1000))
 
     blogs = db.relationship('Blog', backref='blog', lazy=True)
     saved_events = db.relationship('Event', secondary=likes_table, lazy='subquery',
-                                  backref=db.backref('events', lazy=True))
+                                    backref=db.backref('events', lazy=True))
     private_events = db.relationship('PrivateEvent', backref='private_event', lazy=True)
     location = db.Column(db.String(50))
     preferences = db.Column(db.String(50))
