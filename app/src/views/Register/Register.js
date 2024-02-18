@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 import './Register.css'
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 function Register() {
+    const navigate = useNavigate();
 
     const [email, setEmail] = useState("");
     const [flag, setFlag] = useState(0);
@@ -32,6 +34,7 @@ function Register() {
             console.log(res);
             const status = res.data['status'];
             const message = res.data['message'];
+            const token = res.data['access_token'];
 
             if (status === '200') {
                 setFlag(2);
@@ -39,7 +42,11 @@ function Register() {
                 setFlag(1);
             }
 
+            sessionStorage.setItem("token", token)
+
             setMessage(message)
+            navigate("/username")
+            
         })
         .catch(err => {
             console.log(err)

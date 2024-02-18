@@ -48,25 +48,30 @@ function Profile() {
     },
   ]);
   const handleSubmit = () =>{
-    fetch("http://localhost:5000/profile/clearhistory", {
-      method: "GET",
-      headers: {
-        Authorization: "Bearer " + sessionStorage.getItem("token"),
-        "Content-Type": "application/json",
-      }
-    })
-      .then((response) => {
-        if (response.status === 200) {
-          return response.json();
-        } else {
-          alert("error");
-          return false;
-        }
+  
+    // eslint-disable-next-line no-restricted-globals
+    if (confirm("are you sure you want to delete all data?")) {
+      fetch("http://localhost:5000/profile/clearhistory", {
+        method: "GET",
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
       })
-      .then((data) => {})
-      .catch((error) => {
-        console.log("error", error);
-      });
+        .then((response) => {
+          if (response.status === 200) {
+            return response.json();
+          } else {
+            alert("error");
+            return false;
+          }
+        })
+        .then((data) => {})
+        .catch((error) => {
+          console.log("error", error);
+        });;
+    }
+    
          
   }
   const [pastEvents, setPastEvents] = useState([
@@ -154,6 +159,7 @@ function Profile() {
           {friendsNum} FRIENDS • {groupsNum} GROUPS
         </h3>
         <Button onClick={handleSubmit}>delete past events</Button>
+        <Button onClick={() => navigate('/newevent')}>Create event</Button>
       </Stack>
     );
   };
