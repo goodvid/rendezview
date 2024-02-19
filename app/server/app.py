@@ -16,7 +16,8 @@ import os
 import json
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True)
+# CORS(app, supports_credentials=True)
+CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 
 app.secret_key = "super secret essay"
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -24,6 +25,7 @@ app.config.from_object(ApplicationConfig)
 jwt = JWTManager(app)
 
 db.init_app(app)  # Initialize db with your Flask app
+
 
 @app.route('/')
 def index():
@@ -41,24 +43,25 @@ def create_token():
         access_token = create_access_token(identity=email)
         return jsonify(access_token=access_token)
     else:
-        return jsonify({"message":"bad username or password"}), 401
+        return jsonify({"message": "bad username or password"}), 401
 
 
 @app.route("/user/username", methods=["POST"])
 @jwt_required()
 def username():
     current_user = get_jwt_identity()
-    
+
     print(current_user, request.json)
     user = User.query.filter_by(email=current_user).first()
     check = User.query.filter_by(username=request.json["username"]).first()
     if not check:
         user.username = request.json["username"]
-    
+
         db.session.commit()
     else:
         return jsonify({"message": "duplicate username not allowed"}), 401
     return jsonify(logged_in_as=current_user), 200
+
 
 @app.route('/user/register', methods=["POST"])
 def register():
@@ -93,20 +96,22 @@ def get_events():
 
     for event in events:
         values = {'name': event.name,
-                    'time': event.event_datetime,
-                    'location': event.location}
+                  'time': event.event_datetime,
+                  'location': event.location}
         event_values.append(values)
 
     return {'status': '200', 'events': event_values}
 
+
 @app.route('/set-username', methods=['POST'])
 def receive_data():
-    #if request.is_json:
-        data = request.get_json()
-        print("Received data:", data)  # For demonstration, print it to the console
-        #send to database
-        #item = User(name=current_user, username = data) TODO fix getting current user
-        return jsonify({"message": "Data received successfully", "yourData": data}), 200
+    # if request.is_json:
+    data = request.get_json()
+    print("Received data:", data)  # For demonstration, print it to the console
+    # send to database
+    # item = User(name=current_user, username = data) TODO fix getting current user
+    return jsonify({"message": "Data received successfully", "yourData": data}), 200
+
 
 @app.route("/profile/clearhistory", methods=["GET"])
 @jwt_required()
@@ -118,6 +123,7 @@ def deleteEventHistory():
 
     return jsonify({"message": "events deleted"}), 200
 
+
 @app.route("/profile/preferences", methods=["POST"])
 @jwt_required()
 def set_preferences():
@@ -126,6 +132,7 @@ def set_preferences():
     user.preferences = str(request.json["results"])
     db.session.commit()
     return jsonify({"message": "prefs set"}), 200
+
 
 @app.route("/profile/join-event", methods=["POST"])
 @jwt_required()
@@ -144,7 +151,8 @@ def join_event():
         print(user.saved_events)
         return jsonify({"message": "event joined"}), 200
 
-@app.route("/event/create", methods = ["POST"])
+
+@app.route("/event/create", methods=["POST"])
 @jwt_required()
 def create_event():
     current_user = get_jwt_identity()
@@ -158,14 +166,16 @@ def create_event():
     location = request.json["location"]
     userID = user.id
 
-    new_event = Event(name=name, desc=eventDesc, location=location, hostName=hostName, userID=userID, category=category, type=eventType)
+    new_event = Event(name=name, desc=eventDesc, location=location,
+                      hostName=hostName, userID=userID, category=category, type=eventType)
     print(new_event)
     db.session.add(new_event)
     user.saved_events.append(new_event)
     db.session.commit()
     return jsonify({"message": "event set", "eventID": new_event.eventID}), 200
 
-@app.route("/event/details", methods = ["POST"])
+
+@app.route("/event/details", methods=["POST"])
 def get_details():
     id = request.json["id"]
     print("eheheh", request.json)
