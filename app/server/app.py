@@ -91,11 +91,11 @@ def get_events():
 
     event_values = []
 
-    # for event in events:
-    #     values = {'name': event.name,
-    #                 'time': event.event_datetime,
-    #                 'location': event.location}
-    #     event_values.append(values)
+    for event in events:
+        values = {'name': event.name,
+                    'time': event.event_datetime,
+                    'location': event.location}
+        event_values.append(values)
 
     return {'status': '200', 'events': event_values}
 

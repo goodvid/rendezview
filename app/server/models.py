@@ -5,12 +5,13 @@ from werkzeug.security import generate_password_hash, check_password_hash
 db = SQLAlchemy()
 
 events_table = db.Table('user_events',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
-    db.Column('event_id', db.Integer, db.ForeignKey('event.eventID'), primary_key=True)
+    db.Column('user_events_id', db.Integer, primary_key=True),
+    db.Column('user_id', db.Integer, db.ForeignKey('user.userID')),
+    db.Column('event_id', db.Integer, db.ForeignKey('event.eventID'))
 )
 
 class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key = True)
+    userID = db.Column(db.Integer, primary_key = True)
     email = db.Column(db.String, unique=True)
     username = db.Column(db.String(50), unique=True)
     password = db.Column(db.String(50))
@@ -71,6 +72,6 @@ class Event(db.Model):
 class Blog(db.Model):
     blogID = db.Column(db.Integer, primary_key = True)
     text = db.Column(db.String(5000))
-    author = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    author = db.Column(db.Integer, db.ForeignKey('user.userID'), nullable=False)
     event = db.Column(db.Integer, db.ForeignKey('event.eventID'))
     time = db.Column(db.DateTime)
