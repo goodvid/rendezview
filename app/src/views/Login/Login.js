@@ -1,19 +1,18 @@
-import React from 'react';
-import axios from 'axios';
-import './Login.css'
+import React from "react";
+import axios from "axios";
+import "./Login.css";
 import { useState } from "react";
-import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // const express = require("express");
 // const cors = require("cors");
 // const app = express();
 // app.use(cors());
 
-
 function Login() {
   const navigate = useNavigate();
-  let resp = false
+  let resp = false;
   const [inputData, setInputData] = useState({
     // Initial state, adjust based on your form fields
     email: "",
@@ -28,10 +27,11 @@ function Login() {
   };
 
   const handle_authentication = (event) => {
-    axios.get("http://localhost:3000/authenticate")
-      .then(res => { })
-      .catch(err => {
-        console.log(err)
+    axios
+      .get("http://localhost:3000/authenticate")
+      .then((res) => {})
+      .catch((err) => {
+        console.log(err);
       });
     // console.log(event);
     // axios.get("http://localhost:5000/authenticate", {}).then(response => {
@@ -44,34 +44,38 @@ function Login() {
   };
 
   const handleSubmit = (event) => {
-    console.log(inputData)
+    console.log(inputData);
     event.preventDefault();
 
     // Send data to Flask server
-    fetch("http://localhost:5000/user/login", {
+    fetch("http://127.0.0.1:5000/user/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      withCredentials: false,
+      // withCredentials: false,
       body: JSON.stringify(inputData),
     })
-      .then(response => {
-        if (response.status === 200) { resp = response; return response.json(); }
-        else {
-          console.log(response)
-          alert("incorrect login/password")
-          return false
+      .then((response) => {
+        if (response.status === 200) {
+          resp = response;
+          return response.json();
+        } else {
+          console.log(response);
+          alert("incorrect login/password");
+          return false;
         }
       })
-      .then(data => {
+      .then((data) => {
         if (resp.status == 200) {
           sessionStorage.setItem("token", data.access_token);
           console.log("token", sessionStorage.getItem("token"));
           navigate("/");
         }
       })
-      .catch(error => { console.log("error", error) })
+      .catch((error) => {
+        console.log("error", error);
+      });
   };
   return (
     <div className="w-full h-full">
@@ -91,7 +95,7 @@ function Login() {
           </span>
           <input
             name="password"
-            type='password'
+            type="password"
             onChange={handleChange}
             className="w-[360px] h-[45px] border-login-blue outline rounded-md pl-2"
           />
@@ -129,6 +133,6 @@ function Login() {
       </div>
     </div>
   );
-};
+}
 
 export default Login;

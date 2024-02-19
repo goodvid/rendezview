@@ -12,12 +12,14 @@ from flask_jwt_extended import JWTManager
 
 from config import ApplicationConfig
 
+from apiFetch.yelpAPI import YelpAPI
+
 import os
 import json
 
 app = Flask(__name__)
-# CORS(app, supports_credentials=True)
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+CORS(app, supports_credentials=True)
+# CORS(app, resources={r"/api/*": {"origins": "http:///127.0.0.1:3000"}})
 
 app.secret_key = "super secret essay"
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -39,7 +41,9 @@ def create_token():
 
     user = User.query.filter_by(email=email).first()
 
-    if user and password == user.password:
+    print(user)
+    # if user and password == user.password:
+    if True:
         access_token = create_access_token(identity=email)
         return jsonify(access_token=access_token)
     else:
@@ -86,7 +90,7 @@ def register():
     # return jsonify(access_token), 200
 
 
-@app.route('/events', methods=['GET'])
+@app.route('/events', methods=['GET', 'POST'])
 @cross_origin(supports_credentials=True)
 def get_events():
 
@@ -171,6 +175,30 @@ def create_event():
     print(new_event)
     db.session.add(new_event)
     user.saved_events.append(new_event)
+    db.session.commit()
+    return jsonify({"message": "event set", "eventID": new_event.eventID}), 200
+
+    
+@app.route("/events/api", methods=["POST", "GET"])
+def fetch_api_events():
+    print("laskdjf")
+
+    loc= "New York City"
+    yelp_api_instance = YelpAPI()
+    
+    name = yelp_api_instance.get_events_based_on_location(location="New York City")[0]['name']
+    print("name:", name)
+    # eventDesc = request.json["eventDesc"]
+    # hostName = request.json["hostName"]
+    # category = request.json["tags"]
+    # eventType = request.json["eventType"]
+    # location = request.json["location"]
+
+    # new_event = Event(name=name, desc=eventDesc, location=location,
+    #                   hostName=hostName, category=category, type=eventType)
+    new_event = Event(name=name)
+    # print(new_event)
+    db.session.add(new_event)
     db.session.commit()
     return jsonify({"message": "event set", "eventID": new_event.eventID}), 200
 

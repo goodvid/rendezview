@@ -74,7 +74,7 @@ class YelpAPI:
             print(self.check_rate_limit(response.headers))
             # pprint(response)
             events = response.json()['events']
-            pprint(events)
+            # pprint(events)
             # for event in events:
             #     print(event['name'], '-', event['time_start'])
         else:
@@ -82,7 +82,7 @@ class YelpAPI:
             print(self.default_search_path, self.amount, self.location,
                   self.sort_by, self.sort_on)
             print("Failed to fetch events")
-        return
+        return events
 
     def get_events_based_on_category(self, category):
         # for test
@@ -138,6 +138,8 @@ class YelpAPI:
             print("Failed to fetch businesses")
 
         return
+    
+    
 
 
 if __name__ == '__main__':

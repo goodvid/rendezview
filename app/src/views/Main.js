@@ -179,17 +179,43 @@ function Main() {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
-    console.log("hi");
-    axios
-      .get("http://localhost:5000/events")
-      .then((res) => {
-        console.log(res.data["status"]);
-        setEvents(res.data["events"]);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    fetchAPIEvents();
+    // fetchAndDisplayEvents();
   }, []);
+
+  const fetchAPIEvents = () => {
+    axios
+      .get("http://127.0.0.1:5000/events/api")
+      .then((response) => {
+        console.log("API events fetched and stored:", response.data);
+        fetchAndDisplayEvents();
+      })
+      .catch((error) => console.error("Error fetching API events:", error));
+  };
+
+  const fetchAndDisplayEvents = () => {
+    axios
+      .get("http://127.0.0.1:5000/events")
+      .then((response) => {
+        console.log("events status: ", response.data["status"]);
+        console.log("Events fetched:", response.data["events"]);
+        setEvents(response.data["events"]);
+      })
+      .catch((error) => console.error("Error fetching events:", error));
+  };
+
+  // useEffect(() => {
+  //   console.log("hi");
+  //   axios
+  //     .get("http://127.0.0.1:5000/events")
+  //     .then((res) => {
+  //       console.log(res.data["status"]);
+  //       setEvents(res.data["events"]);
+  //     })
+  //     .catch((err) => {
+  //       console.log(err);
+  //     });
+  // }, []);
 
   return (
     <div className="w-full h-full">
