@@ -1,7 +1,7 @@
 from flask import Flask,  request, jsonify, session
 from flask_session import Session
 from models import db  # Importing the db instance and models
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from models import User, Event
 from types import SimpleNamespace
 
@@ -22,7 +22,6 @@ app.secret_key = "super secret essay"
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config.from_object(ApplicationConfig)
 jwt = JWTManager(app)
-
 
 db.init_app(app)  # Initialize db with your Flask app
 
@@ -85,17 +84,18 @@ def register():
 
 
 @app.route('/events', methods=['GET'])
+@cross_origin(supports_credentials=True)
 def get_events():
 
     events = Event.query.all()
 
     event_values = []
 
-    for event in events:
-        values = {'name': event.name,
-                    'time': event.event_datetime,
-                    'location': event.location}
-        event_values.append(values)
+    # for event in events:
+    #     values = {'name': event.name,
+    #                 'time': event.event_datetime,
+    #                 'location': event.location}
+    #     event_values.append(values)
 
     return {'status': '200', 'events': event_values}
 

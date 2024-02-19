@@ -49,30 +49,23 @@ class User(UserMixin, db.Model):
 
 class Event(db.Model):
     
-    
     eventID = db.Column(db.Integer, primary_key = True)
-    desc = db.Column(db.String(500))
     name = db.Column(db.String(50))
     location = db.Column(db.String(50))
     event_datetime = db.Column(db.DateTime)
-    hostName = db.Column(db.String(50))
-    userID = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    host = db.Column(db.String(50))
     rating = db.Column(db.Float)
     category = db.Column(db.String(50))
 
-    type = db.Column(db.String(50))
     def as_dict(self):
         return {
             'eventID': self.eventID,
-            'desc': self.desc,
             'name': self.name,
             'location': self.location,
             'event_datetime': self.event_datetime,
-            'hostName' : self.hostName,
-            'userID': self.userID,
+            'hostName' : self.host,
             'rating' : self.rating,
             'category': self.category,
-            'type': self.type
         }
 
 class Blog(db.Model):
