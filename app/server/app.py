@@ -12,7 +12,6 @@ from flask_jwt_extended import JWTManager
 
 from config import ApplicationConfig
 
-
 import os
 import json
 
@@ -84,6 +83,30 @@ def register():
     return jsonify({"message": "Account created!", "status": 200, "access_token": access_token})
     # return jsonify(access_token), 200
 
+
+@app.route('/events', methods=['GET'])
+def get_events():
+
+    events = Event.query.all()
+
+    event_values = []
+
+    for event in events:
+        values = {'name': event.name,
+                    'time': event.event_datetime,
+                    'location': event.location}
+        event_values.append(values)
+
+    return {'status': '200', 'events': event_values}
+
+@app.route('/set-username', methods=['POST'])
+def receive_data():
+    #if request.is_json:
+        data = request.get_json()
+        print("Received data:", data)  # For demonstration, print it to the console
+        #send to database
+        #item = User(name=current_user, username = data) TODO fix getting current user
+        return jsonify({"message": "Data received successfully", "yourData": data}), 200
 
 @app.route("/profile/clearhistory", methods=["GET"])
 @jwt_required()

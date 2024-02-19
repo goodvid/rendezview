@@ -59,6 +59,7 @@ class Event(db.Model):
     userID = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     rating = db.Column(db.Float)
     category = db.Column(db.String(50))
+
     type = db.Column(db.String(50))
     def as_dict(self):
         return {
@@ -73,7 +74,6 @@ class Event(db.Model):
             'category': self.category,
             'type': self.type
         }
-
 
 class Blog(db.Model):
     blogID = db.Column(db.Integer, primary_key = True)
