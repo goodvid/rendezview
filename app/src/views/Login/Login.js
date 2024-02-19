@@ -6,10 +6,10 @@ import { useNavigate } from 'react-router-dom';
 
 function Login() {
     const navigate = useNavigate();
-    const response = false
+    let resp = false
     const [inputData, setInputData] = useState({
       // Initial state, adjust based on your form fields
-      name: "",
+      email: "",
       password: "",
     });
     const handleChange = (event) => {
@@ -24,31 +24,28 @@ function Login() {
        event.preventDefault();
 
        // Send data to Flask server
-       fetch("http://localhost:5000/login", {
+       fetch("http://localhost:5000/user/login", {
          method: "POST",
          headers: {
            "Content-Type": "application/json",
          },
          body: JSON.stringify(inputData),
        })
-         .then((response) => response.json())
-         .then((data) => {
-           console.log("Success:", data);
-           navigate("/username")
-           response = true
-
-           // Handle success
+         .then(response =>{if (response.status === 200) 
+          {  resp = response; return response.json();}
+          else 
+          {alert("incorrect login/password") 
+          return false}
+          })
+         .then(data => {
+          if (resp.status == 200){
+            sessionStorage.setItem("token", data.access_token);
+            console.log("token", sessionStorage.getItem("token"));
+            navigate("/");
+          }
          })
-         .catch((error) => {
-           console.error("Error:", error);
-           // Handle errors
-         });
-         console.log(response)
-         if (response){
-          console.log("dghuggr")
-          navigate("/username");
-
-         }
+         .catch(error => {console.log("error", error)})
+         
 
 
          
@@ -64,7 +61,7 @@ function Login() {
               Email
             </span>
             <input
-              name="name"
+              name="email"
               onChange={handleChange}
               className="w-[360px] h-[45px] border-login-blue outline rounded-md pl-2"
             />
