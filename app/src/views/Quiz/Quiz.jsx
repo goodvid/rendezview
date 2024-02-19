@@ -1,10 +1,13 @@
 import React from "react";
-import { useState, useCallback } from "react";
+import { useState, useCallback,  } from "react";
 import { Alert, Box, Button, Chip, Stack, Snackbar } from "@mui/material";
 import Navbar from "../../components/Navbar/Navbar";
+import { useNavigate } from "react-router-dom";
 import "../../styles.css";
 
 function Quiz() {
+  let resp = false
+  const navigate = useNavigate();
   const [minSelected, setMinSelected] = useState(false);
   const [selected, setSelected] = useState([]);
   const [tags, setTags] = useState([
@@ -49,7 +52,26 @@ function Quiz() {
   // Alert if less than 3 selected
   const handleNext = useCallback(() => {
     if (minSelected) {
-      // TODO: navigate to next page
+      // TODO add send to backend
+      fetch("http://localhost:5000/profile/preferences", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ results: selected.toString() }),
+      }).then((response) => {
+        if (response.status === 200) {
+          resp = response;
+          navigate("/");
+          return response.json();
+        } else {
+          alert("unathorized");
+          return false;
+        }
+      });
+        
+      
     } else {
       handleAlertClick();
     }

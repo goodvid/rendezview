@@ -3,6 +3,7 @@ import { React, useState } from "react";
 import {
   Card,
   Avatar,
+  Button,
   Box,
   Chip,
   Stack,
@@ -20,6 +21,7 @@ import {
 import Navbar from "../../components/Navbar/Navbar";
 import concertPhoto from "../../media/concert.jpg";
 
+import { useNavigate } from "react-router-dom";
 import SettingsIcon from "@mui/icons-material/Settings";
 import NearMeIcon from "@mui/icons-material/NearMe";
 import EditIcon from "@mui/icons-material/Edit";
@@ -27,6 +29,9 @@ import LocalActivityIcon from "@mui/icons-material/LocalActivity";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 
 function Profile() {
+  const navigate = useNavigate();
+  const response = false;
+
   const [displayName, setDisplayName] = useState("Display Name");
   const [profilePic, setProfilePic] = useState("");
   const [friendsNum, setFriendsNum] = useState(0);
@@ -68,6 +73,33 @@ function Profile() {
       picture: concertPhoto,
     },
   ]);
+  const handleSubmit = () =>{
+  
+    // eslint-disable-next-line no-restricted-globals
+    if (confirm("are you sure you want to delete all data?")) {
+      fetch("http://localhost:5000/profile/clearhistory", {
+        method: "GET",
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => {
+          if (response.status === 200) {
+            return response.json();
+          } else {
+            alert("error");
+            return false;
+          }
+        })
+        .then((data) => {})
+        .catch((error) => {
+          console.log("error", error);
+        });;
+    }
+    
+         
+  }
   const [pastEvents, setPastEvents] = useState([
     {
       id: 1,
@@ -220,6 +252,8 @@ function Profile() {
             </div>
           ))}
         </Stack>
+        <Button onClick={handleSubmit}>delete past events</Button>
+        <Button onClick={() => navigate('/newevent')}>Create event</Button>
       </Stack>
     );
   };
@@ -335,6 +369,7 @@ function Profile() {
             ))}
           </Stack>
         </Box>
+
       </Stack>
     );
   };
