@@ -1,14 +1,15 @@
 import React from "react";
-import { useState, useCallback } from "react";
-import { Alert, Box, Button, Chip, Stack, Snackbar } from "@mui/material";
+import { useState } from "react";
+import {Chip, Stack } from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import PersonIcon from "@mui/icons-material/Person";
 import EventIcon from "@mui/icons-material/Event";
 import ShareIcon from "@mui/icons-material/Share";
-
+import { useEffect} from "react";
 import Navbar from "../../components/Navbar/Navbar";
 import testImage from "../../media/testImage.jpeg";
 import "./EventDetails.css";
+import { useParams } from "react-router-dom";
 import {
   ReadMoreButton,
   YellowButton,
@@ -16,7 +17,46 @@ import {
 
 function EventDetails() {
   // TODO: replace hard coded names
+    let  id  = useParams();
+    console.log(id, "ididid")
+  let resp = false
+  const [eventObject, setEventObject] = useState({
+    eventID: "e",
+    desc: "e",
+    name: "e",
+    location: "e",
+    event_datetime: "e",
+    hostName: "e",
+    userID: "e",
+    rating: "e",
+    category: "e",
+    type: "e",
+  });
+
+  useEffect(() => {
+    fetch("http://localhost:5000/event/details", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(id),
+    })
+      .then((response) => {
+        resp = response;
+        return response.json();
+      })
+      .then((data) => {
+        if (resp.status === 200) {
+          console.log(data);
+          setEventObject(data.event_json)
+        }
+      })
+      .catch((error) => {
+        console.log("error", error);
+      });
+  }, []);
   const [eventName, setEventName] = useState("Event Name");
+  const [eventID, setEventId] = useState("1");
   const [date, setDate] = useState("Saturday, February 8, 2024");
   const [time, setTime] = useState("7:00pm");
   const [description, setDescription] = useState(
@@ -37,14 +77,41 @@ function EventDetails() {
   ]);
   const [showAll, setShowAll] = useState(false);
 
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    // Send data to Flask server
+    fetch("http://localhost:5000/profile/join-event", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + sessionStorage.getItem("token"),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ "event id": eventObject.eventID}),
+    })
+      .then((response) => {
+        if (response.status === 200) {
+          alert("event joined successfully");
+          return response.json();
+        } else {
+          alert("error");
+          return false;
+        }
+      })
+      .then(() => {})
+      .catch((error) => {
+        console.log("error", error);
+      });
+  };
+
   const EventInfoSection = () => {
     return (
       <div>
         <Stack direction="row" marginBlock="1rem">
           <Stack width="100%" justifyContent="flex-start" textAlign="left">
-            <h1>{eventName}</h1>
+            <h1>{eventObject.name}</h1>
             <h3 style={{ color: "#818181" }}>
-              {date} • {time}
+              {eventObject.event_datetime} • {eventObject.event_datetime}
             </h3>
           </Stack>
           <Stack
@@ -68,7 +135,11 @@ function EventDetails() {
           <img src={testImage} style={{ borderRadius: "1rem" }} />
         </Stack>
         <Stack alignItems="flex-start" marginTop="1rem">
-          <YellowButton textAlign="left" variant="contained">
+          <YellowButton
+            textAlign="left"
+            variant="contained"
+            onClick={handleSubmit}
+          >
             Join Event
           </YellowButton>
         </Stack>
@@ -80,18 +151,18 @@ function EventDetails() {
     return (
       <Stack className="section">
         <h2>Event Details</h2>
-        {description.length > 500 ? (
+        {eventObject.desc.length > 500 ? (
           <div>
             {showAll ? (
               <div>
-                <p>{description}</p>
+                <p>{eventObject.desc}</p>
                 <ReadMoreButton size="small" onClick={() => setShowAll(false)}>
                   Read Less
                 </ReadMoreButton>
               </div>
             ) : (
               <div>
-                <p>{description.substring(0, 500).concat("...")}</p>
+                <p>{eventObject.desc.substring(0, 500).concat("...")}</p>
                 <ReadMoreButton size="small" onClick={() => setShowAll(true)}>
                   Read More
                 </ReadMoreButton>
@@ -99,7 +170,7 @@ function EventDetails() {
             )}
           </div>
         ) : (
-          description
+          eventObject.desc
         )}
       </Stack>
     );
@@ -111,7 +182,7 @@ function EventDetails() {
         <h2>Location</h2>
         <Stack direction="row" alignItems="center" gap="1rem">
           <LocationOnIcon />
-          <h3>{location}</h3>
+          <h3>{eventObject.location}</h3>
         </Stack>
       </Stack>
     );
@@ -122,7 +193,7 @@ function EventDetails() {
         <h2>Organizer</h2>
         <Stack direction="row" alignItems="center" gap="1rem">
           <PersonIcon />
-          <h3>{organizer}</h3>
+          <h3>{eventObject.hostName}</h3>
         </Stack>
       </Stack>
     );
@@ -140,11 +211,15 @@ function EventDetails() {
             flexWrap="wrap"
             width="100%"
           >
-            {tags.map((name) => (
-              <div>
-                <Chip key={name} label={name} />
-              </div>
-            ))}
+            {tags.map(
+              (
+                name //TODO add proper tags
+              ) => (
+                <div>
+                  <Chip key={name} label={name} />
+                </div>
+              )
+            )}
           </Stack>
         </Stack>
       </Stack>

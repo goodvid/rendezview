@@ -1,12 +1,12 @@
 import React from "react";
 import "./Profile.css";
 import { useState } from "react";
-import { Card, Avatar, Box, Chip, Stack, Rating } from "@mui/material";
+import { Card, Avatar, Box, Chip, Stack, Rating, Button } from "@mui/material";
 import {
   YellowCard,
   BlueCard,
 } from "../../components/StyledComponents/StyledComponents";
-
+import { useNavigate } from "react-router-dom";
 import SettingsIcon from "@mui/icons-material/Settings";
 import NearMeIcon from "@mui/icons-material/NearMe";
 import LocalActivityIcon from "@mui/icons-material/LocalActivity";
@@ -15,6 +15,8 @@ import concertPhoto from "../../media/concert.jpg";
 import Navbar from "../../components/Navbar/Navbar";
 
 function Profile() {
+  const navigate = useNavigate();
+  const response = false;
   const [friendsNum, setFriendsNum] = useState(0);
   const [groupsNum, setGroupsNum] = useState(0);
 
@@ -45,6 +47,33 @@ function Profile() {
       picture: concertPhoto,
     },
   ]);
+  const handleSubmit = () =>{
+  
+    // eslint-disable-next-line no-restricted-globals
+    if (confirm("are you sure you want to delete all data?")) {
+      fetch("http://localhost:5000/profile/clearhistory", {
+        method: "GET",
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => {
+          if (response.status === 200) {
+            return response.json();
+          } else {
+            alert("error");
+            return false;
+          }
+        })
+        .then((data) => {})
+        .catch((error) => {
+          console.log("error", error);
+        });;
+    }
+    
+         
+  }
   const [pastEvents, setPastEvents] = useState([
     {
       id: 1,
@@ -129,6 +158,8 @@ function Profile() {
         <h3>
           {friendsNum} FRIENDS • {groupsNum} GROUPS
         </h3>
+        <Button onClick={handleSubmit}>delete past events</Button>
+        <Button onClick={() => navigate('/newevent')}>Create event</Button>
       </Stack>
     );
   };
@@ -244,6 +275,7 @@ function Profile() {
             ))}
           </Stack>
         </Box>
+
       </Stack>
     );
   };
