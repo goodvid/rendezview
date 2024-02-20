@@ -50,6 +50,7 @@ class User(UserMixin, db.Model):
 class Event(db.Model):
     
     eventID = db.Column(db.Integer, primary_key = True)
+    yelpID = db.Column(db.String(500))
     desc = db.Column(db.String(500))
     name = db.Column(db.String(50))
     location = db.Column(db.String(50))
