@@ -86,7 +86,6 @@ def register():
 
 
 @app.route('/events', methods=['GET'])
-@cross_origin(supports_credentials=True)
 def get_events():
 
     events = Event.query.all()
@@ -94,9 +93,30 @@ def get_events():
     event_values = []
 
     for event in events:
-        values = {'name': event.name,
-                  'time': event.event_datetime,
-                  'location': event.location}
+        values = {'id': event.eventID,
+                    'name': event.name,
+                    'time': event.event_datetime,
+                    'location': event.location}
+        event_values.append(values)
+
+    return {'status': '200', 'events': event_values}
+
+@app.route('/user_events', methods=['GET'])
+@jwt_required()
+def get_user_events():
+
+    user = get_jwt_identity()
+    print(user)
+
+    events = Event.query.filter_by(host=user['name'])
+
+    event_values = []
+
+    for event in events:
+        values = {'id': event.eventID,
+                    'name': event.name,
+                    'time': event.event_datetime,
+                    'location': event.location}
         event_values.append(values)
 
     return {'status': '200', 'events': event_values}

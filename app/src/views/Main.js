@@ -44,6 +44,7 @@ function Main() {
                     {events.map((event, i) => {
                         return (
                             <Event
+                            id={event.id}
                             name={event.name}
                             date={event.time}
                             location={event.location}
