@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 function Register() {
+
     const navigate = useNavigate();
 
     const [email, setEmail] = useState("");
@@ -30,27 +31,27 @@ function Register() {
             email: email,
             password: password
         })
-        .then(res => {
-            console.log(res);
-            const status = res.data['status'];
-            const message = res.data['message'];
-            const token = res.data['access_token'];
+            .then(res => {
+                console.log(res);
+                const status = res.data['status'];
+                const message = res.data['message'];
+                const token = res.data['access_token'];
 
-            if (status === '200') {
-                setFlag(2);
-            } else {
-                setFlag(1);
-            }
+                if (status === '200') {
+                    setFlag(2);
+                } else {
+                    setFlag(1);
+                }
 
-            sessionStorage.setItem("token", token)
+                sessionStorage.setItem("token", token)
 
-            setMessage(message)
-            navigate("/username")
-            
-        })
-        .catch(err => {
-            console.log(err)
-        });
+                setMessage(message)
+                navigate("/username")
+
+            })
+            .catch(err => {
+                console.log(err)
+            });
         setEmail("");
         setPassword("");
         setFlag(1);
@@ -80,20 +81,20 @@ function Register() {
                     <span className='w-[360px] text-gray-500 text-left mt-[10px] mr-[525px]'>Select Preferences</span>
                     <div className='w-[680px] flex flex-row justify-center items-center mt-1 gap-[50px] mr-[210px]'>
                         <button
-                        href='/quiz'
-                        className='w-[360px] h-[45px] bg-login-blue text-white font-bold rounded-lg'>Take Preference Quiz</button>
+                            href='/quiz'
+                            className='w-[360px] h-[45px] bg-login-blue text-white font-bold rounded-lg'>Take Preference Quiz</button>
                         <span className='text-gray-500'>OR</span>
                         <span className='text-gray-500 font-bold'>Manually Add Preferences</span>
                     </div>
                     {flag == 0 ? <div className='mt-[70px]' /> : <div className={flag == 1 ? 'mt-[70px] text-red-600' : 'mt-[70px] text-green-500'}>{message}</div>}
                     <button
-                    className='w-[260px] h-[45px] bg-login-blue text-white font-medium rounded-lg mt-2'
-                    onClick={register}>Create Account</button>
+                        className='w-[260px] h-[45px] bg-login-blue text-white font-medium rounded-lg mt-2'
+                        onClick={register}>Create Account</button>
                     <span className='font-normal text-gray-500 mt-4'>Already have an account?</span>
                     <Link
-                    id="log-in"
-                    to='/login'
-                    className='text-login-blue font-bold'>Log In</Link>
+                        id="log-in"
+                        to='/login'
+                        className='text-login-blue font-bold'>Log In</Link>
                 </div>
             </div>
         </div>

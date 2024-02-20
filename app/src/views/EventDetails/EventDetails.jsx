@@ -1,11 +1,11 @@
 import React from "react";
 import { useState } from "react";
-import {Chip, Stack } from "@mui/material";
+import { Chip, Stack } from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import PersonIcon from "@mui/icons-material/Person";
 import EventIcon from "@mui/icons-material/Event";
 import ShareIcon from "@mui/icons-material/Share";
-import { useEffect} from "react";
+import { useEffect } from "react";
 import Navbar from "../../components/Navbar/Navbar";
 import testImage from "../../media/testImage.jpeg";
 import "./EventDetails.css";
@@ -17,8 +17,8 @@ import {
 
 function EventDetails() {
   // TODO: replace hard coded names
-    let  id  = useParams();
-    console.log(id, "ididid")
+  let id = useParams();
+  console.log(id, "ididid")
   let resp = false
   const [eventObject, setEventObject] = useState({
     eventID: "e",
@@ -87,7 +87,7 @@ function EventDetails() {
         Authorization: "Bearer " + sessionStorage.getItem("token"),
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ "event id": eventObject.eventID}),
+      body: JSON.stringify({ "event id": eventObject.eventID }),
     })
       .then((response) => {
         if (response.status === 200) {
@@ -98,7 +98,7 @@ function EventDetails() {
           return false;
         }
       })
-      .then(() => {})
+      .then(() => { })
       .catch((error) => {
         console.log("error", error);
       });
