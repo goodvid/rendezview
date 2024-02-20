@@ -49,7 +49,6 @@ def create_token():
         return jsonify(access_token=access_token)
     else:
         return jsonify({"message": "bad username or password"}), 401
-        return jsonify({"message": "bad username or password"}), 401
 
 
 @app.route("/user/username", methods=["POST"])
@@ -200,8 +199,15 @@ def get_details():
 @app.route("/authenticate", methods=["GET"])
 def link_google_account():
     print("d")
-    if handle_google_api.handle_authentication():
-        return {"message": "Success"}
+    response = handle_google_api.handle_authentication()
+    if response['flag']:
+        # email = response['email']
+        # user = User.query.filter_by(email=email).first()
+        # # replace password with credentials
+        # if user and password == user.password:
+        #     access_token = create_access_token(identity=email)
+        #     return jsonify(access_token=access_token)
+        return {'message': 'success'}
     else:
         return {"message": "Error occurred while attempting to link accounts"}
 

@@ -7,13 +7,13 @@ def handle_authentication():
     try:
         google_api_instance = GoogleAPI(os.getcwd())
         credentials = google_api_instance.authenticate()
-        user_email = google_api_instance.get_user_email()
+        user_email = google_api_instance.get_user_email(credentials)
         google_api_instance.save_credentials_and_email(credentials, user_email)
         # probably need another function here to actually save it to the database
-        return True
+        return {'flag': True, 'credentials': credentials, 'email': user_email}
     except Exception as e:
         print(e)
-        return False
+        return {'flag': False}
 
 
 def handle_deauthentication():
