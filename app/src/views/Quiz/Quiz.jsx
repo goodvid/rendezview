@@ -8,6 +8,7 @@ import "../../styles.css";
 function Quiz() {
   let resp = false
   const navigate = useNavigate();
+  const [selectedStr, setSelectedStr] = useState("");
   const [minSelected, setMinSelected] = useState(false);
   const [selected, setSelected] = useState([]);
   const [tags, setTags] = useState([
@@ -31,8 +32,11 @@ function Quiz() {
         newSelected.delete(name);
       }
 
+      let newStr = Array.from(newSelected).join(",");
+
       setSelected(newSelected);
       setMinSelected(newSelected.size >= 3);
+      setSelectedStr(newStr);
     },
     [selected]
   );
@@ -59,7 +63,7 @@ function Quiz() {
           Authorization: "Bearer " + sessionStorage.getItem("token"),
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ results: selected.toString() }),
+        body: JSON.stringify({ results: selectedStr }),
       }).then((response) => {
         if (response.status === 200) {
           resp = response;
