@@ -10,7 +10,7 @@ class YelpAPI:
     API_HOST = 'https://api.yelp.com/v3'
     HEADERS = {'Authorization': f'Bearer {API_KEY}'}
 
-    def __init__(self, type="events", location='New York, NY', amount=3, sort_on='popularity', sort_by='desc'):
+    def __init__(self, type="events", location='New York, NY', amount=5, sort_on='popularity', sort_by='desc'):
         # default configurations
         self.default_search_path = os.path.join(self.API_HOST, type)
         self.remaining_requests = 0

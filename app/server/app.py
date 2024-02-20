@@ -4,6 +4,7 @@ from models import db  # Importing the db instance and models
 from flask_cors import CORS, cross_origin
 from models import User, Event
 from types import SimpleNamespace
+from dateutil import parser
 
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import get_jwt_identity
@@ -181,26 +182,53 @@ def create_event():
     
 @app.route("/events/api", methods=["POST", "GET"])
 def fetch_api_events():
-    print("laskdjf")
 
-    loc= "New York City"
+    loc= "West Lafayette, Indiana"
     yelp_api_instance = YelpAPI()
-    
-    name = yelp_api_instance.get_events_based_on_location(location="New York City")[0]['name']
-    print("name:", name)
-    # eventDesc = request.json["eventDesc"]
-    # hostName = request.json["hostName"]
-    # category = request.json["tags"]
-    # eventType = request.json["eventType"]
-    # location = request.json["location"]
 
-    # new_event = Event(name=name, desc=eventDesc, location=location,
-    #                   hostName=hostName, category=category, type=eventType)
-    new_event = Event(name=name)
-    # print(new_event)
-    db.session.add(new_event)
+    events = yelp_api_instance.get_events_based_on_location(location=loc)
+    
+    created_event_ids = []
+
+    for event in events:
+        eventDesc = event['description']
+        name = event['name']
+        
+        yelpLocation = event['location']
+        locationAddress = ', '.join(yelpLocation['display_address'])
+        
+        eventDateTime = parser.isoparse(event['time_start'])
+        
+        
+        new_event = Event(name=name, desc=eventDesc, location=locationAddress, event_datetime=eventDateTime, category=category)
+        
+        db.session.add(new_event)
+        
+        created_event_ids.append(new_event.eventID)
+
     db.session.commit()
-    return jsonify({"message": "event set", "eventID": new_event.eventID}), 200
+    
+    return jsonify({"message": "Events set", "eventIDs": created_event_ids, "events": events}), 200
+    
+    # eventDesc = yelp_api_instance.get_events_based_on_location(location=loc)[0]['description']
+    # name = yelp_api_instance.get_events_based_on_location(location=loc)[0]['name']
+
+    # yelpLocation = yelp_api_instance.get_events_based_on_location(location=loc)[0]['location']
+    # locationAddress = ', '.join(yelpLocation['display_address'])
+
+    # eventDateTime = parser.isoparse(yelp_api_instance.get_events_based_on_location(location=loc)[0]['time_start'])
+
+    # # hostName= yelp_api_instance.get_events_based_on_location(location="New York City")[0]['category']
+    # # userID =
+    # category = yelp_api_instance.get_events_based_on_location(location=loc)[0]['category']
+
+    # new_event = Event(name=name, desc=eventDesc, location=locationAddress, event_datetime=eventDateTime, category=category)
+    # # new_event = Event(name=name, desc=eventDesc, location=locationAddress, event_datetime=eventDateTime, hostName=hostName, userID=userID, rating=rating, category=category)
+    # print(new_event)
+    # db.session.add(new_event)
+    # db.session.commit()
+    # return jsonify({"message": "event set", "eventID": new_event.eventID, "events": yelp_api_instance.get_events_based_on_location(location="New York City")}), 200
+    # # return jsonify({"message": "event set", "eventID": new_event.eventID}), 200
 
 
 @app.route("/event/details", methods=["POST"])
