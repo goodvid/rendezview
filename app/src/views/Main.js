@@ -10,13 +10,13 @@ function Main() {
     useEffect(() => {
         console.log("hi");
         axios.get("http://localhost:5000/events")
-        .then(res => {
-            console.log(res.data['status']);
-            setEvents(res.data['events']);
-        })
-        .catch(err => {
-            console.log(err)
-        });
+            .then(res => {
+                console.log(res.data['status']);
+                setEvents(res.data['events']);
+            })
+            .catch(err => {
+                console.log(err)
+            });
     }, []);
 
     return (
@@ -44,10 +44,10 @@ function Main() {
                     {events.map((event, i) => {
                         return (
                             <Event
-                            name={event.name}
-                            date={event.time}
-                            location={event.location}
-                            key={i} />
+                                name={event.name}
+                                date={event.time}
+                                location={event.location}
+                                key={i} />
                         );
                     })}
                 </div>

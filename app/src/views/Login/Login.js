@@ -4,6 +4,7 @@ import './Login.css'
 import { useState } from "react";
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import { HOST_NAME } from '../../Global';
 
 // const express = require("express");
 // const cors = require("cors");
@@ -28,7 +29,7 @@ function Login() {
   };
 
   const handle_authentication = (event) => {
-    axios.get("http://localhost:3000/authenticate")
+    axios.get("http://" + HOST_NAME + ":5000/authenticate")
       .then(res => { })
       .catch(err => {
         console.log(err)
@@ -48,7 +49,7 @@ function Login() {
     event.preventDefault();
 
     // Send data to Flask server
-    fetch("http://localhost:5000/user/login", {
+    fetch("http://" + HOST_NAME + ":5000/user/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
