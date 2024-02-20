@@ -2,7 +2,7 @@ import React from "react";
 import { useState } from "react";
 import Navbar from "../../components/Navbar/Navbar";
 import { useNavigate } from "react-router-dom";
-
+import { withAuth } from "../withAuth";
 function CreateEvent() {
     const navigate = useNavigate();
     
@@ -187,4 +187,4 @@ function CreateEvent() {
       </div>
     );
 }
-export default CreateEvent;
+export default withAuth(CreateEvent);
