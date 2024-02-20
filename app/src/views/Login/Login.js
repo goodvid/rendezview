@@ -5,11 +5,6 @@ import { useState } from "react";
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 
-// const express = require("express");
-// const cors = require("cors");
-// const app = express();
-// app.use(cors());
-
 
 function Login() {
   const navigate = useNavigate();

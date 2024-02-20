@@ -16,8 +16,7 @@ import os
 import json
 
 app = Flask(__name__)
-# CORS(app, supports_credentials=True)
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+CORS(app, supports_credentials=True)
 
 app.secret_key = "super secret essay"
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -40,7 +39,7 @@ def create_token():
     user = User.query.filter_by(email=email).first()
 
     if user and password == user.password:
-        access_token = create_access_token(identity=email)
+        access_token = create_access_token(identity={'email': email, 'name': user.username})
         return jsonify(access_token=access_token)
     else:
         return jsonify({"message": "bad username or password"}), 401

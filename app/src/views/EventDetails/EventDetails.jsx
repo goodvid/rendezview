@@ -151,27 +151,14 @@ function EventDetails() {
     return (
       <Stack className="section">
         <h2>Event Details</h2>
-        {eventObject.desc.length > 500 ? (
           <div>
-            {showAll ? (
               <div>
-                <p>{eventObject.desc}</p>
+                <p>{eventObject.category}</p>
                 <ReadMoreButton size="small" onClick={() => setShowAll(false)}>
                   Read Less
                 </ReadMoreButton>
               </div>
-            ) : (
-              <div>
-                <p>{eventObject.desc.substring(0, 500).concat("...")}</p>
-                <ReadMoreButton size="small" onClick={() => setShowAll(true)}>
-                  Read More
-                </ReadMoreButton>
-              </div>
-            )}
           </div>
-        ) : (
-          eventObject.desc
-        )}
       </Stack>
     );
   };
