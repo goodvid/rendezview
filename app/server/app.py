@@ -37,7 +37,7 @@ def create_token():
     password = request.json["password"]
 
     user = User.query.filter_by(email=email).first()
-
+    print(user)
     if user and password == user.password:
         access_token = create_access_token(identity={'email': email, 'name': user.username})
         return jsonify(access_token=access_token)
@@ -154,6 +154,7 @@ def join_event():
 @app.route("/event/create", methods=["POST"])
 @jwt_required()
 def create_event():
+    #get from api
     current_user = get_jwt_identity()
     user = User.query.filter_by(email=current_user).first()
 
@@ -186,6 +187,13 @@ def get_details():
         return jsonify({"message": "event not found"}), 404
 
     return jsonify(event_json=event_json)
+
+
+@app.route("/check_user", methods = ["POST"])
+@jwt_required
+def hello():
+    user = get_jwt_identity()
+    return jsonify(logged_in=user), 200
 
 
 if __name__ == '__main__':
