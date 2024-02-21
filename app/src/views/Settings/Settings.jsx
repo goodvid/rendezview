@@ -1,4 +1,3 @@
-import "../../App.css";
 import "../Settings/Settings.css"
 import {Avatar, Button, Stack} from "@mui/material/";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -9,7 +8,7 @@ function Settings() {
     const navigate = useNavigate();
     
     const changeUsernameClick = () => {
-        navigate("/modifyusername");
+        navigate("/changeusername");
     };
     
   return (

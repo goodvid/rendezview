@@ -7,11 +7,11 @@ import Username from "./views/Username/Username";
 import Register from "./views/Register/Register";
 import Profile from "./views/Profile/Profile";
 import Quiz from "./views/Quiz/Quiz";
-import Settings from "./views/Settings/Settings";
 import EventDetails from "./views/EventDetails/EventDetails";
 import CreateEvent from "./views/CreateEvent/createEvent";
 import Events from "./views/Events/Events";
-import ModifyUsername from "./views/Settings/ModifyUsername/ModifyUsername";
+import Settings from "./views/Settings/Settings";
+import ChangeUsername from "./views/Settings/ChangeUsername/ChangeUsername";
 
 function App() {
   return (
@@ -28,7 +28,7 @@ function App() {
           <Route path="/newevent" element={<CreateEvent/>}/>
           <Route path="/events" element={<Events />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="/modifyusername" element={<ModifyUsername />} />
+          <Route path="/changeusername" element={<ChangeUsername />} />
         </Routes>
       </BrowserRouter>
     </div>

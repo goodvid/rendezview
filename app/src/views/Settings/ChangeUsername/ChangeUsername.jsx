@@ -1,16 +1,19 @@
-import "../../../App.css";
-import "../ModifyUsername/ModifyUsername.css"
+import "./ChangeUsername.css"
 import {Avatar, Button, Stack, IconButton, TextField} from "@mui/material/";
 import SettingsIcon from "@mui/icons-material/Settings";
 import MainNavbar from "../../../components/MainNavbar/MainNavbar";
 import { useNavigate } from "react-router-dom";
 
-function ModifyUsername() {   
+function ChangeUsername() {   
     const navigate = useNavigate();
     
     const settingsClick = () => {
         navigate("/settings");
     };
+
+    const saveClick =() => {
+        navigate("/settings");
+    }
 
   return (
     <div>
@@ -49,7 +52,7 @@ function ModifyUsername() {
                         <TextField />
                     </Stack>
 
-                    <Button className="SaveButton" variant="contained" disableElevation sx={{textTransform: 'none', width: "200px", height: "50px"}}>
+                    <Button className="SaveButton" onClick={saveClick} variant="contained" disableElevation sx={{textTransform: 'none', width: "200px", height: "50px"}}>
                         Save Changes
                     </Button>
                 </Stack>
@@ -61,4 +64,4 @@ function ModifyUsername() {
   );
 }
 
-export default ModifyUsername;
+export default ChangeUsername;
