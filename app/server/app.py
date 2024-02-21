@@ -5,6 +5,8 @@ from flask_cors import CORS, cross_origin
 from models import User, Event
 from types import SimpleNamespace
 from dateutil import parser
+from sqlalchemy.exc import SQLAlchemyError
+
 
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import get_jwt_identity
@@ -181,36 +183,88 @@ def create_event():
 
 @app.route("/events/api", methods=["POST", "GET"])
 def fetch_api_events():
-    loc = "West Lafayette, Indiana"
+    # Uncomment the next line to dynamically set the location based on query parameter
+    loc = request.args.get('location', default=None, type=str)
+    start_date = request.args.get('start_date', default=None, type=str)  # Assuming start_date is a string in YYYY-MM-DD format
+    is_free = request.args.get('is_free', default=None, type=str)  # Assuming is_free could be 'true' or 'false'
+    sort_on = request.args.get('sort_on', default=None, type=str)
+
     yelp_api_instance = YelpAPI()
     events = yelp_api_instance.get_events_based_on_location(location=loc)
+    # events = yelp_api_instance.get_events_based_on_location(location=loc, is_free=False)
     
-    eventIDTracking = []
-    for event in events:
-        yelpID = event['id']
-        eventDesc = event['description']
-        name = event['name']
-        yelpLocation = event['location']
-        locationAddress = ', '.join(yelpLocation['display_address'])
-        eventDateTime = parser.isoparse(event['time_start'])
-        category = event['category']
+    # Check the count of fetched events against existing events in the database
+    existing_events_count = Event.query.count()
+    fetched_events_count = len(events)
 
-        existingEvent = Event.query.filter_by(yelpID=yelpID).first()
+    try:
+        db.session.query(Event).delete()
 
-        if existingEvent:
-            existingEvent.desc = eventDesc
-            existingEvent.name = name
-            existingEvent.location = locationAddress
-            existingEvent.event_datetime = eventDateTime
-            existingEvent.category = category
-        else:
-            newEvent = Event(name=name, desc=eventDesc, location=locationAddress, event_datetime=eventDateTime, category=category, yelpID=yelpID)
-            db.session.add(newEvent)
-            eventIDTracking.append(newEvent.eventID)
+        eventIDTracking = []
+        for event in events:
+            yelpID = event['id']
+            eventDesc = event['description']
+            name = event['name']
+            yelpLocation = event['location']
+            locationAddress = ', '.join(yelpLocation['display_address'])
+            eventDateTime = parser.isoparse(event['time_start'])
+            category = event['category']
 
-    db.session.commit()
+            # For each event, either update the existing record or create a new one
+            existingEvent = Event.query.filter_by(yelpID=yelpID).first()
 
-    return jsonify({"message": "Events processed", "eventIDs": eventIDTracking,"count": len(events), "events": events}), 200
+            if existingEvent:
+                existingEvent.desc = eventDesc
+                existingEvent.name = name
+                existingEvent.location = locationAddress
+                existingEvent.event_datetime = eventDateTime
+                existingEvent.category = category
+            else:
+                newEvent = Event(name=name, desc=eventDesc, location=locationAddress, event_datetime=eventDateTime, category=category, yelpID=yelpID)
+                db.session.add(newEvent)
+                db.session.flush()  
+                eventIDTracking.append(newEvent.eventID)
+
+        db.session.commit()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({"message": "An error occurred while processing events", "error": str(e)}), 500
+
+    return jsonify({"message": "Events processed", "eventIDs": eventIDTracking, "count": fetched_events_count, "events": events}), 200
+
+# @app.route("/events/api", methods=["POST", "GET"])
+# def fetch_api_events():
+#     loc = "West Lafayette, Indiana"
+#     # loc = request.args.get('location', default="West Lafayette, Indiana", type=str)
+#     yelp_api_instance = YelpAPI()
+#     events = yelp_api_instance.get_events_based_on_location(location=loc)
+    
+#     eventIDTracking = []
+#     for event in events:
+#         yelpID = event['id']
+#         eventDesc = event['description']
+#         name = event['name']
+#         yelpLocation = event['location']
+#         locationAddress = ', '.join(yelpLocation['display_address'])
+#         eventDateTime = parser.isoparse(event['time_start'])
+#         category = event['category']
+
+#         existingEvent = Event.query.filter_by(yelpID=yelpID).first()
+
+#         if existingEvent:
+#             existingEvent.desc = eventDesc
+#             existingEvent.name = name
+#             existingEvent.location = locationAddress
+#             existingEvent.event_datetime = eventDateTime
+#             existingEvent.category = category
+#         else:
+#             newEvent = Event(name=name, desc=eventDesc, location=locationAddress, event_datetime=eventDateTime, category=category, yelpID=yelpID)
+#             db.session.add(newEvent)
+#             eventIDTracking.append(newEvent.eventID)
+
+#     db.session.commit()
+
+#     return jsonify({"message": "Events processed", "eventIDs": eventIDTracking,"count": len(events), "events": events}), 200
  
 
 @app.route("/event/details", methods=["POST"])

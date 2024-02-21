@@ -10,7 +10,7 @@ class YelpAPI:
     API_HOST = 'https://api.yelp.com/v3'
     HEADERS = {'Authorization': f'Bearer {API_KEY}'}
 
-    def __init__(self, type="events", location='New York, NY', amount=5, sort_on='popularity', sort_by='desc'):
+    def __init__(self, type="events", location='New York, NY', amount=20, sort_on='time_start', sort_by='desc'):
         # default configurations
         self.default_search_path = os.path.join(self.API_HOST, type)
         self.remaining_requests = 0
@@ -18,6 +18,8 @@ class YelpAPI:
         self.amount = amount
         self.sort_on = sort_on
         self.sort_by = sort_by
+        # self.start_date = sort_by
+        # self.is_free = is_free 
 
     def expand_search_path(self, input_path):
         new_path = os.path.join(self.default_search_path, input_path)
@@ -35,6 +37,18 @@ class YelpAPI:
 
     def set_location(self, location):
         self.location = location
+
+    # def set_start_date(self, start_date):
+    #     self.start_date = start_date 
+
+    def set_is_free(self, is_free):
+        self.is_free = is_free 
+
+    # def set_sort_on(self, sort_on):
+    #     self.sort_on = sort_on 
+
+    # def set_sort_by(self, sort_by):
+    #     self.sort_by = sort_by
 
     def set_amount(self, amount):
         self.amount = min(amount, 50)
@@ -54,19 +68,24 @@ class YelpAPI:
             else:
                 return "Good"
 
+    # def get_events_based_on_location(self, location="", start_date="", is_free=None, sort_on="time_start", sort_by="desc"):
     def get_events_based_on_location(self, location=""):
-        if location != "":
+        # if location != "":
             # if we give it a new location, we set it
             # otherwise we just use the previous stored location
             # in the class
-            self.set_location(location)
+        self.set_location(location)
+            # pprint("location:", location)
+            # self.set_start_date(start_date)
+        # self.set_is_free(is_free)
+            # self.set_sort_on(sort_on)
 
         params = {
             'location': self.location,
             'limit': self.amount,
             'sort_on': self.sort_on,
             'sort_by': self.sort_by,
-            'is_free': 'false'
+            # 'is_free': True 
         }
         response = requests.get(
             self.default_search_path, headers=self.HEADERS, params=params)
