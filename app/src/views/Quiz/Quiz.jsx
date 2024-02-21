@@ -4,9 +4,12 @@ import { Alert, Box, Button, Chip, Stack, Snackbar } from "@mui/material";
 import Navbar from "../../components/Navbar/Navbar";
 import { useNavigate } from "react-router-dom";
 import "../../styles.css";
+import { withAuth } from "../withAuth";
 
 function Quiz() {
+  let resp = false
   const navigate = useNavigate();
+  const [selectedStr, setSelectedStr] = useState("");
   const [minSelected, setMinSelected] = useState(false);
   const [selected, setSelected] = useState([]);
   const [tags, setTags] = useState([
@@ -30,8 +33,11 @@ function Quiz() {
         newSelected.delete(name);
       }
 
+      let newStr = Array.from(newSelected).join(",");
+
       setSelected(newSelected);
       setMinSelected(newSelected.size >= 3);
+      setSelectedStr(newStr);
     },
     [selected]
   );
@@ -52,23 +58,25 @@ function Quiz() {
   const handleNext = useCallback(() => {
     if (minSelected) {
       // TODO add send to backend
-      // fetch("http://localhost:5000/set-pref", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify(inputData),
-      // })
-      //   .then((response) => response.json())
-      //   .then((data) => {
-      //     console.log("Success:", data);
-      //     // Handle success
-      //   })
-      //   .catch((error) => {
-      //     console.error("Error:", error);
-      //     // Handle errors
-      //   });
-      navigate('/')
+      fetch("http://localhost:5000/profile/preferences", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ results: selectedStr }),
+      }).then((response) => {
+        if (response.status === 200) {
+          resp = response;
+          navigate("/");
+          return response.json();
+        } else {
+          alert("unathorized");
+          return false;
+        }
+      });
+        
+      
     } else {
       handleAlertClick();
     }
@@ -152,4 +160,4 @@ function Quiz() {
   );
 }
 
-export default Quiz;
+export default withAuth(Quiz);
