@@ -10,7 +10,7 @@ class YelpAPI:
     API_HOST = 'https://api.yelp.com/v3'
     HEADERS = {'Authorization': f'Bearer {API_KEY}'}
 
-    def __init__(self, type="events", location='New York, NY', amount=20, sort_on='time_start', sort_by='desc'):
+    def __init__(self, type="events", location='New York, NY', amount=20, sort_on='time_start', sort_by='desc', is_free=""):
         # default configurations
         self.default_search_path = os.path.join(self.API_HOST, type)
         self.remaining_requests = 0
@@ -18,8 +18,8 @@ class YelpAPI:
         self.amount = amount
         self.sort_on = sort_on
         self.sort_by = sort_by
-        # self.start_date = sort_by
-        # self.is_free = is_free 
+        self.start_date = sort_by
+        self.is_free = is_free 
 
     def expand_search_path(self, input_path):
         new_path = os.path.join(self.default_search_path, input_path)
@@ -42,10 +42,10 @@ class YelpAPI:
     #     self.start_date = start_date 
 
     def set_is_free(self, is_free):
-        self.is_free = is_free 
+        self.is_free = is_free; 
 
-    # def set_sort_on(self, sort_on):
-    #     self.sort_on = sort_on 
+    def set_sort_on(self, sort_on):
+        self.sort_on = sort_on 
 
     # def set_sort_by(self, sort_by):
     #     self.sort_by = sort_by
@@ -69,26 +69,30 @@ class YelpAPI:
                 return "Good"
 
     # def get_events_based_on_location(self, location="", start_date="", is_free=None, sort_on="time_start", sort_by="desc"):
-    def get_events_based_on_location(self, location=""):
-        # if location != "":
+    # def get_events_based_on_location(self, location="", sort_on=""):
+    def get_events_based_on_location(self, location="", is_free="true"):
+        if location != "":
             # if we give it a new location, we set it
             # otherwise we just use the previous stored location
             # in the class
-        self.set_location(location)
-            # pprint("location:", location)
-            # self.set_start_date(start_date)
-        # self.set_is_free(is_free)
-            # self.set_sort_on(sort_on)
+            self.set_location(location)
+
+        # self.set_is_free("true")
+
+        if is_free != "":
+            self.set_is_free(is_free)
 
         params = {
-            'location': self.location,
+            'location': location,
             'limit': self.amount,
             'sort_on': self.sort_on,
             'sort_by': self.sort_by,
-            # 'is_free': True 
+            'is_free': self.is_free,
         }
         response = requests.get(
             self.default_search_path, headers=self.HEADERS, params=params)
+        
+        print("url4:", response.url)
         if response.status_code == 200:
             print(self.check_rate_limit(response.headers))
             # pprint(response)
@@ -97,9 +101,9 @@ class YelpAPI:
             # for event in events:
             #     print(event['name'], '-', event['time_start'])
         else:
-            print(response.status_code, response.text)
-            print(self.default_search_path, self.amount, self.location,
-                  self.sort_by, self.sort_on)
+            # print(response.status_code, response.text)
+            # print(self.default_search_path, self.amount, self.location,
+                #   self.sort_by, self.sort_on)
             print("Failed to fetch events")
         return events
 

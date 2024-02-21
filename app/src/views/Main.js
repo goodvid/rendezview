@@ -25,12 +25,15 @@ function Main() {
   const [location, setLocation] = useState("West Lafayette, Indiana");
   const [startDate, setStartDate] = useState("");
   const [isFree, setIsFree] = useState("");
-  const [sortOn, setSortOn] = useState("time_start");
+  // const [sortOn, setSortOn] = useState("time_start");
+  const [sortOn, setSortOn] = useState("");
   const [loading, setLoading] = useState(false);
   pinwheel.register();
 
   useEffect(() => {
     fetchAPIEvents();
+    console.log(location);
+    console.log(isFree);
     // const params = new URLSearchParams();
     // // Conditionally append parameters if they are not empty strings
     // if (location) params.append("location", location);
@@ -44,7 +47,7 @@ function Main() {
     // //   is_free: encodeURIComponent(isFree),
     // // }).toString();
     // console.log(`http://127.0.0.1:5000/events?${params}`);
-  }, [location]);
+  }, [location, isFree]);
 
   const fetchAPIEvents = () => {
     setLoading(true);
@@ -54,20 +57,27 @@ function Main() {
     //   is_free: encodeURIComponent(isFree),
     //   sort_on: encodeURIComponent(sortOn),
     // }).toString();
-    // const params = new URLSearchParams();
-    // if (location) params.append("location", location);
-    // if (startDate) params.append("start_date", startDate);
-    // if (isFree) params.append("is_free", isFree);
-    // if (sortOn) params.append("sort_on", sortOn);
+    const params = new URLSearchParams();
+    if (location) params.append("location", location);
+    if (startDate) params.append("start_date", startDate);
+    if (isFree) params.append("is_free", isFree);
+    if (sortOn) params.append("sort_on", sortOn);
 
-    // .get(`http://127.0.0.1:5000/events?${params}`)
+    console.log(`http://127.0.0.1:5000/events/api?${params}`);
+    // console.log(
+    //   `http://127.0.0.1:5000/events/api?location=${encodeURIComponent(
+    //     location
+    //   )}`
+    // );
+
     axios
+      .get(`http://127.0.0.1:5000/events/api?${params}`)
       // .get(`http://127.0.0.1:5000/events/api`)
-      .get(
-        `http://127.0.0.1:5000/events/api?location=${encodeURIComponent(
-          location
-        )}`
-      )
+      // .get(
+      //   `http://127.0.0.1:5000/events/api?location=${encodeURIComponent(
+      //     location
+      //   )}`
+      // )
       .then((response) => {
         console.log("API events fetched and stored:", response.data);
         fetchAndDisplayEvents();
@@ -175,12 +185,13 @@ function Main() {
         <Select
           labelId="price-select"
           id="price-select"
-          // value={age}
+          value={isFree}
           label="Price"
-          // onChange={handleChange}
+          onChange={(event) => setIsFree(event.target.value)}
         >
-          <MenuItem value="free">Free</MenuItem>
-          <MenuItem value="paid">Paid</MenuItem>
+          <MenuItem value="">None</MenuItem>
+          <MenuItem value="true">Free</MenuItem>
+          <MenuItem value="false">Paid</MenuItem>
         </Select>
       </FormControl>
     );
