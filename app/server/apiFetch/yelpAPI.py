@@ -10,7 +10,7 @@ class YelpAPI:
     API_HOST = 'https://api.yelp.com/v3'
     HEADERS = {'Authorization': f'Bearer {API_KEY}'}
 
-    def __init__(self, type="events", location='New York, NY', amount=20, sort_on='time_start', sort_by='desc', is_free="", start_date=""):
+    def __init__(self, type="events", location='New York, NY', amount=20, sort_on='time_start', sort_by='desc', is_free="", start_date="", category=""):
         # default configurations
         self.default_search_path = os.path.join(self.API_HOST, type)
         self.remaining_requests = 0
@@ -20,6 +20,7 @@ class YelpAPI:
         self.sort_by = sort_by
         self.start_date = start_date 
         self.is_free = is_free 
+        self.category = category 
 
     def expand_search_path(self, input_path):
         new_path = os.path.join(self.default_search_path, input_path)
@@ -47,8 +48,8 @@ class YelpAPI:
     def set_sort_on(self, sort_on):
         self.sort_on = sort_on 
 
-    # def set_sort_by(self, sort_by):
-    #     self.sort_by = sort_by
+    def set_category(self, category):
+        self.category = category 
 
     def set_amount(self, amount):
         self.amount = min(amount, 50)
@@ -70,7 +71,7 @@ class YelpAPI:
 
     # def get_events_based_on_location(self, location="", start_date="", is_free=None, sort_on="time_start", sort_by="desc"):
     # def get_events_based_on_location(self, location="", sort_on=""):
-    def get_events_based_on_location(self, location="", is_free="", sort_on="", start_date=""):
+    def get_events_based_on_location(self, location="", is_free="", sort_on="", start_date="", category=""):
         if location != "":
             # if we give it a new location, we set it
             # otherwise we just use the previous stored location
@@ -86,6 +87,9 @@ class YelpAPI:
         if start_date != "":
             self.set_start_date(start_date)
 
+        if category != "":
+            self.set_category(category)
+
         params = {
             'location': location,
             'limit': self.amount,
@@ -93,6 +97,7 @@ class YelpAPI:
             'sort_by': self.sort_by,
             'is_free': self.is_free,
             'start_date': self.start_date,
+            'categories': self.category,
         }
         response = requests.get(
             self.default_search_path, headers=self.HEADERS, params=params)

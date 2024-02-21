@@ -188,9 +188,10 @@ def fetch_api_events():
     sort_on = request.args.get('sort_on', default=None, type=str)
     start_date = request.args.get('start_date', default=None, type=str)
     is_free = request.args.get('is_free', default=None, type=str)
+    category = request.args.get('category', default=None, type=str)
 
     yelp_api_instance = YelpAPI()
-    events = yelp_api_instance.get_events_based_on_location(location=loc, is_free=is_free, sort_on=sort_on, start_date=start_date)
+    events = yelp_api_instance.get_events_based_on_location(location=loc, is_free=is_free, sort_on=sort_on, start_date=start_date, category=category)
     
     # Check the count of fetched events against existing events in the database
     existing_events_count = Event.query.count()

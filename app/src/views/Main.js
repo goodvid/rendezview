@@ -18,18 +18,16 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { pinwheel } from "ldrs";
 
-import StarBorderIcon from "@mui/icons-material/StarBorder";
-import StarIcon from "@mui/icons-material/Star";
-
 function Main() {
   const [events, setEvents] = useState([]);
   const [location, setLocation] = useState("West Lafayette, Indiana");
-  const [startDate, setStartDate] = useState("");
+  const [startDate, setStartDate] = useState(null);
   const [unixStartDate, setUnixStartDate] = useState("");
   const [isFree, setIsFree] = useState("");
   const [sortOn, setSortOn] = useState("time_start");
+  const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
-  pinwheel.register();
+  pinwheel.register(); // Loading animation
 
   useEffect(() => {
     setUnixStartDate(dayjs(startDate).unix());
@@ -37,7 +35,7 @@ function Main() {
 
   useEffect(() => {
     fetchAPIEvents();
-  }, [location, isFree, sortOn, unixStartDate]);
+  }, [location, isFree, sortOn, unixStartDate, category]);
 
   const fetchAPIEvents = () => {
     setLoading(true);
@@ -48,6 +46,7 @@ function Main() {
     if (isFree) params.append("is_free", isFree);
     if (sortOn) params.append("sort_on", sortOn);
     if (unixStartDate) params.append("start_date", unixStartDate);
+    if (category) params.append("category", category);
 
     console.log(`http://127.0.0.1:5000/events/api?${params}`);
     axios
@@ -81,6 +80,61 @@ function Main() {
     "West Lafayette, IN",
     "New York City",
     "Novi, Michigan",
+  ];
+
+  const categories = [
+    {
+      name: "Music",
+      value: "music",
+    },
+    {
+      name: "Visual Arts",
+      value: "visual-arts",
+    },
+    {
+      name: "Performing Arts",
+      value: "performing-arts",
+    },
+    {
+      name: "Film",
+      value: "film",
+    },
+    {
+      name: "Lectures & Books",
+      value: "lectures-books",
+    },
+    {
+      name: "Fashion",
+      value: "fashion",
+    },
+    {
+      name: "Food & Drink",
+      value: "food-and-drink",
+    },
+    {
+      name: "Festivals & Fairs",
+      value: "festivals-fairs",
+    },
+    {
+      name: "Charities",
+      value: "charities",
+    },
+    {
+      name: "Sports & Active Life",
+      value: "sports-active-life",
+    },
+    {
+      name: "Nightlife",
+      value: "nightlife",
+    },
+    {
+      name: "Kids & Family",
+      value: "kids-family",
+    },
+    {
+      name: "Other",
+      value: "other",
+    },
   ];
 
   const SortBySelect = () => {
@@ -171,60 +225,6 @@ function Main() {
     );
   };
 
-  const RatingFilter = () => {
-    return (
-      <FormControl sx={{ minWidth: 120 }}>
-        <InputLabel id="price-select">Rating</InputLabel>
-        <Select
-          labelId="price-select"
-          id="price-select"
-          // value={age}
-          label="Price"
-          // onChange={handleChange}
-        >
-          <MenuItem value="">
-            <em>None</em>
-          </MenuItem>
-          <MenuItem value="1">
-            <StarIcon />
-            <StarBorderIcon />
-            <StarBorderIcon />
-            <StarBorderIcon />
-            <StarBorderIcon />+
-          </MenuItem>
-          <MenuItem value="2">
-            <StarIcon />
-            <StarIcon />
-            <StarBorderIcon />
-            <StarBorderIcon />
-            <StarBorderIcon />+
-          </MenuItem>
-          <MenuItem value="3">
-            <StarIcon />
-            <StarIcon />
-            <StarIcon />
-            <StarBorderIcon />
-            <StarBorderIcon />+
-          </MenuItem>
-          <MenuItem value="4">
-            <StarIcon />
-            <StarIcon />
-            <StarIcon />
-            <StarIcon />
-            <StarBorderIcon />+
-          </MenuItem>
-          <MenuItem value="5">
-            <StarIcon />
-            <StarIcon />
-            <StarIcon />
-            <StarIcon />
-            <StarIcon />
-          </MenuItem>
-        </Select>
-      </FormControl>
-    );
-  };
-
   const FilteringTab = () => {
     return (
       <Stack width="100%">
@@ -256,20 +256,31 @@ function Main() {
       <div className="w-full h-[533px] flex flex-col">
         <span className="text-xl">Categories</span>
         <div className="w-full flex flex-row">
-          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
-          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
-          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
-          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
-          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
-          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
-          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
-          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
-          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
-          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
-          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
-          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
-          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
+          {categories.map((item, index) => (
+            <div
+              className="bg-light-gray w-[150px] h-[100px]"
+              key={index}
+              onClick={() => setCategory(item.value)}
+            >
+              {item.name}
+            </div>
+          ))}
         </div>
+        {/* <div className="w-full flex flex-row">
+          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
+          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
+          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
+          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
+          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
+          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
+          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
+          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
+          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
+          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
+          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
+          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
+          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
+        </div> */}
         <div className="flex flex-row flex-wrap gap-5 pl-10 pt-10">
           <FilteringTab />
           {loading ? (
