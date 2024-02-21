@@ -10,6 +10,10 @@ function Settings() {
     const changeUsernameClick = () => {
         navigate("/changeusername");
     };
+
+    const changeEmailClick = () => {
+        navigate("/changeemail");
+    };
     
   return (
     <div>
@@ -49,7 +53,13 @@ function Settings() {
                 <Stack direction="column" spacing={1}>
                     <h1 style={{textAlign: "left"}}>Modify Account</h1>
                     <Stack direction = "row" spacing={2}>
-                        <Button className="AccountButton" variant="contained" disableElevation sx={{textTransform: 'none', width: "200px", height: "50px"}}>Change Email</Button>
+                        <Button className="AccountButton" 
+                            variant="contained" 
+                            disableElevation 
+                            sx={{textTransform: 'none', width: "200px", height: "50px"}}
+                            onClick={changeEmailClick}>
+                                Change Email
+                        </Button>
                         <Button className="AccountButton" variant="contained" disableElevation sx={{textTransform: 'none', width: "200px", height: "50px"}}>Change Password</Button>
                         <Button className="DeleteButton" variant="contained" disableElevation sx={{textTransform: 'none', width: "200px", height: "50px"}}>Delete Account</Button>
                     </Stack>

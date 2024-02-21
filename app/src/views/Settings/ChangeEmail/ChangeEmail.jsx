@@ -1,10 +1,10 @@
-import "../ChangeUsername/ModifyUsername.css"
+import "../ChangeEmail/ChangeEmail.css"
 import {Avatar, Button, Stack, IconButton, TextField} from "@mui/material/";
 import SettingsIcon from "@mui/icons-material/Settings";
 import MainNavbar from "../../../components/MainNavbar/MainNavbar";
 import { useNavigate } from "react-router-dom";
 
-function ModifyUsername() {   
+function ChangeEmail() {   
     const navigate = useNavigate();
     
     const settingsClick = () => {
@@ -39,16 +39,16 @@ function ModifyUsername() {
                 </Stack> 
 
                 <Stack direction="column" spacing={2}>
-                    <h1 style={{textAlign: "left"}}>Change Username</h1>
+                    <h1 style={{textAlign: "left"}}>Change Email</h1>
 
                     <Stack direction = "column" spacing={1}>
-                        <h4 style={{textAlign: "left"}}>Email</h4>
+                        <h4 style={{textAlign: "left"}}>Current Email</h4>
                         <TextField />
 
-                        <h4 style={{textAlign: "left"}}>New Username</h4>
+                        <h4 style={{textAlign: "left"}}>New Email</h4>
                         <TextField />
 
-                        <h4 style={{textAlign: "left"}}>Confirm New Username</h4>
+                        <h4 style={{textAlign: "left"}}>Confirm New Email</h4>
                         <TextField />
                     </Stack>
 
@@ -64,4 +64,4 @@ function ModifyUsername() {
   );
 }
 
-export default ModifyUsername;
+export default ChangeEmail;
