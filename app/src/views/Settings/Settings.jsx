@@ -3,6 +3,7 @@ import {Avatar, Button, Stack} from "@mui/material/";
 import SettingsIcon from "@mui/icons-material/Settings";
 import MainNavbar from "../../components/MainNavbar/MainNavbar";
 import { useNavigate } from "react-router-dom";
+import ChangePassword from "./ChangePassword/ChangePassword";
 
 function Settings() {   
     const navigate = useNavigate();
@@ -13,6 +14,10 @@ function Settings() {
 
     const changeEmailClick = () => {
         navigate("/changeemail");
+    };
+
+    const changePasswordClick = () => {
+        navigate("/changepassword");
     };
     
   return (
@@ -60,7 +65,12 @@ function Settings() {
                             onClick={changeEmailClick}>
                                 Change Email
                         </Button>
-                        <Button className="AccountButton" variant="contained" disableElevation sx={{textTransform: 'none', width: "200px", height: "50px"}}>Change Password</Button>
+                        <Button className="AccountButton" variant="contained" 
+                            disableElevation 
+                            sx={{textTransform: 'none', width: "200px", height: "50px"}}
+                            onClick={changePasswordClick}>
+                            Change Password
+                        </Button>
                         <Button className="DeleteButton" variant="contained" disableElevation sx={{textTransform: 'none', width: "200px", height: "50px"}}>Delete Account</Button>
                     </Stack>
                 </Stack>
