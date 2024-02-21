@@ -3,6 +3,7 @@ import {Avatar, Button, Stack, IconButton, TextField} from "@mui/material/";
 import SettingsIcon from "@mui/icons-material/Settings";
 import MainNavbar from "../../../components/MainNavbar/MainNavbar";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 function ChangeEmail() {   
     const navigate = useNavigate();
@@ -11,9 +12,72 @@ function ChangeEmail() {
         navigate("/settings");
     };
 
-    const saveClick =() => {
-        navigate("/settings");
-    }
+    const [email, setEmail] = useState("");
+    const updateEmail = (event) => {
+        if (event != null) {
+            setEmail(event.target.value);
+        }
+    };
+    const [newEmail, setNewEmail] = useState("");
+    const updateNewEmail = (event) => {
+        if (event != null) {
+            setNewEmail(event.target.value);
+        }
+    };
+    const [confirmNewEmail, setconfirmNewEmail] = useState("");
+    const updateConfirmNewEmail = (event) => {
+        if (event != null) {
+            setconfirmNewEmail(event.target.value);
+        }
+    };
+
+    let resp = "";
+
+    const saveClick = (event) => {
+        if (newEmail != confirmNewEmail) {
+            alert("Your emails don't match! Please ensure they are the same.");
+            return;
+        }
+
+        if (!(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/).test(newEmail)) {
+            alert("Your email is invalid. Enter a valid email.");
+            return;
+        }
+
+        console.log(email + newEmail);
+        event.preventDefault();
+
+        // Send to Flask server
+        fetch("http://localhost:5000/user/changeemail", {
+            method: "POST",
+            headers: {
+                Authorization: "Bearer " + sessionStorage.getItem("token"),
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({email: email, newEmail: newEmail}),
+        })
+        .then((response) => {
+            if (response.status === 200) {
+              resp = response;
+              return response.json();
+            } else if (response.status == 401) {
+              alert("That email is taken. Please choose a different email.");
+              return false;
+            } else {
+              alert("Unauthorized.");
+              return false;
+            }
+          })
+          .then((data) => {
+            if (resp.status == 200) {
+              console.log(sessionStorage.getItem("token"));
+              navigate("/settings");
+            }
+          })
+          .catch((error) => {
+            console.log("error", error);
+          });
+      };
 
   return (
     <div>
@@ -43,13 +107,13 @@ function ChangeEmail() {
 
                     <Stack direction = "column" spacing={1}>
                         <h4 style={{textAlign: "left"}}>Current Email</h4>
-                        <TextField />
+                        <TextField onChange={updateEmail}/>
 
                         <h4 style={{textAlign: "left"}}>New Email</h4>
-                        <TextField />
+                        <TextField onChange={updateNewEmail}/>
 
                         <h4 style={{textAlign: "left"}}>Confirm New Email</h4>
-                        <TextField />
+                        <TextField onChange={updateConfirmNewEmail}/>
                     </Stack>
 
                     <Button className="SaveButton" onClick={saveClick} variant="contained" disableElevation sx={{textTransform: 'none', width: "200px", height: "50px"}}>

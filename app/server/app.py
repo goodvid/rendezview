@@ -94,7 +94,25 @@ def changepassword():
     else:
         return jsonify({"message": "Short password not allowed."}), 401
 
-    return jsonify({"message": "Username changed successfully"}), 200
+    return jsonify({"message": "Password changed successfully"}), 200
+
+
+@app.route("/user/changeemail", methods=["POST"])
+@jwt_required()
+def changeemail():
+    current_user = get_jwt_identity()
+    print("Request: ")
+    print(request.json)
+
+    user = User.query.filter_by(email=current_user["email"]).first()
+    duplicate = User.query.filter_by(email=request.json["newEmail"]).first()
+    if not duplicate:
+        user.email = request.json["newEmail"]
+        db.session.commit()
+    else:
+        return jsonify({"message": "Duplicate email not allowed."}), 401
+
+    return jsonify({"message": "Email changed successfully"}), 200
 
 
 @app.route('/user/register', methods=["POST"])
