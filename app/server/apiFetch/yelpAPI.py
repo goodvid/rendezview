@@ -70,17 +70,18 @@ class YelpAPI:
 
     # def get_events_based_on_location(self, location="", start_date="", is_free=None, sort_on="time_start", sort_by="desc"):
     # def get_events_based_on_location(self, location="", sort_on=""):
-    def get_events_based_on_location(self, location="", is_free="true"):
+    def get_events_based_on_location(self, location="", is_free="", sort_on=""):
         if location != "":
             # if we give it a new location, we set it
             # otherwise we just use the previous stored location
             # in the class
             self.set_location(location)
 
-        # self.set_is_free("true")
-
         if is_free != "":
             self.set_is_free(is_free)
+
+        if sort_on != "":
+            self.set_sort_on(sort_on)
 
         params = {
             'location': location,
@@ -92,7 +93,7 @@ class YelpAPI:
         response = requests.get(
             self.default_search_path, headers=self.HEADERS, params=params)
         
-        print("url4:", response.url)
+        print("url6:", response.url)
         if response.status_code == 200:
             print(self.check_rate_limit(response.headers))
             # pprint(response)

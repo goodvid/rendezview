@@ -191,7 +191,8 @@ def fetch_api_events():
 
     yelp_api_instance = YelpAPI()
     # events = yelp_api_instance.get_events_based_on_location(location=loc)
-    events = yelp_api_instance.get_events_based_on_location(location=loc, is_free=is_free)
+    # events = yelp_api_instance.get_events_based_on_location(location=loc, is_free=is_free)
+    events = yelp_api_instance.get_events_based_on_location(location=loc, is_free=is_free, sort_on=sort_on)
     # events = yelp_api_instance.get_events_based_on_location(location=loc, sort_on=sort_on)
     # events = yelp_api_instance.get_events_based_on_location(location=loc, is_free=False)
     

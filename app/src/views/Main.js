@@ -25,8 +25,7 @@ function Main() {
   const [location, setLocation] = useState("West Lafayette, Indiana");
   const [startDate, setStartDate] = useState("");
   const [isFree, setIsFree] = useState("");
-  // const [sortOn, setSortOn] = useState("time_start");
-  const [sortOn, setSortOn] = useState("");
+  const [sortOn, setSortOn] = useState("time_start");
   const [loading, setLoading] = useState(false);
   pinwheel.register();
 
@@ -34,29 +33,13 @@ function Main() {
     fetchAPIEvents();
     console.log(location);
     console.log(isFree);
-    // const params = new URLSearchParams();
-    // // Conditionally append parameters if they are not empty strings
-    // if (location) params.append("location", location);
-    // if (startDate) params.append("start_date", startDate);
-    // if (isFree) params.append("is_free", isFree);
-    // if (sortOn) params.append("sort_on", sortOn);
-    // // const params = new URLSearchParams({
-    // //   location: encodeURIComponent(location),
-    // //   start_date: encodeURIComponent(startDate),
-    // //   sort_on: encodeURIComponent(sortOn),
-    // //   is_free: encodeURIComponent(isFree),
-    // // }).toString();
-    // console.log(`http://127.0.0.1:5000/events?${params}`);
-  }, [location, isFree]);
+    console.log(sortOn);
+  }, [location, isFree, sortOn]);
 
   const fetchAPIEvents = () => {
     setLoading(true);
-    // const params = new URLSearchParams({
-    //   location: encodeURIComponent(location),
-    //   start_date: encodeURIComponent(startDate),
-    //   is_free: encodeURIComponent(isFree),
-    //   sort_on: encodeURIComponent(sortOn),
-    // }).toString();
+
+    // Dynamically add parameters
     const params = new URLSearchParams();
     if (location) params.append("location", location);
     if (startDate) params.append("start_date", startDate);
@@ -124,11 +107,12 @@ function Main() {
             id="sort-by"
             variant="standard"
             defaultValue="time-start"
-            // value={age}
+            value={sortOn}
             label="sort-by"
             // onChange={handleChange}
+            onChange={(event) => setSortOn(event.target.value)}
           >
-            <MenuItem value="time-start">Time Start</MenuItem>
+            <MenuItem value="time_start">Time Start</MenuItem>
             <MenuItem value="popularity">Popularity</MenuItem>
           </Select>
         </FormControl>
