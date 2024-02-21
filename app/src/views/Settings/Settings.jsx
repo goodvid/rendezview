@@ -1,9 +1,14 @@
+import * as React from 'react';
 import "../Settings/Settings.css"
-import {Avatar, Button, Stack} from "@mui/material/";
+import {Avatar, Button, Stack, IconButton} from "@mui/material/";
 import SettingsIcon from "@mui/icons-material/Settings";
+import CloseIcon from '@mui/icons-material/Close';
 import MainNavbar from "../../components/MainNavbar/MainNavbar";
 import { useNavigate } from "react-router-dom";
-import ChangePassword from "./ChangePassword/ChangePassword";
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
 
 function Settings() {   
     const navigate = useNavigate();
@@ -19,6 +24,22 @@ function Settings() {
     const changePasswordClick = () => {
         navigate("/changepassword");
     };
+
+    // Delete Account
+    const [deleteOpen, setDeleteOpen] = React.useState(false);
+
+    const handleDeleteOpen = () => {
+        setDeleteOpen(true);
+    };
+
+    const handleDeleteClose = () => {
+        setDeleteOpen(false);
+    };
+
+    const deleteAccountClick = () => {
+        handleDeleteClose();
+    };
+
     
   return (
     <div>
@@ -65,13 +86,33 @@ function Settings() {
                             onClick={changeEmailClick}>
                                 Change Email
                         </Button>
-                        <Button className="AccountButton" variant="contained" 
+                        <Button className="AccountButton" 
+                            variant="contained" 
                             disableElevation 
                             sx={{textTransform: 'none', width: "200px", height: "50px"}}
                             onClick={changePasswordClick}>
                             Change Password
                         </Button>
-                        <Button className="DeleteButton" variant="contained" disableElevation sx={{textTransform: 'none', width: "200px", height: "50px"}}>Delete Account</Button>
+                        <Button className="DeleteButton" 
+                            variant="contained" 
+                            disableElevation 
+                            sx={{textTransform: 'none', width: "200px", height: "50px"}}
+                            onClick={handleDeleteOpen}>
+                                Delete Account
+                        </Button>
+                        <Dialog onClose={handleDeleteClose} open={deleteOpen} >
+                            <DialogTitle sx={{m: 2, p: 2, paddingBottom: 0, width: "500px", color: "red"}}> Delete Account?</DialogTitle>
+                            <IconButton onClick={handleDeleteClose} sx={{position: 'absolute', right: 20, top: 25}}>
+                                <CloseIcon />
+                            </IconButton>
+                            <DialogContent sx={{marginLeft: 1, paddingBottom: 0}}>Are you sure you'd like to delete your account? </DialogContent>
+                            <DialogContent sx={{marginLeft: 1}}>Deleting your account is permanent.</DialogContent>
+                            <DialogActions>
+                                <Button className="DeleteButton2" variant="contained" sx={{p:2, backgroundColor: "red", color: "white"}} autoFocus onClick={deleteAccountClick}>
+                                    Delete Account
+                                </Button>
+                            </DialogActions>
+                        </Dialog>
                     </Stack>
                 </Stack>
             </Stack>

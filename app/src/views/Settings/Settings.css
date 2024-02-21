@@ -28,6 +28,11 @@
     color: black;
 }
 
+.DeleteButton2:hover {
+    background-color: red;
+    font-weight: bold;
+}
+
 .LogoutButton {
     background-color: #FFEBC4;
     color: black;
