@@ -3,6 +3,7 @@ import {Avatar, Button, Stack, IconButton, TextField} from "@mui/material/";
 import SettingsIcon from "@mui/icons-material/Settings";
 import MainNavbar from "../../../components/MainNavbar/MainNavbar";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 function ChangeUsername() {   
     const navigate = useNavigate();
@@ -11,9 +12,68 @@ function ChangeUsername() {
         navigate("/settings");
     };
 
-    const saveClick =() => {
-        navigate("/settings");
-    }
+    const [email, setEmail] = useState("");
+    const updateEmail = (event) => {
+        if (event != null) {
+            setEmail(event.target.value);
+        }
+    };
+    const [newUsername, setnewUsername] = useState("");
+    const updateNewUsername = (event) => {
+        if (event != null) {
+            setnewUsername(event.target.value);
+        }
+    };
+    const [confirmNewUsername, setconfirmNewUsername] = useState("");
+    const updateConfirmNewUsername = (event) => {
+        if (event != null) {
+            setconfirmNewUsername(event.target.value);
+        }
+    };
+
+    let resp = "";
+
+    const saveClick = (event) => {
+        if (newUsername != confirmNewUsername) {
+            alert("Your usernames don't match! Please ensure they are the same.");
+            return;
+        }
+
+        console.log(email + newUsername);
+        event.preventDefault();
+
+        // Send to Flask server
+        fetch("http://localhost:5000/user/changeusername", {
+            method: "POST",
+            headers: {
+                Authorization: "Bearer " + sessionStorage.getItem("token"),
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({email: email, newUsername: newUsername}),
+        })
+        .then((response) => {
+            if (response.status === 200) {
+              resp = response;
+              return response.json();
+            } else if (response.status == 401) {
+              alert("That username is taken. Please choose a different username.");
+              return false;
+            } else {
+              alert("Unauthorized.");
+              return false;
+            }
+          })
+          .then((data) => {
+            if (resp.status == 200) {
+              console.log(sessionStorage.getItem("token"));
+              navigate("/settings");
+            }
+          })
+          .catch((error) => {
+            console.log("error", error);
+          });
+      };
+
 
   return (
     <div>
@@ -43,13 +103,13 @@ function ChangeUsername() {
 
                     <Stack direction = "column" spacing={1}>
                         <h4 style={{textAlign: "left"}}>Email</h4>
-                        <TextField />
+                        <TextField onChange={updateEmail}/>
 
                         <h4 style={{textAlign: "left"}}>New Username</h4>
-                        <TextField />
+                        <TextField onChange={updateNewUsername}/>
 
                         <h4 style={{textAlign: "left"}}>Confirm New Username</h4>
-                        <TextField />
+                        <TextField onChange={updateConfirmNewUsername}/>
                     </Stack>
 
                     <Button className="SaveButton" onClick={saveClick} variant="contained" disableElevation sx={{textTransform: 'none', width: "200px", height: "50px"}}>

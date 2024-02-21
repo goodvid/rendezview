@@ -62,6 +62,41 @@ def username():
     return jsonify(logged_in_as=current_user), 200
 
 
+@app.route("/user/changeusername", methods=["POST"])
+@jwt_required()
+def changeusername():
+    current_user = get_jwt_identity()
+    print("Request: ")
+    print(request.json)
+
+    user = User.query.filter_by(email=current_user["email"]).first()
+    duplicate = User.query.filter_by(username=request.json["newUsername"]).first()
+    if not duplicate:
+        user.username = request.json["newUsername"]
+        db.session.commit()
+    else:
+        return jsonify({"message": "Duplicate username not allowed."}), 401
+
+    return jsonify({"message": "Username changed successfully"}), 200
+
+
+@app.route("/user/changepassword", methods=["POST"])
+@jwt_required()
+def changepassword():
+    current_user = get_jwt_identity()
+    print("Request: ")
+    print(request.json)
+
+    user = User.query.filter_by(email=current_user["email"]).first()
+    if (len(request.json["newPassword"]) > 6):
+        user.password = request.json["newPassword"]
+        db.session.commit()
+    else:
+        return jsonify({"message": "Short password not allowed."}), 401
+
+    return jsonify({"message": "Username changed successfully"}), 200
+
+
 @app.route('/user/register', methods=["POST"])
 def register():
     data = request.json

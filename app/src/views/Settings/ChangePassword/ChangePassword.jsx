@@ -3,6 +3,7 @@ import {Avatar, Button, Stack, IconButton, TextField} from "@mui/material/";
 import SettingsIcon from "@mui/icons-material/Settings";
 import MainNavbar from "../../../components/MainNavbar/MainNavbar";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 function ChangePassword() {   
     const navigate = useNavigate();
@@ -11,9 +12,68 @@ function ChangePassword() {
         navigate("/settings");
     };
 
-    const saveClick =() => {
-        navigate("/settings");
-    }
+    const [email, setEmail] = useState("");
+    const updateEmail = (event) => {
+        if (event != null) {
+            setEmail(event.target.value);
+        }
+    };
+    const [newPassword, setNewPassword] = useState("");
+    const updateNewPassword = (event) => {
+        if (event != null) {
+            setNewPassword(event.target.value);
+        }
+    };
+    const [confirmNewPassword, setconfirmNewPassword] = useState("");
+    const updateConfirmNewPassword = (event) => {
+        if (event != null) {
+            setconfirmNewPassword(event.target.value);
+        }
+    };
+
+    let resp = "";
+
+    const saveClick = (event) => {
+        if (newPassword != confirmNewPassword) {
+            alert("Your passwords don't match! Please ensure they are the same.");
+            return;
+        }
+
+        console.log(email + newPassword);
+        event.preventDefault();
+
+        // Send to Flask server
+        fetch("http://localhost:5000/user/changepassword", {
+            method: "POST",
+            headers: {
+                Authorization: "Bearer " + sessionStorage.getItem("token"),
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({email: email, newPassword: newPassword}),
+        })
+        .then((response) => {
+            if (response.status === 200) {
+              resp = response;
+              return response.json();
+            } else if (response.status == 401) {
+              alert("This password is too short. Please choose a different password.");
+              return false;
+            } else {
+              alert("Unauthorized.");
+              return false;
+            }
+          })
+          .then((data) => {
+            if (resp.status == 200) {
+              console.log(sessionStorage.getItem("token"));
+              navigate("/settings");
+            }
+          })
+          .catch((error) => {
+            console.log("error", error);
+          });
+      };
+    
 
   return (
     <div>
@@ -43,13 +103,13 @@ function ChangePassword() {
 
                     <Stack direction = "column" spacing={1}>
                         <h4 style={{textAlign: "left"}}>Email</h4>
-                        <TextField />
+                        <TextField onChange={updateEmail}/>
 
                         <h4 style={{textAlign: "left"}}>New Password</h4>
-                        <TextField />
+                        <TextField onChange={updateNewPassword}/>
 
                         <h4 style={{textAlign: "left"}}>Confirm New Password</h4>
-                        <TextField />
+                        <TextField onChange={updateConfirmNewPassword}/>
                     </Stack>
 
                     <Button className="SaveButton" onClick={saveClick} variant="contained" disableElevation sx={{textTransform: 'none', width: "200px", height: "50px"}}>

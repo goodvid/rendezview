@@ -40,6 +40,13 @@ function Settings() {
         handleDeleteClose();
     };
 
+    const logout = () => {
+        sessionStorage.removeItem("token");
+        console.log('removed');
+        navigate("/");
+    }
+
+    let username = "Name"
     
   return (
     <div>
@@ -50,11 +57,15 @@ function Settings() {
                 <Stack direction="row" spacing={3} borderRadius="16px" sx={{p: 5, bgcolor: '#171B26'}}>
                     <Avatar sx={{width: 100, height: 100}}/>
                     <Stack direction="column" justifyContent="center">
-                        <h1 style={{color: "white", textAlign: "left", verticalAlign: "middle"}}>Name</h1>
+                        <h1 style={{color: "white", textAlign: "left", verticalAlign: "middle"}}> {username} </h1>
                     </Stack>
                     <Stack width="100%" direction="row" justifyContent="flex-end" gap="1rem">
                         <Stack direction="column" justifyContent="center">
-                            <Button justifyContent="center" variant="contained" color="inherit" size="large" sx={{backgroundColor: "#FFEBC4", color: "black"}}>Logout</Button>
+                            <Button justifyContent="center" variant="contained" color="inherit" size="large" 
+                                onClick={logout}
+                                sx={{backgroundColor: "#FFEBC4", color: "black"}}>
+                                    Logout
+                            </Button>
                         </Stack>
                         <Stack direction="column" justifyContent="center">
                             <SettingsIcon style={{fontSize: "40px", color: "white"}}/>
