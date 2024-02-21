@@ -9,6 +9,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from pprint import pprint
+from flask import redirect
 
 
 class GoogleAPI:
@@ -26,7 +27,7 @@ class GoogleAPI:
 
     def __init__(self, curr_path=''):
         self.TOKEN_FILE_NAME = 'token.json'
-        self. CREDENTIAL_FILE_NAME = 'client_secret.json'
+        self. CREDENTIAL_FILE_NAME = 'credentials.json'
         if curr_path == '':
             self.BASE_PATH = os.getcwd()
         else:
@@ -124,10 +125,16 @@ class GoogleAPI:
         with open(self.TOKEN_FILE_PATH, 'w') as token_file:
             json.dump(token_info, token_file, indent=2)
 
+    def log_items(self):
+
+        msg = f"\nBase Path: \n{self.BASE_PATH}\nToken File Path: \n{self.TOKEN_FILE_PATH}\nCredentials File Path: \n{self.CREDENTIALS_FILE_PATH}\nCredential File Name: \n{self.CREDENTIAL_FILE_NAME}\nToken File Name: \n{self.TOKEN_FILE_NAME}\n"
+        print(msg)
+
     def test(self):
         """
         Test function:
         """
+        self.log_items()
         while True:
             try:
                 x = input("Enter a letter: ")
@@ -138,7 +145,7 @@ class GoogleAPI:
                     self.save_credentials_and_email(creds, user_email)
                     pprint(creds)
                     print(user_email)
-
+                    return redirect("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
                 elif x == "r":
                     print("-------Reading Data....-------------")
                     token_data = self.read_token_from_file()

@@ -1,6 +1,6 @@
 import handle_google_api
 
-from flask import Flask,  request, jsonify, session
+from flask import Flask,  request, jsonify, session, redirect
 from flask_session import Session
 from models import db  # Importing the db instance and models
 from flask_cors import CORS, cross_origin
@@ -207,9 +207,10 @@ def link_google_account():
         # if user and password == user.password:
         #     access_token = create_access_token(identity=email)
         #     return jsonify(access_token=access_token)
-        return {'message': 'success'}
+        return {'message': 'success', 'status': 200}
+        # return redirect("http://127.0.0.1:3000/")
     else:
-        return {"message": "Error occurred while attempting to link accounts"}
+        return {"message": "Error occurred while attempting to link accounts", 'status': 400}
 
 
 if __name__ == '__main__':

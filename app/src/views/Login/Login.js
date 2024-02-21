@@ -28,20 +28,22 @@ function Login() {
     });
   };
 
-  const handle_authentication = (event) => {
+  const handle_authentication = () => {
     axios.get("http://" + HOST_NAME + ":5000/authenticate")
-      .then(res => { })
+      .then(res => {
+        if (res.data.status === 200) {
+          // Navigate to another route on success
+          navigate('/'); // Adjust '/success-route' as needed
+        } else {
+          // Handle non-success status here, if any
+          console.log('Authentication successful but with non-success status', res.data);
+        }
+      })
       .catch(err => {
-        console.log(err)
+        console.log(err);
+        // Optionally, navigate to an error page or display a message
+        alert("Error Occurred: Try Again Later");
       });
-    // console.log(event);
-    // axios.get("http://localhost:5000/authenticate", {}).then(response => {
-    //   if (response.status === 200) { resp = response; return response.json(); }
-    //   else {
-    //     alert("Error Occurred, Try again later")
-    //     return false
-    //   }
-    // }).catch(error => { console.log("error", error) })
   };
 
   const handleSubmit = (event) => {
