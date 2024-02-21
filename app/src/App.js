@@ -22,7 +22,7 @@ function App() {
           <Route path="/quiz" element={<Quiz />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/eventdetails/:id" element={<EventDetails />} />
-          <Route path="/newevent" element={<CreateEvent/>}/>
+          <Route path="/newevent" element={<CreateEvent />} />
         </Routes>
       </BrowserRouter>
     </div>

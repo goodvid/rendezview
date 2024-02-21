@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import MainNavbar from "../components/MainNavbar/MainNavbar";
 import Event from "../components/Event/Event";
 import axios from "axios";
@@ -8,15 +8,34 @@ import {
   TextField,
   Autocomplete,
   FormControl,
+  Input,
   InputLabel,
   Select,
   MenuItem,
+  OutlinedInput,
 } from "@mui/material";
 import dayjs from "dayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { pinwheel } from "ldrs";
+import MapAutocomplete, { usePlacesWidget } from "react-google-autocomplete";
+import categories from "./eventCategories.json";
+
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import ColorLensIcon from "@mui/icons-material/ColorLens";
+import TheaterComedyIcon from "@mui/icons-material/TheaterComedy";
+import TheatersIcon from "@mui/icons-material/Theaters";
+import MenuBookIcon from "@mui/icons-material/MenuBook";
+import CheckroomIcon from "@mui/icons-material/Checkroom";
+import FastfoodIcon from "@mui/icons-material/Fastfood";
+import FestivalIcon from "@mui/icons-material/Festival";
+import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
+import SportsScoreIcon from "@mui/icons-material/SportsScore";
+import NightlifeIcon from "@mui/icons-material/Nightlife";
+import FamilyRestroomIcon from "@mui/icons-material/FamilyRestroom";
+import PendingIcon from "@mui/icons-material/Pending";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 
 function Main() {
   const [events, setEvents] = useState([]);
@@ -27,7 +46,24 @@ function Main() {
   const [sortOn, setSortOn] = useState("time_start");
   const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
-  pinwheel.register(); // Loading animation
+  const [locationInput, setLocationInput] = useState("");
+  pinwheel.register(); // Set loading animation
+
+  const iconMapping = {
+    music: <MusicNoteIcon />,
+    "visual-arts": <ColorLensIcon />,
+    "performing-arts": <TheaterComedyIcon />,
+    film: <TheatersIcon />,
+    "lectures-books": <MenuBookIcon />,
+    fashion: <CheckroomIcon />,
+    "food-and-drink": <FastfoodIcon />,
+    "festivals-fairs": <FestivalIcon />,
+    charities: <VolunteerActivismIcon />,
+    "sports-active-life": <SportsScoreIcon />,
+    nightlife: <NightlifeIcon />,
+    "kids-family": <FamilyRestroomIcon />,
+    other: <MoreHorizIcon />,
+  };
 
   useEffect(() => {
     setUnixStartDate(dayjs(startDate).unix());
@@ -48,7 +84,6 @@ function Main() {
     if (unixStartDate) params.append("start_date", unixStartDate);
     if (category) params.append("category", category);
 
-    console.log(`http://127.0.0.1:5000/events/api?${params}`);
     axios
       .get(`http://127.0.0.1:5000/events/api?${params}`)
       .then((response) => {
@@ -76,117 +111,23 @@ function Main() {
       });
   };
 
-  const locationOptions = [
-    "West Lafayette, IN",
-    "New York City",
-    "Novi, Michigan",
-  ];
-
-  const categories = [
-    {
-      name: "Music",
-      value: "music",
-    },
-    {
-      name: "Visual Arts",
-      value: "visual-arts",
-    },
-    {
-      name: "Performing Arts",
-      value: "performing-arts",
-    },
-    {
-      name: "Film",
-      value: "film",
-    },
-    {
-      name: "Lectures & Books",
-      value: "lectures-books",
-    },
-    {
-      name: "Fashion",
-      value: "fashion",
-    },
-    {
-      name: "Food & Drink",
-      value: "food-and-drink",
-    },
-    {
-      name: "Festivals & Fairs",
-      value: "festivals-fairs",
-    },
-    {
-      name: "Charities",
-      value: "charities",
-    },
-    {
-      name: "Sports & Active Life",
-      value: "sports-active-life",
-    },
-    {
-      name: "Nightlife",
-      value: "nightlife",
-    },
-    {
-      name: "Kids & Family",
-      value: "kids-family",
-    },
-    {
-      name: "Other",
-      value: "other",
-    },
-  ];
-
-  const SortBySelect = () => {
-    return (
-      <Stack
-        direction="row"
-        justifyContent="flex-end"
-        marginInline="3rem"
-        gap="1rem"
-      >
-        <p>Sort by:</p>
-        <FormControl sx={{ minWidth: 120 }}>
-          <Select
-            labelId="sort-by"
-            id="sort-by"
-            variant="standard"
-            defaultValue="time-start"
-            value={sortOn}
-            label="sort-by"
-            onChange={(event) => setSortOn(event.target.value)}
-          >
-            <MenuItem value="time_start">Time Start</MenuItem>
-            <MenuItem value="popularity">Popularity</MenuItem>
-          </Select>
-        </FormControl>
-      </Stack>
-    );
-  };
+  const handlePlaceSelected = useCallback((place) => {
+    setLocation(place.formatted_address);
+    setLocationInput(place.formatted_address);
+  }, []);
 
   const LocationFilter = () => {
     return (
       <div>
-        <Autocomplete
-          disablePortal
-          id="Location"
-          options={locationOptions}
-          value={location}
-          sx={{ width: 200 }}
-          onChange={(event, newValue) => {
-            setLocation(newValue);
-          }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              label="Location"
-              // InputProps={{
-              //   startAdornment: (
-              //     <InputAdornment position="start">
-              //       <LocationOnIcon />
-              //     </InputAdornment>
-              //   ),
-              // }}
+        <OutlinedInput
+          fullWidth
+          color="secondary"
+          inputComponent={({ inputRef, onFocus, onBlur, ...props }) => (
+            <MapAutocomplete
+              apiKey="AIzaSyBMp7w0sRedU-xNT_Z5DGFCYPFkHa-QTMg"
+              {...props}
+              defaultValue={locationInput}
+              onPlaceSelected={handlePlaceSelected}
             />
           )}
         />
@@ -225,14 +166,39 @@ function Main() {
     );
   };
 
+  const SortBySelect = () => {
+    return (
+      <Stack
+        direction="row"
+        justifyContent="flex-end"
+        marginInline="3rem"
+        gap="1rem"
+      >
+        <p>Sort by:</p>
+        <FormControl sx={{ minWidth: 120 }}>
+          <Select
+            labelId="sort-by"
+            id="sort-by"
+            variant="standard"
+            defaultValue="time-start"
+            value={sortOn}
+            label="sort-by"
+            onChange={(event) => setSortOn(event.target.value)}
+          >
+            <MenuItem value="time_start">Time Start</MenuItem>
+            <MenuItem value="popularity">Popularity</MenuItem>
+          </Select>
+        </FormControl>
+      </Stack>
+    );
+  };
+
   const FilteringTab = () => {
     return (
       <Stack width="100%">
         <Stack
           direction="row"
           justifyContent="flex-start"
-          // margin="2.5rem"
-          // marginBottom="0px"
           gap="1rem"
           width="100%"
         >
@@ -255,32 +221,25 @@ function Main() {
       </div>
       <div className="w-full h-[533px] flex flex-col">
         <span className="text-xl">Categories</span>
-        <div className="w-full flex flex-row">
-          {categories.map((item, index) => (
-            <div
-              className="bg-light-gray w-[150px] h-[100px]"
-              key={index}
-              onClick={() => setCategory(item.value)}
-            >
-              {item.name}
-            </div>
-          ))}
+        <div className="flex overflow-x-scroll p-10" style={{ height: "auto" }}>
+          <Stack direction="row" gap={2} sx={{ minWidth: "max-content" }}>
+            {categories.map((item, index) => (
+              <Stack
+                direction="column"
+                justifyContent="center"
+                alignItems="center"
+                key={index}
+                onClick={() => setCategory(item.value)}
+                sx={{
+                  minWidth: "150px",
+                }}
+              >
+                {iconMapping[item.value]}
+                <h3>{item.name}</h3>
+              </Stack>
+            ))}
+          </Stack>
         </div>
-        {/* <div className="w-full flex flex-row">
-          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
-          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
-          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
-          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
-          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
-          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
-          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
-          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
-          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
-          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
-          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
-          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
-          <div className="bg-light-gray w-[150px] h-[100px]"> Category</div>
-        </div> */}
         <div className="flex flex-row flex-wrap gap-5 pl-10 pt-10">
           <FilteringTab />
           {loading ? (

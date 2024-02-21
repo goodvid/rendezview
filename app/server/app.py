@@ -232,41 +232,6 @@ def fetch_api_events():
 
     return jsonify({"message": "Events processed", "eventIDs": eventIDTracking, "count": fetched_events_count, "events": events}), 200
 
-# @app.route("/events/api", methods=["POST", "GET"])
-# def fetch_api_events():
-#     loc = "West Lafayette, Indiana"
-#     # loc = request.args.get('location', default="West Lafayette, Indiana", type=str)
-#     yelp_api_instance = YelpAPI()
-#     events = yelp_api_instance.get_events_based_on_location(location=loc)
-    
-#     eventIDTracking = []
-#     for event in events:
-#         yelpID = event['id']
-#         eventDesc = event['description']
-#         name = event['name']
-#         yelpLocation = event['location']
-#         locationAddress = ', '.join(yelpLocation['display_address'])
-#         eventDateTime = parser.isoparse(event['time_start'])
-#         category = event['category']
-
-#         existingEvent = Event.query.filter_by(yelpID=yelpID).first()
-
-#         if existingEvent:
-#             existingEvent.desc = eventDesc
-#             existingEvent.name = name
-#             existingEvent.location = locationAddress
-#             existingEvent.event_datetime = eventDateTime
-#             existingEvent.category = category
-#         else:
-#             newEvent = Event(name=name, desc=eventDesc, location=locationAddress, event_datetime=eventDateTime, category=category, yelpID=yelpID)
-#             db.session.add(newEvent)
-#             eventIDTracking.append(newEvent.eventID)
-
-#     db.session.commit()
-
-#     return jsonify({"message": "Events processed", "eventIDs": eventIDTracking,"count": len(events), "events": events}), 200
- 
-
 @app.route("/event/details", methods=["POST"])
 def get_details():
     id = request.json["id"]

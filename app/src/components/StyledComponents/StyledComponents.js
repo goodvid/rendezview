@@ -1,4 +1,4 @@
-import { Stack, Button, Card, IconButton, styled } from "@mui/material";
+import { Stack, Button, Card, IconButton, styled, Input } from "@mui/material";
 
 export const YellowCard = styled(Card)({
   overflow: "auto",
@@ -35,4 +35,9 @@ export const YellowButton = styled(Button)({
     backgroundColor: "#E2B662",
     boxShadow: "none",
   },
+});
+
+export const OutlinedInput = styled(Input)({
+  backgroundColor: "#F2C879",
+  paddingInline: "1.5rem",
 });
