@@ -20,16 +20,21 @@ class GoogleAPI:
     BASE_PATH = ''
     TOKEN_FILE_PATH = ''
     CREDENTIALS_FILE_PATH = ''
+    CREDENTIAL_FILE_NAME = ''
+    TOKEN_FILE_NAME = ''
     TIME_BREAK = 30
 
     def __init__(self, curr_path=''):
+        self.TOKEN_FILE_NAME = 'token.json'
+        self. CREDENTIAL_FILE_NAME = 'client_secret.json'
         if curr_path == '':
             self.BASE_PATH = os.getcwd()
         else:
             self.BASE_PATH = os.path.join(curr_path, 'api')
-        self.TOKEN_FILE_PATH = os.path.join(self.BASE_PATH, 'token.json')
+        self.TOKEN_FILE_PATH = os.path.join(
+            self.BASE_PATH, self.TOKEN_FILE_NAME)
         self.CREDENTIALS_FILE_PATH = os.path.join(
-            self.BASE_PATH, 'credentials.json')
+            self.BASE_PATH, self.CREDENTIAL_FILE_NAME)
 
     def authenticate(self):
         creds = None
