@@ -186,15 +186,11 @@ def fetch_api_events():
     # Uncomment the next line to dynamically set the location based on query parameter
     loc = request.args.get('location', default=None, type=str)
     sort_on = request.args.get('sort_on', default=None, type=str)
-    start_date = request.args.get('start_date', default=None, type=str)  # Assuming start_date is a string in YYYY-MM-DD format
-    is_free = request.args.get('is_free', default=None, type=str)  # Assuming is_free could be 'true' or 'false'
+    start_date = request.args.get('start_date', default=None, type=str)
+    is_free = request.args.get('is_free', default=None, type=str)
 
     yelp_api_instance = YelpAPI()
-    # events = yelp_api_instance.get_events_based_on_location(location=loc)
-    # events = yelp_api_instance.get_events_based_on_location(location=loc, is_free=is_free)
-    events = yelp_api_instance.get_events_based_on_location(location=loc, is_free=is_free, sort_on=sort_on)
-    # events = yelp_api_instance.get_events_based_on_location(location=loc, sort_on=sort_on)
-    # events = yelp_api_instance.get_events_based_on_location(location=loc, is_free=False)
+    events = yelp_api_instance.get_events_based_on_location(location=loc, is_free=is_free, sort_on=sort_on, start_date=start_date)
     
     # Check the count of fetched events against existing events in the database
     existing_events_count = Event.query.count()

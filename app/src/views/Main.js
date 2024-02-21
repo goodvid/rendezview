@@ -12,6 +12,7 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
+import dayjs from "dayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
@@ -24,17 +25,19 @@ function Main() {
   const [events, setEvents] = useState([]);
   const [location, setLocation] = useState("West Lafayette, Indiana");
   const [startDate, setStartDate] = useState("");
+  const [unixStartDate, setUnixStartDate] = useState("");
   const [isFree, setIsFree] = useState("");
   const [sortOn, setSortOn] = useState("time_start");
   const [loading, setLoading] = useState(false);
   pinwheel.register();
 
   useEffect(() => {
+    setUnixStartDate(dayjs(startDate).unix());
+  }, [startDate]);
+
+  useEffect(() => {
     fetchAPIEvents();
-    console.log(location);
-    console.log(isFree);
-    console.log(sortOn);
-  }, [location, isFree, sortOn]);
+  }, [location, isFree, sortOn, unixStartDate]);
 
   const fetchAPIEvents = () => {
     setLoading(true);
@@ -42,25 +45,13 @@ function Main() {
     // Dynamically add parameters
     const params = new URLSearchParams();
     if (location) params.append("location", location);
-    if (startDate) params.append("start_date", startDate);
     if (isFree) params.append("is_free", isFree);
     if (sortOn) params.append("sort_on", sortOn);
+    if (unixStartDate) params.append("start_date", unixStartDate);
 
     console.log(`http://127.0.0.1:5000/events/api?${params}`);
-    // console.log(
-    //   `http://127.0.0.1:5000/events/api?location=${encodeURIComponent(
-    //     location
-    //   )}`
-    // );
-
     axios
       .get(`http://127.0.0.1:5000/events/api?${params}`)
-      // .get(`http://127.0.0.1:5000/events/api`)
-      // .get(
-      //   `http://127.0.0.1:5000/events/api?location=${encodeURIComponent(
-      //     location
-      //   )}`
-      // )
       .then((response) => {
         console.log("API events fetched and stored:", response.data);
         fetchAndDisplayEvents();
@@ -109,7 +100,6 @@ function Main() {
             defaultValue="time-start"
             value={sortOn}
             label="sort-by"
-            // onChange={handleChange}
             onChange={(event) => setSortOn(event.target.value)}
           >
             <MenuItem value="time_start">Time Start</MenuItem>
@@ -155,8 +145,8 @@ function Main() {
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DateTimePicker
           label="Start Date/Time"
-          // value={value}
-          // onChange={(newValue) => setValue(newValue)}
+          value={startDate}
+          onChange={(newValue) => setStartDate(newValue)}
         />
       </LocalizationProvider>
     );

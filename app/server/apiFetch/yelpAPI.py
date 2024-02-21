@@ -10,7 +10,7 @@ class YelpAPI:
     API_HOST = 'https://api.yelp.com/v3'
     HEADERS = {'Authorization': f'Bearer {API_KEY}'}
 
-    def __init__(self, type="events", location='New York, NY', amount=20, sort_on='time_start', sort_by='desc', is_free=""):
+    def __init__(self, type="events", location='New York, NY', amount=20, sort_on='time_start', sort_by='desc', is_free="", start_date=""):
         # default configurations
         self.default_search_path = os.path.join(self.API_HOST, type)
         self.remaining_requests = 0
@@ -18,7 +18,7 @@ class YelpAPI:
         self.amount = amount
         self.sort_on = sort_on
         self.sort_by = sort_by
-        self.start_date = sort_by
+        self.start_date = start_date 
         self.is_free = is_free 
 
     def expand_search_path(self, input_path):
@@ -38,8 +38,8 @@ class YelpAPI:
     def set_location(self, location):
         self.location = location
 
-    # def set_start_date(self, start_date):
-    #     self.start_date = start_date 
+    def set_start_date(self, start_date):
+        self.start_date = start_date 
 
     def set_is_free(self, is_free):
         self.is_free = is_free; 
@@ -70,7 +70,7 @@ class YelpAPI:
 
     # def get_events_based_on_location(self, location="", start_date="", is_free=None, sort_on="time_start", sort_by="desc"):
     # def get_events_based_on_location(self, location="", sort_on=""):
-    def get_events_based_on_location(self, location="", is_free="", sort_on=""):
+    def get_events_based_on_location(self, location="", is_free="", sort_on="", start_date=""):
         if location != "":
             # if we give it a new location, we set it
             # otherwise we just use the previous stored location
@@ -83,17 +83,21 @@ class YelpAPI:
         if sort_on != "":
             self.set_sort_on(sort_on)
 
+        if start_date != "":
+            self.set_start_date(start_date)
+
         params = {
             'location': location,
             'limit': self.amount,
             'sort_on': self.sort_on,
             'sort_by': self.sort_by,
             'is_free': self.is_free,
+            'start_date': self.start_date,
         }
         response = requests.get(
             self.default_search_path, headers=self.HEADERS, params=params)
         
-        print("url6:", response.url)
+        print("url7:", response.url)
         if response.status_code == 200:
             print(self.check_rate_limit(response.headers))
             # pprint(response)
