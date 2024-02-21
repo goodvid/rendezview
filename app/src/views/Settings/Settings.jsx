@@ -1,10 +1,17 @@
-import "../..//App.css";
+import "../../App.css";
 import "../Settings/Settings.css"
 import {Avatar, Button, Stack} from "@mui/material/";
 import SettingsIcon from "@mui/icons-material/Settings";
 import MainNavbar from "../../components/MainNavbar/MainNavbar";
+import { useNavigate } from "react-router-dom";
 
-function Settings() {      
+function Settings() {   
+    const navigate = useNavigate();
+    
+    const changeUsernameClick = () => {
+        navigate("/modifyusername");
+    };
+    
   return (
     <div>
         <MainNavbar />
@@ -12,7 +19,7 @@ function Settings() {
         <Stack sx={{p: 5}}>
             <Stack direction="column" spacing={5}>
                 <Stack direction="row" spacing={3} borderRadius="16px" sx={{p: 5, bgcolor: '#171B26'}}>
-                    <Avatar sx={{width: 150, height: 150}}/>
+                    <Avatar sx={{width: 100, height: 100}}/>
                     <Stack direction="column" justifyContent="center">
                         <h1 style={{color: "white", textAlign: "left", verticalAlign: "middle"}}>Name</h1>
                     </Stack>
@@ -29,7 +36,13 @@ function Settings() {
                 <Stack direction="column" spacing={1}>
                     <h1 style={{textAlign: "left"}}>Modify Profile</h1>
                     <Stack direction = "row" spacing={2}>
-                        <Button className="ProfileButton" variant="contained" disableElevation color="info" sx={{textTransform: 'none', width: "200px", height: "50px"}}>Change Username</Button>
+                        <Button className="ProfileButton" 
+                            variant="contained" 
+                            disableElevation 
+                            sx={{textTransform: 'none', width: "200px", height: "50px"}}
+                            onClick={changeUsernameClick}>
+                                Change Username
+                        </Button>
                         <Button className="ProfileButton" variant="contained" disableElevation color="info" sx={{textTransform: 'none', width: "200px", height: "50px"}}>Change Profile Picture</Button>
                     </Stack>
                 </Stack>

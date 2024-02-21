@@ -11,6 +11,7 @@ import Settings from "./views/Settings/Settings";
 import EventDetails from "./views/EventDetails/EventDetails";
 import CreateEvent from "./views/CreateEvent/createEvent";
 import Events from "./views/Events/Events";
+import ModifyUsername from "./views/Settings/ModifyUsername/ModifyUsername";
 
 function App() {
   return (
@@ -23,10 +24,11 @@ function App() {
           <Route path="/username" element={<Username />} />
           <Route path="/quiz" element={<Quiz />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/settings" element={<Settings />} />
           <Route path="/eventdetails/:id" element={<EventDetails />} />
           <Route path="/newevent" element={<CreateEvent/>}/>
           <Route path="/events" element={<Events />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/modifyusername" element={<ModifyUsername />} />
         </Routes>
       </BrowserRouter>
     </div>
