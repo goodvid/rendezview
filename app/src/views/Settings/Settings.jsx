@@ -1,5 +1,5 @@
 import * as React from 'react';
-import "../Settings/Settings.css"
+import "./Settings.css";
 import {Avatar, Button, Stack, IconButton} from "@mui/material/";
 import SettingsIcon from "@mui/icons-material/Settings";
 import CloseIcon from '@mui/icons-material/Close';
@@ -54,7 +54,7 @@ function Settings() {
                     </Stack>
                     <Stack width="100%" direction="row" justifyContent="flex-end" gap="1rem">
                         <Stack direction="column" justifyContent="center">
-                            <Button className="LogoutButton" justifyContent="center" variant="contained" color="inherit" size="large">Logout</Button>
+                            <Button justifyContent="center" variant="contained" color="inherit" size="large" sx={{backgroundColor: "#FFEBC4", color: "black"}}>Logout</Button>
                         </Stack>
                         <Stack direction="column" justifyContent="center">
                             <SettingsIcon style={{fontSize: "40px", color: "white"}}/>
@@ -65,38 +65,37 @@ function Settings() {
                 <Stack direction="column" spacing={1}>
                     <h1 style={{textAlign: "left"}}>Modify Profile</h1>
                     <Stack direction = "row" spacing={2}>
-                        <Button className="ProfileButton" 
-                            variant="contained" 
+                        <Button variant="contained" 
                             disableElevation 
-                            sx={{textTransform: 'none', width: "200px", height: "50px"}}
+                            sx={{textTransform: 'none', width: "200px", height: "50px", 
+                                backgroundColor: "#D1EEFF", color: "black", 
+                                '&:hover': {backgroundColor: "#8bd4ff", color: "black"}}}
                             onClick={changeUsernameClick}>
                                 Change Username
                         </Button>
-                        <Button className="ProfileButton" variant="contained" disableElevation color="info" sx={{textTransform: 'none', width: "200px", height: "50px"}}>Change Profile Picture</Button>
+                        <Button variant="contained" disableElevation color="info" sx={{textTransform: 'none', width: "200px", height: "50px", backgroundColor: "#D1EEFF", color: "black", 
+                                '&:hover': {backgroundColor: "#8bd4ff", color: "black"}}}>Change Profile Picture</Button>
                     </Stack>
                 </Stack>
 
                 <Stack direction="column" spacing={1}>
                     <h1 style={{textAlign: "left"}}>Modify Account</h1>
                     <Stack direction = "row" spacing={2}>
-                        <Button className="AccountButton" 
-                            variant="contained" 
+                        <Button variant="contained" 
                             disableElevation 
-                            sx={{textTransform: 'none', width: "200px", height: "50px"}}
+                            sx={{textTransform: 'none', width: "200px", height: "50px", backgroundColor: "#FFE1E1", color: "black", '&:hover': {backgroundColor: "#ff9999", color: "black"}}}
                             onClick={changeEmailClick}>
                                 Change Email
                         </Button>
-                        <Button className="AccountButton" 
-                            variant="contained" 
+                        <Button variant="contained" 
                             disableElevation 
-                            sx={{textTransform: 'none', width: "200px", height: "50px"}}
+                            sx={{textTransform: 'none', width: "200px", height: "50px", backgroundColor: "#FFE1E1", color: "black", '&:hover': {backgroundColor: "#ff9999", color: "black"}}}
                             onClick={changePasswordClick}>
                             Change Password
                         </Button>
-                        <Button className="DeleteButton" 
-                            variant="contained" 
+                        <Button variant="contained" 
                             disableElevation 
-                            sx={{textTransform: 'none', width: "200px", height: "50px"}}
+                            sx={{textTransform: 'none', width: "200px", height: "50px", backgroundColor: "#FFA7A7", color: "black", '&:hover': {backgroundColor: "#ff6868", color: "black"}}}
                             onClick={handleDeleteOpen}>
                                 Delete Account
                         </Button>

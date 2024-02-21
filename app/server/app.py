@@ -189,7 +189,7 @@ def get_details():
     return jsonify(event_json=event_json)
 
 
-@app.route("/check_user", methods = ["POST"])
+# @app.route("/check_user", methods = ["POST"])
 @jwt_required
 def hello():
     user = get_jwt_identity()
