@@ -6,7 +6,7 @@ from models import User, Event
 from types import SimpleNamespace
 from dateutil import parser
 from sqlalchemy.exc import SQLAlchemyError
-
+from flask_migrate import Migrate
 
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import get_jwt_identity
@@ -28,6 +28,8 @@ app.secret_key = "super secret essay"
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config.from_object(ApplicationConfig)
 jwt = JWTManager(app)
+
+migrate = Migrate(app, db)
 
 db.init_app(app)  # Initialize db with your Flask app
 
