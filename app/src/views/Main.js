@@ -126,9 +126,6 @@ function Main() {
 
   useEffect(() => {
     console.log("user location:", userCoords);
-    // if (userCoords) {
-    //   getReverseGeocodingData(userCoords.latitude, userCoords.longitude);
-    // }
   }, [userCoords]);
 
   const getIPGeolocation = () => {
@@ -213,7 +210,6 @@ function Main() {
       </div>
     );
   };
-
   const DateFilter = () => {
     return (
       <LocalizationProvider dateAdapter={AdapterDayjs}>

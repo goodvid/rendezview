@@ -68,6 +68,90 @@ def username():
     return jsonify(logged_in_as=current_user), 200
 
 
+@app.route("/user/changeusername", methods=["POST"])
+@jwt_required()
+def changeusername():
+    current_user = get_jwt_identity()
+    print("Request: ")
+    print(request.json)
+
+    user = User.query.filter_by(email=current_user["email"]).first()
+    duplicate = User.query.filter_by(username=request.json["newUsername"]).first()
+    if not duplicate:
+        user.username = request.json["newUsername"]
+        db.session.commit()
+    else:
+        return jsonify({"message": "Duplicate username not allowed."}), 401
+
+    return jsonify({"message": "Username changed successfully"}), 200
+
+
+@app.route("/user/changepassword", methods=["POST"])
+@jwt_required()
+def changepassword():
+    current_user = get_jwt_identity()
+    print("Request: ")
+    print(request.json)
+
+    user = User.query.filter_by(email=current_user["email"]).first()
+    if (len(request.json["newPassword"]) > 6):
+        user.password = request.json["newPassword"]
+        db.session.commit()
+    else:
+        return jsonify({"message": "Short password not allowed."}), 401
+
+    return jsonify({"message": "Password changed successfully"}), 200
+
+
+@app.route("/user/changeemail", methods=["POST"])
+@jwt_required()
+def changeemail():
+    current_user = get_jwt_identity()
+    print("Request: ")
+    print(request.json)
+
+    user = User.query.filter_by(email=current_user["email"]).first()
+    duplicate = User.query.filter_by(email=request.json["newEmail"]).first()
+    if not duplicate:
+        user.email = request.json["newEmail"]
+        db.session.commit()
+    else:
+        return jsonify({"message": "Duplicate email not allowed."}), 401
+
+    return jsonify({"message": "Email changed successfully"}), 200
+
+
+@app.route("/user/deleteaccount", methods=["GET"])
+@jwt_required()
+def deleteaccount():
+    current_user = get_jwt_identity()
+    
+    User.query.filter_by(email=current_user["email"]).delete()
+    # db.session.delete(user)
+    db.session.commit()
+
+    return jsonify({"message": "Account deleted successfully"}), 200
+
+
+@app.route("/user/resetpassword", methods=["POST"])
+def resetpassword():
+    print("Request: ")
+    print(request.json)
+
+    user = User.query.filter_by(email=request.json["email"]).first()
+    if (user == None):
+        return jsonify({'message': 'This email does not belong to an existing account.'}), 400
+    
+    if (len(request.json["newPassword"]) < 7):
+        return jsonify({'message': 'Password is too short.'}), 401
+
+    user.password = request.json["newPassword"]
+    db.session.commit()
+    access_token = create_access_token(identity=request.json["email"])
+
+    return jsonify({"message": "Password reset successfully"}), 200
+
+
 @app.route('/user/register', methods=["POST"])
 def register():
     data = request.json
@@ -91,8 +175,7 @@ def register():
     # return jsonify(access_token), 200
 
 
-@app.route('/events', methods=['GET', 'POST'])
-@cross_origin(supports_credentials=True)
+@app.route('/events', methods=['GET'])
 def get_events():
 
     events = Event.query.all()
@@ -100,9 +183,30 @@ def get_events():
     event_values = []
 
     for event in events:
-        values = {'name': event.name,
-                  'time': event.event_datetime,
-                  'location': event.location}
+        values = {'id': event.eventID,
+                    'name': event.name,
+                    'time': event.event_datetime,
+                    'location': event.location}
+        event_values.append(values)
+
+    return {'status': '200', 'events': event_values}
+
+@app.route('/user_events', methods=['GET'])
+@jwt_required()
+def get_user_events():
+
+    user = get_jwt_identity()
+    print(user)
+
+    events = Event.query.filter_by(host=user['name'])
+
+    event_values = []
+
+    for event in events:
+        values = {'id': event.eventID,
+                    'name': event.name,
+                    'time': event.event_datetime,
+                    'location': event.location}
         event_values.append(values)
 
     return {'status': '200', 'events': event_values}
@@ -117,6 +221,19 @@ def receive_data():
     # item = User(name=current_user, username = data) TODO fix getting current user
     return jsonify({"message": "Data received successfully", "yourData": data}), 200
 
+
+@app.route('/delete_event', methods=['POST'])
+def delete_event():
+    data = request.json
+
+    print(data['event'])
+
+    event = Event.query.filter_by(eventID=data['event']['eventID']).first()
+
+    db.session.delete(event)
+    db.session.commit()
+
+    return {'status': '200'}
 
 @app.route("/profile/clearhistory", methods=["GET"])
 @jwt_required()
@@ -245,7 +362,7 @@ def get_details():
     return jsonify(event_json=event_json)
 
 
-@app.route("/check_user", methods = ["POST"])
+# @app.route("/check_user", methods = ["POST"])
 @jwt_required
 def hello():
     user = get_jwt_identity()
