@@ -2,25 +2,23 @@ import React from "react";
 import { useState } from "react";
 import Navbar from "../../components/Navbar/Navbar";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import './EditEvent.css';
 
-function CreateEvent() {
+function EditEvent(cur_event) {
     const navigate = useNavigate();
     const [color1, setColor1] = useState("")
     const [color2, setColor2] = useState("");
     const [eventData, setEventData] = useState({
-      eventName: "",
-      eventDesc: "",
-      hostName: "",
-      tags: "",
-      eventType: "",
-      location: "",
-      startDate: "",
-      startTime: "",
-      endTime: "",
-      endDate: "",
+        eventID: cur_event.eventID,
+        name: cur_event.name,
+        hostName: cur_event.hostName,
+        category: cur_event.category,
+        location: cur_event.location,
+        event_datetime: cur_event.event_datetime
     });
 
-     const handleChange = (event) => {
+    const handleChange = (event) => {
        // Update the inputData state when form fields change
        setEventData({
          ...eventData,
@@ -34,8 +32,8 @@ function CreateEvent() {
         } else {
           setColor1("bg-clear");
         }
-        
-       } 
+
+       }
        if (
          event.target.name === "eventType" &&
          event.target.value === "Public Event"
@@ -51,25 +49,11 @@ function CreateEvent() {
 
      const handleSubmit = (event) => {
       event.preventDefault();
-      fetch("http://localhost:5000/event/create", {
-        method: "POST",
-        headers: {
-          Authorization: "Bearer " + sessionStorage.getItem("token"),
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(eventData),
+      axios.post("http://localhost:5000/event/edit", {
+        'event': eventData
       })
-        .then((response) => {
-          if (response.status === 422) {
-            alert("unauthorized");
-          } else if (response.status == 200) {
-            alert("event made"); //TODO any navigation
-            return response.json()
-          }
-        })
-        .then(data =>{
-          console.log(data, "adafewrg")
-          navigate(`/eventdetails/${data.eventID}`);
+        .then((res) => {
+            console.log(res);
         })
         .catch((error) => {
           console.log("error", error);
@@ -80,7 +64,7 @@ function CreateEvent() {
       <div className="w-full h-full">
         <Navbar />
         <div className="m-[5%] flex flex-col gap-4">
-          <div className="text-5xl font-bold text-left">New Event</div>
+          <div className="text-5xl font-bold text-left">Edit Event</div>
           <div className="text-2xl font-bold text-left mt-[5%]">
             {" "}
             Basic Info
@@ -219,4 +203,4 @@ function CreateEvent() {
       </div>
     );
 }
-export default CreateEvent;
+export default EditEvent;
