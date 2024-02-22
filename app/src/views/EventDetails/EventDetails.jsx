@@ -1,11 +1,11 @@
 import React from "react";
 import { useState } from "react";
-import {Chip, Stack } from "@mui/material";
+import { Chip, Stack } from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import PersonIcon from "@mui/icons-material/Person";
 import EventIcon from "@mui/icons-material/Event";
 import ShareIcon from "@mui/icons-material/Share";
-import { useEffect} from "react";
+import { useEffect } from "react";
 import Navbar from "../../components/Navbar/Navbar";
 import testImage from "../../media/testImage.jpeg";
 import "./EventDetails.css";
@@ -14,16 +14,16 @@ import {
   ReadMoreButton,
   YellowButton,
   RedButton,
-  GrayButton
+  GrayButton,
 } from "../../components/StyledComponents/StyledComponents";
-import axios from 'axios';
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 function EventDetails() {
   // TODO: replace hard coded names
-    let  id  = useParams();
-    console.log(id, "ididid")
-  let resp = false
+  let id = useParams();
+  console.log(id, "ididid");
+  let resp = false;
   const [eventObject, setEventObject] = useState({
     eventID: "e",
     desc: "e",
@@ -38,7 +38,7 @@ function EventDetails() {
   });
 
   useEffect(() => {
-    fetch("http://localhost:5000/event/details", {
+    fetch("http://127.0.0.1:5000/event/details", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -52,7 +52,7 @@ function EventDetails() {
       .then((data) => {
         if (resp.status === 200) {
           console.log(data);
-          setEventObject(data.event_json)
+          setEventObject(data.event_json);
         }
       })
       .catch((error) => {
@@ -93,7 +93,7 @@ function EventDetails() {
         Authorization: "Bearer " + sessionStorage.getItem("token"),
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ "event id": eventObject.eventID}),
+      body: JSON.stringify({ "event id": eventObject.eventID }),
     })
       .then((response) => {
         if (response.status === 200) {
@@ -157,14 +157,14 @@ function EventDetails() {
     return (
       <Stack className="section">
         <h2>Event Details</h2>
+        <div>
           <div>
-              <div>
-                <p>{eventObject.category}</p>
-                <ReadMoreButton size="small" onClick={() => setShowAll(false)}>
-                  Read Less
-                </ReadMoreButton>
-              </div>
+            <p>{eventObject.desc}</p>
+            {/* <ReadMoreButton size="small" onClick={() => setShowAll(false)}>
+              Read Less
+            </ReadMoreButton> */}
           </div>
+        </div>
       </Stack>
     );
   };
@@ -220,35 +220,32 @@ function EventDetails() {
   };
 
   const deleteEvent = () => {
-    axios.post("http://localhost:5000/delete_event", {
-      'event': eventObject
-    })
-    .then(res => {
-      console.log(res.data)
-    })
+    axios
+      .post("http://localhost:5000/delete_event", {
+        event: eventObject,
+      })
+      .then((res) => {
+        console.log(res.data);
+      });
 
     navigate("/events");
-  }
+  };
 
   const EditDelete = () => {
     return (
-      <div className="w-[100%] flex flex-row justify-center mt-8" id="EditDelete">
-        <GrayButton
-            textAlign="left"
-            variant="contained"
-          >
-            Edit Event
+      <div
+        className="w-[100%] flex flex-row justify-center mt-8"
+        id="EditDelete"
+      >
+        <GrayButton textAlign="left" variant="contained">
+          Edit Event
         </GrayButton>
-        <RedButton
-            textAlign="left"
-            variant="contained"
-            onClick={deleteEvent}
-          >
-            Delete Event
+        <RedButton textAlign="left" variant="contained" onClick={deleteEvent}>
+          Delete Event
         </RedButton>
       </div>
     );
-  }
+  };
 
   return (
     <div
@@ -268,12 +265,7 @@ function EventDetails() {
           <LocationSection />
           <OrganizerSection />
           <TagsSection />
-          {
-            sessionStorage.getItem('token') ?
-            <EditDelete />
-            :
-            <div />
-          }
+          {sessionStorage.getItem("token") ? <EditDelete /> : <div />}
         </Stack>
       </Stack>
     </div>
