@@ -29,7 +29,7 @@ class GoogleAPI:
         self.TOKEN_FILE_NAME = 'token.json'
         self. CREDENTIAL_FILE_NAME = 'credentials.json'
         if curr_path == '':
-            self.BASE_PATH = os.getcwd()
+            self.BASE_PATH = os.path.join(os.getcwd(), 'api')
         else:
             self.BASE_PATH = os.path.join(curr_path, 'api')
         self.TOKEN_FILE_PATH = os.path.join(
@@ -121,7 +121,11 @@ class GoogleAPI:
             token (str): The token to be revoked. This could be an access token or a refresh token.
         """
         token_data = None
+        print("\n"+self.TOKEN_FILE_PATH+"\n")
+        print("\n"+self.BASE_PATH+"\n")
+        print("\n"+self.CREDENTIALS_FILE_PATH+"\n")
         if os.path.exists(self.TOKEN_FILE_PATH):
+            print("entered hereeee")
             with open(self.TOKEN_FILE_PATH, 'r') as token_file:
                 token_data = json.load(token_file)
             token_file.close()

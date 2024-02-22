@@ -36,11 +36,8 @@ def handle_deauthentication():
         token_data = google_api_instance.revoke_google_token()
         if token_data:
             # because right now username and email are the same
-            username = token_data["account"]
-            email = username
-            user_to_delete = User.query.filter_by(
-                username=username, email=email).first()
-            db.session.delete(user_to_delete)
+            email = token_data["account"]
+            User.query.filter_by(email=email).delete()
             db.session.commit()
         return True
     except Exception as e:
