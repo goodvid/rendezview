@@ -11,6 +11,7 @@ function MainNavbar() {
         sessionStorage.removeItem("token");
         console.log('removed');
         window.location.reload();
+        navigate("/");
     }
 
     const navigate = useNavigate();
