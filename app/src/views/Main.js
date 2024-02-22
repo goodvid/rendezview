@@ -19,9 +19,10 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { pinwheel } from "ldrs";
-import MapAutocomplete, { usePlacesWidget } from "react-google-autocomplete";
+import MapAutocomplete from "react-google-autocomplete";
 import categories from "./eventCategories.json";
 
+// Icons
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import ColorLensIcon from "@mui/icons-material/ColorLens";
 import TheaterComedyIcon from "@mui/icons-material/TheaterComedy";
@@ -39,7 +40,7 @@ import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 
 function Main() {
   const [events, setEvents] = useState([]);
-  const [location, setLocation] = useState("West Lafayette, Indiana");
+  const [location, setLocation] = useState("");
   const [startDate, setStartDate] = useState(null);
   const [unixStartDate, setUnixStartDate] = useState("");
   const [isFree, setIsFree] = useState("");
@@ -47,6 +48,8 @@ function Main() {
   const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
   const [locationInput, setLocationInput] = useState("");
+  const [userCoords, setUserCoords] = useState(null);
+  const [locLoading, setLocLoading] = useState(false);
   pinwheel.register(); // Set loading animation
 
   const iconMapping = {
@@ -116,9 +119,85 @@ function Main() {
     setLocationInput(place.formatted_address);
   }, []);
 
+  useEffect(() => {
+    // getUserCoords();
+    getIPGeolocation();
+  }, []);
+
+  useEffect(() => {
+    console.log("user location:", userCoords);
+    // if (userCoords) {
+    //   getReverseGeocodingData(userCoords.latitude, userCoords.longitude);
+    // }
+  }, [userCoords]);
+
+  const getIPGeolocation = () => {
+    console.log("called");
+    setLocLoading(true);
+    fetch("https://ipinfo.io/json?token=f92cb4e0401c19")
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("aslkdfj");
+        const { city, region, country } = data;
+        const formattedAddress = `${city}, ${region}, ${country}`;
+        console.log("Formatted Address:", formattedAddress);
+
+        setLocation(formattedAddress);
+        setLocationInput(formattedAddress);
+        setLocLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error getting IP-based location:", error);
+        setLocLoading(false);
+      });
+  };
+
+  // works but really slow to get location
+  const getUserCoords = () => {
+    setLocLoading(true);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setUserCoords({ latitude, longitude });
+        },
+        (error) => {
+          console.error("Error getting user location:", error);
+        }
+      );
+    } else {
+      console.error("Geolocation is not supported by this browser.");
+    }
+  };
+
+  function getReverseGeocodingData(latitude, longitude) {
+    var apiKey = "AIzaSyBMp7w0sRedU-xNT_Z5DGFCYPFkHa-QTMg";
+    var url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`;
+
+    fetch(url)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status === "OK") {
+          if (data.results[0]) {
+            var address = data.results[0].formatted_address;
+            console.log("address:", address);
+            setLocation(address);
+            setLocationInput(address);
+            // setLocLoading(false);
+          } else {
+            console.error("No results found");
+          }
+        } else {
+          console.error("Geocoder failed due to: " + data.status);
+        }
+      })
+      .catch((error) => console.error("Error:", error));
+  }
+
   const LocationFilter = () => {
     return (
       <div>
+        {locLoading ? <p>loading location...</p> : <></>}
         <OutlinedInput
           fullWidth
           color="secondary"
