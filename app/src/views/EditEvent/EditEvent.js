@@ -5,17 +5,18 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import './EditEvent.css';
 
-function EditEvent(cur_event) {
+function EditEvent() {
+    const cur_event = JSON.parse(sessionStorage.getItem('cur_event'));
     const navigate = useNavigate();
     const [color1, setColor1] = useState("")
     const [color2, setColor2] = useState("");
     const [eventData, setEventData] = useState({
-        eventID: cur_event.eventID,
-        name: cur_event.name,
-        hostName: cur_event.hostName,
-        category: cur_event.category,
-        location: cur_event.location,
-        event_datetime: cur_event.event_datetime
+        eventID: cur_event['eventID'],
+        name: cur_event['name'],
+        hostName: cur_event['hostName'],
+        category: cur_event['category'],
+        location: cur_event['location'],
+        event_datetime: cur_event['event_datetime']
     });
 
     const handleChange = (event) => {
@@ -24,7 +25,6 @@ function EditEvent(cur_event) {
          ...eventData,
          [event.target.name]: event.target.value,
        });
-       console.log(eventData, event.target)
        if (event.target.name === "eventType" && event.target.value === "Private Event"){
         if (color1 === "bg-clear"){
           setColor1("bg-[#A1CFFF4D]");
@@ -48,16 +48,17 @@ function EditEvent(cur_event) {
      };
 
      const handleSubmit = (event) => {
-      event.preventDefault();
-      axios.post("http://localhost:5000/event/edit", {
-        'event': eventData
-      })
+        event.preventDefault();
+        axios.post("http://localhost:5000/event/edit", {
+            'event': eventData
+        })
         .then((res) => {
             console.log(res);
         })
         .catch((error) => {
           console.log("error", error);
         });
+        navigate("/events");
      }
 
     return (
@@ -71,7 +72,7 @@ function EditEvent(cur_event) {
           </div>
           <div className="text-l  text-left "> Event Title</div>
           <input
-            name="eventName"
+            name="name"
             onChange={handleChange}
             className="w-[80%] h-[45px] border-login-blue outline rounded-md align-left"
           ></input>
@@ -194,7 +195,7 @@ function EditEvent(cur_event) {
           </div>
 
           <button onClick={handleSubmit} class="w-[20%] h-[45px] bg-yellow-500 mt-5 text-white font-bold  rounded">
-            Create Event
+            Save
           </button>
 
           <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"></hr>
