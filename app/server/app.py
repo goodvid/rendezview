@@ -170,7 +170,6 @@ def register():
 
 
 @app.route('/events', methods=['GET'])
-@cross_origin(supports_credentials=True)
 def get_events():
 
     events = Event.query.all()
@@ -178,9 +177,30 @@ def get_events():
     event_values = []
 
     for event in events:
-        values = {'name': event.name,
-                  'time': event.event_datetime,
-                  'location': event.location}
+        values = {'id': event.eventID,
+                    'name': event.name,
+                    'time': event.event_datetime,
+                    'location': event.location}
+        event_values.append(values)
+
+    return {'status': '200', 'events': event_values}
+
+@app.route('/user_events', methods=['GET'])
+@jwt_required()
+def get_user_events():
+
+    user = get_jwt_identity()
+    print(user)
+
+    events = Event.query.filter_by(host=user['name'])
+
+    event_values = []
+
+    for event in events:
+        values = {'id': event.eventID,
+                    'name': event.name,
+                    'time': event.event_datetime,
+                    'location': event.location}
         event_values.append(values)
 
     return {'status': '200', 'events': event_values}
@@ -195,6 +215,19 @@ def receive_data():
     # item = User(name=current_user, username = data) TODO fix getting current user
     return jsonify({"message": "Data received successfully", "yourData": data}), 200
 
+
+@app.route('/delete_event', methods=['POST'])
+def delete_event():
+    data = request.json
+
+    print(data['event'])
+
+    event = Event.query.filter_by(eventID=data['event']['eventID']).first()
+
+    db.session.delete(event)
+    db.session.commit()
+
+    return {'status': '200'}
 
 @app.route("/profile/clearhistory", methods=["GET"])
 @jwt_required()

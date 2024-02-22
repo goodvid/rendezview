@@ -13,7 +13,11 @@ import { useParams } from "react-router-dom";
 import {
   ReadMoreButton,
   YellowButton,
+  RedButton,
+  GrayButton
 } from "../../components/StyledComponents/StyledComponents";
+import axios from 'axios';
+import { useNavigate } from "react-router-dom";
 
 function EventDetails() {
   // TODO: replace hard coded names
@@ -76,6 +80,8 @@ function EventDetails() {
     "DIY",
   ]);
   const [showAll, setShowAll] = useState(false);
+
+  const navigate = useNavigate();
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -213,6 +219,37 @@ function EventDetails() {
     );
   };
 
+  const deleteEvent = () => {
+    axios.post("http://localhost:5000/delete_event", {
+      'event': eventObject
+    })
+    .then(res => {
+      console.log(res.data)
+    })
+
+    navigate("/events");
+  }
+
+  const EditDelete = () => {
+    return (
+      <div className="w-[100%] flex flex-row justify-center mt-8" id="EditDelete">
+        <GrayButton
+            textAlign="left"
+            variant="contained"
+          >
+            Edit Event
+        </GrayButton>
+        <RedButton
+            textAlign="left"
+            variant="contained"
+            onClick={deleteEvent}
+          >
+            Delete Event
+        </RedButton>
+      </div>
+    );
+  }
+
   return (
     <div
       style={{
@@ -231,6 +268,12 @@ function EventDetails() {
           <LocationSection />
           <OrganizerSection />
           <TagsSection />
+          {
+            sessionStorage.getItem('token') ?
+            <EditDelete />
+            :
+            <div />
+          }
         </Stack>
       </Stack>
     </div>
