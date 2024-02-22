@@ -4,6 +4,9 @@ from models import db  # Importing the db instance and models
 from flask_cors import CORS, cross_origin
 from models import User, Event
 from types import SimpleNamespace
+from dateutil import parser
+from sqlalchemy.exc import SQLAlchemyError
+from flask_migrate import Migrate
 
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import get_jwt_identity
@@ -12,16 +15,21 @@ from flask_jwt_extended import JWTManager
 
 from config import ApplicationConfig
 
+from apiFetch.yelpAPI import YelpAPI
+
 import os
 import json
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
+# CORS(app, resources={r"/api/*": {"origins": "http:///127.0.0.1:3000"}})
 
 app.secret_key = "super secret essay"
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config.from_object(ApplicationConfig)
 jwt = JWTManager(app)
+
+migrate = Migrate(app, db)
 
 db.init_app(app)  # Initialize db with your Flask app
 
@@ -310,14 +318,65 @@ def create_event():
     location = request.json["location"]
     userID = user.id
 
-    new_event = Event(name=name, desc=eventDesc, location=location,
+    newEvent = Event(name=name, desc=eventDesc, location=location,
                       hostName=hostName, userID=userID, category=category, type=eventType)
-    print(new_event)
-    db.session.add(new_event)
-    user.saved_events.append(new_event)
+    print(newEvent)
+    db.session.add(newEvent)
+    user.saved_events.append(newEvent)
     db.session.commit()
-    return jsonify({"message": "event set", "eventID": new_event.eventID}), 200
+    return jsonify({"message": "event set", "eventID": newEvent.eventID}), 200
 
+@app.route("/events/api", methods=["POST", "GET"])
+def fetch_api_events():
+    # Uncomment the next line to dynamically set the location based on query parameter
+    loc = request.args.get('location', default=None, type=str)
+    sort_on = request.args.get('sort_on', default=None, type=str)
+    start_date = request.args.get('start_date', default=None, type=str)
+    is_free = request.args.get('is_free', default=None, type=str)
+    category = request.args.get('category', default=None, type=str)
+
+    yelp_api_instance = YelpAPI()
+    events = yelp_api_instance.get_events_based_on_location(location=loc, is_free=is_free, sort_on=sort_on, start_date=start_date, category=category)
+    
+    # # Check the count of fetched events against existing events in the database
+    # existing_events_count = Event.query.count()
+    fetched_events_count = len(events)
+
+    try:
+        db.session.query(Event).filter(Event.yelpID.isnot(None)).delete(synchronize_session=False)
+        # db.session.query(Event).delete()
+
+        eventIDTracking = []
+        for event in events:
+            yelpID = event['id']
+            eventDesc = event['description']
+            name = event['name']
+            yelpLocation = event['location']
+            locationAddress = ', '.join(yelpLocation['display_address'])
+            eventDateTime = parser.isoparse(event['time_start'])
+            category = event['category']
+
+            # For each event, either update the existing record or create a new one
+            existingEvent = Event.query.filter_by(yelpID=yelpID).first()
+
+            if existingEvent:
+                existingEvent.desc = eventDesc
+                existingEvent.name = name
+                existingEvent.location = locationAddress
+                existingEvent.event_datetime = eventDateTime
+                existingEvent.category = category
+            else:
+                newEvent = Event(name=name, desc=eventDesc, location=locationAddress, event_datetime=eventDateTime, category=category, yelpID=yelpID)
+                db.session.add(newEvent)
+                db.session.flush()  
+                eventIDTracking.append(newEvent.eventID)
+
+        db.session.commit()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({"message": "An error occurred while processing events", "error": str(e)}), 500
+
+    return jsonify({"message": "Events processed", "eventIDs": eventIDTracking, "count": fetched_events_count, "events": events}), 200
 
 @app.route("/event/details", methods=["POST"])
 def get_details():

@@ -1,0 +1,54 @@
+[
+  {
+    "name": "Music",
+    "value": "music"
+  },
+  {
+    "name": "Visual Arts",
+    "value": "visual-arts"
+  },
+  {
+    "name": "Performing Arts",
+    "value": "performing-arts"
+  },
+  {
+    "name": "Film",
+    "value": "film"
+  },
+  {
+    "name": "Lectures & Books",
+    "value": "lectures-books"
+  },
+  {
+    "name": "Fashion",
+    "value": "fashion"
+  },
+  {
+    "name": "Food & Drink",
+    "value": "food-and-drink"
+  },
+  {
+    "name": "Festivals & Fairs",
+    "value": "festivals-fairs"
+  },
+  {
+    "name": "Charities",
+    "value": "charities"
+  },
+  {
+    "name": "Sports & Active Life",
+    "value": "sports-active-life"
+  },
+  {
+    "name": "Nightlife",
+    "value": "nightlife"
+  },
+  {
+    "name": "Kids & Family",
+    "value": "kids-family"
+  },
+  {
+    "name": "Other",
+    "value": "other"
+  }
+]

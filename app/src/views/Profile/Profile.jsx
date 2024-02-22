@@ -1,47 +1,73 @@
-import React from "react";
 import "./Profile.css";
-import { useState, useEffect } from "react";
-import { Card, Avatar, Box, Chip, Stack, Rating, Button } from "@mui/material";
+import { React, useState, useEffect } from "react";
+import {
+  Card,
+  Avatar,
+  Button,
+  Box,
+  Chip,
+  Stack,
+  Rating,
+  IconButton,
+  Badge,
+} from "@mui/material";
 import {
   YellowCard,
   BlueCard,
+  ReadMoreButton,
+  TextIconStack,
+  EditIconButton,
 } from "../../components/StyledComponents/StyledComponents";
+
 import { useNavigate } from "react-router-dom";
 import SettingsIcon from "@mui/icons-material/Settings";
 import NearMeIcon from "@mui/icons-material/NearMe";
+import EditIcon from "@mui/icons-material/Edit";
 import LocalActivityIcon from "@mui/icons-material/LocalActivity";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import concertPhoto from "../../media/concert.jpg";
 import Navbar from "../../components/Navbar/Navbar";
 import { withAuth } from "../withAuth";
-import axios from 'axios';
-
+import axios from "axios";
 
 function Profile() {
   const navigate = useNavigate();
   const response = false;
+
+  const [displayName, setDisplayName] = useState("Display Name");
+  const [profilePic, setProfilePic] = useState("");
   const [friendsNum, setFriendsNum] = useState(0);
   const [groupsNum, setGroupsNum] = useState(0);
 
   const [username, setUsername] = useState("");
 
-    useEffect(() => {
-        axios.get("http://localhost:5000/user/getusername" ,{
-            headers: {
-                "Authorization": "Bearer " + sessionStorage.getItem("token"),
-                "Content-Type": "application/json"
-            }
-        })
-        .then(res => {
-            console.log(res.data['status']);
-            setUsername(res.data['username']);
-        })
-        .catch(err => {
-            console.log(err)
-        });
-    }, []);
+  useEffect(() => {
+    axios
+      .get("http://localhost:5000/user/getusername", {
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        console.log(res.data["status"]);
+        setUsername(res.data["username"]);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
 
   // Dummy data; replace with actual database data
+  const [tags, setTags] = useState([
+    "Comedy",
+    "Food",
+    "Film",
+    "Travel",
+    "Rock",
+    "Yoga",
+    "DIY",
+  ]);
   const [upcomingEvents, setUpcomingEvents] = useState([
     {
       id: 1,
@@ -68,8 +94,7 @@ function Profile() {
       picture: concertPhoto,
     },
   ]);
-  const handleSubmit = () =>{
-  
+  const handleSubmit = () => {
     // eslint-disable-next-line no-restricted-globals
     if (confirm("are you sure you want to delete all data?")) {
       fetch("http://localhost:5000/profile/clearhistory", {
@@ -90,11 +115,9 @@ function Profile() {
         .then((data) => {})
         .catch((error) => {
           console.log("error", error);
-        });;
+        });
     }
-    
-         
-  }
+  };
   const [pastEvents, setPastEvents] = useState([
     {
       id: 1,
@@ -150,16 +173,21 @@ function Profile() {
     },
   ]);
 
+  const handleReadMore = (id) => {
+    return <>//TODO: navigate to blog post</>;
+  };
+
   const LeftInfoStack = () => {
     return (
       <Stack
         width="50vh"
         style={{
-          backgroundColor: "#171B26",
+          backgroundColor: "#4D4D4D",
           color: "white",
-          margin: "0.75rem",
+          padding: "1rem",
         }}
         alignItems={"center"}
+        gap="1rem"
       >
         <Box
           sx={{
@@ -168,19 +196,82 @@ function Profile() {
             justifyContent: "flex-end",
           }}
         >
-          <SettingsIcon style={{ height: "2rem", width: "2rem" }} />
+          <IconButton
+            sx={{ color: "white", height: "2rem", width: "2rem" }}
+            aria-label="edit display name"
+            size="large"
+          >
+            <SettingsIcon fontSize="inherit" height="2rem" width="2rem" />
+          </IconButton>
         </Box>
-        <Avatar sx={{ width: "15rem", height: "15rem" }} />
-        <h1> {username} </h1>
-        <Stack direction="row" alignItems="center" gap="1rem">
+
+        {/* Profile Picture */}
+        <Stack>
+          <Badge
+            overlap="circular"
+            anchorOrigin={{
+              vertical: "bottom",
+              horizontal: "right",
+            }}
+            badgeContent={
+              <IconButton
+                style={{ color: "#4D4D4D", backgroundColor: "white" }}
+              >
+                <EditIcon />
+              </IconButton>
+            }
+          >
+            <Avatar
+              sx={{ width: "15rem", height: "15rem" }}
+              alt={"avatar"}
+              src={profilePic}
+            />
+          </Badge>
+          <input type="file" style={{ display: "none" }} />
+        </Stack>
+
+        {/* Display Name */}
+        <TextIconStack>
+          <h1>{displayName}</h1>
+          <IconButton
+            sx={{ color: "white" }}
+            aria-label="edit display name"
+            size="large"
+          >
+            <EditIcon fontSize="inherit" />
+          </IconButton>
+        </TextIconStack>
+
+        {/* Location, Friends, Groups */}
+        <TextIconStack>
           <NearMeIcon style={{ color: "red" }} />
           <h3>Location</h3>
-        </Stack>
+        </TextIconStack>
         <h3>
           {friendsNum} FRIENDS • {groupsNum} GROUPS
         </h3>
+
+        {/* User Tags */}
+        <Stack
+          direction="row"
+          gap="0.5rem"
+          justifyContent="center"
+          flexWrap="wrap"
+          width="100%"
+          marginTop="1.5rem"
+        >
+          {tags.map((name) => (
+            <div>
+              <Chip
+                key={name}
+                label={name}
+                sx={{ backgroundColor: "#5AB9F3", color: "white" }}
+              />
+            </div>
+          ))}
+        </Stack>
         <Button onClick={handleSubmit}>delete past events</Button>
-        <Button onClick={() => navigate('/newevent')}>Create event</Button>
+        <Button onClick={() => navigate("/newevent")}>Create event</Button>
       </Stack>
     );
   };
@@ -296,7 +387,6 @@ function Profile() {
             ))}
           </Stack>
         </Box>
-
       </Stack>
     );
   };
@@ -369,6 +459,7 @@ function Profile() {
   };
 
   const BlogCard = ({ id, name, contents, date, pictures }) => {
+    const readMoreLimit = 200;
     return (
       <>
         <BlueCard variant="outlined">
@@ -387,7 +478,21 @@ function Profile() {
               textAlign="left"
             >
               <h2>{name}</h2>
-              <p>{contents}</p>
+              {contents.length < readMoreLimit ? (
+                <div>
+                  <p>{contents}</p>
+                </div>
+              ) : (
+                <div>
+                  <p>{contents.substring(0, readMoreLimit).concat("...")}</p>
+                  <ReadMoreButton
+                    size="small"
+                    onClick={() => handleReadMore(id)}
+                  >
+                    Read More
+                  </ReadMoreButton>
+                </div>
+              )}
             </Stack>
             {pictures ? (
               <Stack

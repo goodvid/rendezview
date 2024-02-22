@@ -29,7 +29,7 @@ function App() {
           <Route path="/quiz" element={<Quiz />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/eventdetails/:id" element={<EventDetails />} />
-          <Route path="/new_event" element={<CreateEvent/>}/>
+          <Route path="/new_event" element={<CreateEvent />} />
           <Route path="/events" element={<Events />} />
           <Route path="/edit_event" element={<EditEvent />} />
           <Route path="/settings" element={<Settings />} />
