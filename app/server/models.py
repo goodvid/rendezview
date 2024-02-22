@@ -48,10 +48,9 @@ class User(UserMixin, db.Model):
 
 
 class Event(db.Model):
-    
     eventID = db.Column(db.Integer, primary_key = True)
     yelpID = db.Column(db.String(500))
-    desc = db.Column(db.String(500))
+    desc = db.Column(db.String(5000))
     name = db.Column(db.String(50))
     location = db.Column(db.String(50))
     event_datetime = db.Column(db.DateTime)

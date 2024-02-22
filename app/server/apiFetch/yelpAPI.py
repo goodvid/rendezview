@@ -1,3 +1,4 @@
+from flask import jsonify
 import requests
 import os
 from pprint import pprint
@@ -10,7 +11,7 @@ class YelpAPI:
     API_HOST = 'https://api.yelp.com/v3'
     HEADERS = {'Authorization': f'Bearer {API_KEY}'}
 
-    def __init__(self, type="events", location='New York, NY', amount=5, sort_on='time_start', sort_by='desc', is_free="", start_date="", category=""):
+    def __init__(self, type="events", location='New York, NY', amount=50, sort_on='time_start', sort_by='desc', is_free="", start_date="", category=""):
         # default configurations
         self.default_search_path = os.path.join(self.API_HOST, type)
         self.remaining_requests = 0
@@ -98,16 +99,16 @@ class YelpAPI:
         response = requests.get(
             self.default_search_path, headers=self.HEADERS, params=params)
         
-        print("url7:", response.url)
         if response.status_code == 200:
             print(self.check_rate_limit(response.headers))
             events = response.json()['events']
+            return events
         else:
             # print(response.status_code, response.text)
             # print(self.default_search_path, self.amount, self.location,
                 #   self.sort_by, self.sort_on)
-            print("Failed to fetch events")
-        return events
+            return jsonify({"message": "An error occurred while processing events", "error": str(e)}), 500
+            # print("Failed to fetch events")
 
     def get_events_based_on_category(self, category):
         # for test

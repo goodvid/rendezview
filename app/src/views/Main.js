@@ -86,7 +86,6 @@ function Main() {
     if (sortOn) params.append("sort_on", sortOn);
     if (unixStartDate) params.append("start_date", unixStartDate);
     if (category) params.append("category", category);
-
     axios
       .get(`http://127.0.0.1:5000/events/api?${params}`)
       .then((response) => {
@@ -284,6 +283,7 @@ function Main() {
                   date={event.time}
                   location={event.location}
                   key={i}
+                  id={event.id}
                 />
               );
             })
