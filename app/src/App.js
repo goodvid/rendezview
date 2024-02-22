@@ -9,6 +9,7 @@ import Profile from "./views/Profile/Profile";
 import Quiz from "./views/Quiz/Quiz";
 import EventDetails from "./views/EventDetails/EventDetails";
 import CreateEvent from "./views/CreateEvent/createEvent";
+import Events from "./views/Events/Events";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/eventdetails/:id" element={<EventDetails />} />
           <Route path="/newevent" element={<CreateEvent />} />
+          <Route path="/events" element={<Events />} />
         </Routes>
       </BrowserRouter>
     </div>
