@@ -55,7 +55,7 @@ function ChangeUsername() {
             if (response.status === 200) {
               resp = response;
               return response.json();
-            } else if (response.status == 401) {
+            } else if (response.status === 401) {
               alert("That username is taken. Please choose a different username.");
               return false;
             } else {
@@ -64,7 +64,7 @@ function ChangeUsername() {
             }
           })
           .then((data) => {
-            if (resp.status == 200) {
+            if (resp.status === 200) {
               console.log(sessionStorage.getItem("token"));
               navigate("/settings");
             }
@@ -88,7 +88,7 @@ function ChangeUsername() {
                     </Stack>
                     <Stack width="100%" direction="row" justifyContent="flex-end" gap="1rem">
                         <Stack direction="column" justifyContent="center">
-                            <Button className="LogoutButton2" justifyContent="center" variant="contained" color="inherit" size="large">Logout</Button>
+                            <Button className="LogoutButton2" justifyContent="center" variant="contained" sx={{backgroundColor: "#02407F"}} size="large">Logout</Button>
                         </Stack>
                         <Stack direction="column" justifyContent="center">
                             <IconButton onClick={settingsClick}>
@@ -112,7 +112,7 @@ function ChangeUsername() {
                         <TextField onChange={updateConfirmNewUsername}/>
                     </Stack>
 
-                    <Button className="SaveButton" onClick={saveClick} variant="contained" disableElevation sx={{textTransform: 'none', width: "200px", height: "50px"}}>
+                    <Button className="SaveButton" onClick={saveClick} variant="contained" disableElevation sx={{textTransform: 'none', width: "200px", height: "50px", backgroundColor: "#02407F"}}>
                         Save Changes
                     </Button>
                 </Stack>
