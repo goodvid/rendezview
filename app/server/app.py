@@ -132,6 +132,19 @@ def receive_data():
     return jsonify({"message": "Data received successfully", "yourData": data}), 200
 
 
+@app.route('/delete_event', methods=['POST'])
+def delete_event():
+    data = request.json
+
+    print(data['event'])
+
+    event = Event.query.filter_by(eventID=data['event']['eventID']).first()
+
+    db.session.delete(event)
+    db.session.commit()
+
+    return {'status': '200'}
+
 @app.route("/profile/clearhistory", methods=["GET"])
 @jwt_required()
 def deleteEventHistory():
