@@ -201,6 +201,17 @@ def edit_event():
 
     return {'status': '200'}
 
+@app.route('/user/getusername', methods=['GET'])
+@jwt_required()
+def getusername():
+    current_user = get_jwt_identity()
+
+    user = User.query.filter_by(email=current_user["email"]).first()
+    username = user.username
+
+    return {'status': '200', 'username': username}
+
+
 @app.route('/user_events', methods=['GET'])
 @jwt_required()
 def get_user_events():
