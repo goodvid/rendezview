@@ -9,9 +9,30 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+
 
 function Settings() {   
     const navigate = useNavigate();
+
+    const [username, setUsername] = useState("");
+
+    useEffect(() => {
+        axios.get("http://localhost:5000/user/getusername" ,{
+            headers: {
+                "Authorization": "Bearer " + sessionStorage.getItem("token"),
+                "Content-Type": "application/json"
+            }
+        })
+        .then(res => {
+            console.log(res.data['status']);
+            setUsername(res.data['username']);
+        })
+        .catch(err => {
+            console.log(err)
+        });
+    }, []);
     
     const changeUsernameClick = () => {
         navigate("/changeusername");
@@ -75,8 +96,6 @@ function Settings() {
         console.log('removed');
         navigate("/");
     }
-
-    let username = "Name"
     
   return (
     <div>

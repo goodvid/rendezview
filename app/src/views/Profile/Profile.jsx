@@ -1,5 +1,5 @@
 import "./Profile.css";
-import { React, useState } from "react";
+import { React, useState, useEffect } from "react";
 import {
   Card,
   Avatar,
@@ -28,6 +28,8 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import concertPhoto from "../../media/concert.jpg";
 import Navbar from "../../components/Navbar/Navbar";
 import { withAuth } from "../withAuth";
+import axios from "axios";
+
 function Profile() {
   const navigate = useNavigate();
   const response = false;
@@ -36,6 +38,25 @@ function Profile() {
   const [profilePic, setProfilePic] = useState("");
   const [friendsNum, setFriendsNum] = useState(0);
   const [groupsNum, setGroupsNum] = useState(0);
+
+  const [username, setUsername] = useState("");
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:5000/user/getusername", {
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        console.log(res.data["status"]);
+        setUsername(res.data["username"]);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
 
   // Dummy data; replace with actual database data
   const [tags, setTags] = useState([
