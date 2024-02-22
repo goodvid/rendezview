@@ -198,19 +198,35 @@ def get_details():
 
 @app.route("/authenticate", methods=["GET"])
 def link_google_account():
-    print("d")
     response = handle_google_api.handle_authentication()
+    print(response)
     if response['flag']:
-        # email = response['email']
-        # user = User.query.filter_by(email=email).first()
-        # # replace password with credentials
-        # if user and password == user.password:
-        #     access_token = create_access_token(identity=email)
-        #     return jsonify(access_token=access_token)
-        return {'message': 'success', 'status': 200}
-        # return redirect("http://127.0.0.1:3000/")
+        email = response['email']
+        access_token = create_access_token(identity=email)
+        # need to get user and strengthen validationm for email
+        # but for now its ok, couldn't save stuff to database
+        response = jsonify({
+            'access_token': access_token,
+            'message': 'success',
+            'status': 200
+        })
+        # Specify the status code explicitly if needed, though 'status' within the JSON is also informative
+        response.status_code = 200
+        return response
     else:
-        return {"message": "Error occurred while attempting to link accounts", 'status': 400}
+        return {"message": "Error occurred while attempting to link accounts", 'status': 401}
+
+
+@app.route("/delinkGoogle", methods=["GET"])
+def signOutFromGoogle():
+    response = handle_google_api.handle_deauthentication()
+    if response:
+        return jsonify({
+            'message': 'success',
+            'status': 200
+        })
+    else:
+        return {"message": "Error occurred while attempting to link accounts", 'status': 401}
 
 
 if __name__ == '__main__':

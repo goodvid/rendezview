@@ -37,6 +37,21 @@ class GoogleAPI:
         self.CREDENTIALS_FILE_PATH = os.path.join(
             self.BASE_PATH, self.CREDENTIAL_FILE_NAME)
 
+    def user_token_exists(self):
+        creds = None
+        # The file token.json stores the user's access and refresh tokens, and is
+        # created automatically when the authorization flow completes for the first time.
+        if os.path.exists(self.TOKEN_FILE_PATH):
+            creds = Credentials.from_authorized_user_file(
+                self.TOKEN_FILE_PATH, self.SCOPES)
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+                return creds
+            else:
+                return False
+        return creds
+
     def authenticate(self):
         creds = None
         # The file token.json stores the user's access and refresh tokens, and is
@@ -105,11 +120,13 @@ class GoogleAPI:
         Args:
             token (str): The token to be revoked. This could be an access token or a refresh token.
         """
+        token_data = None
         if os.path.exists(self.TOKEN_FILE_PATH):
+            with open(self.TOKEN_FILE_PATH, 'r') as token_file:
+                token_data = json.load(token_file)
+            token_file.close()
             os.remove(self.TOKEN_FILE_PATH)
-        # token_info = {}
-        # with open(file_path, 'w') as token_file:
-        #     json.dump(token_info, token_file, indent=2)
+        return token_data
 
     def save_credentials_and_email(self, creds, email):
         """

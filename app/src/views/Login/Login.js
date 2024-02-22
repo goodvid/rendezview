@@ -33,6 +33,8 @@ function Login() {
       .then(res => {
         if (res.data.status === 200) {
           // Navigate to another route on success
+          sessionStorage.setItem("token", res.data.access_token);
+          console.log("token", sessionStorage.getItem("token"));
           navigate('/'); // Adjust '/success-route' as needed
         } else {
           // Handle non-success status here, if any
