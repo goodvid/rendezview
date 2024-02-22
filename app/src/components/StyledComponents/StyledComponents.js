@@ -41,6 +41,7 @@ export const OutlinedInput = styled(Input)({
   backgroundColor: "#F2C879",
   paddingInline: "1.5rem",
 });
+
 export const RedButton = styled(Button)({
   backgroundColor: "#FF0000",
   paddingInline: "1.5rem",

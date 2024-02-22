@@ -90,7 +90,7 @@ function Main() {
     axios
       .get(`http://127.0.0.1:5000/events/api?${params}`)
       .then((response) => {
-        console.log("API events fetched and stored:", response.data);
+        // console.log("API events fetched and stored:", response.data);
         fetchAndDisplayEvents();
       })
       .catch((error) => {
@@ -103,7 +103,7 @@ function Main() {
     axios
       .get("http://127.0.0.1:5000/events")
       .then((response) => {
-        console.log("events status: ", response.data["status"]);
+        // console.log("events status: ", response.data["status"]);
         console.log("Events fetched:", response.data["events"]);
         setEvents(response.data["events"]);
         setLoading(false);
@@ -120,24 +120,16 @@ function Main() {
   }, []);
 
   useEffect(() => {
-    // getUserCoords();
     getIPGeolocation();
   }, []);
 
-  useEffect(() => {
-    console.log("user location:", userCoords);
-  }, [userCoords]);
-
   const getIPGeolocation = () => {
-    console.log("called");
     setLocLoading(true);
     fetch("https://ipinfo.io/json?token=f92cb4e0401c19")
       .then((response) => response.json())
       .then((data) => {
-        console.log("aslkdfj");
         const { city, region, country } = data;
         const formattedAddress = `${city}, ${region}, ${country}`;
-        console.log("Formatted Address:", formattedAddress);
 
         setLocation(formattedAddress);
         setLocationInput(formattedAddress);
@@ -148,48 +140,6 @@ function Main() {
         setLocLoading(false);
       });
   };
-
-  // works but really slow to get location
-  const getUserCoords = () => {
-    setLocLoading(true);
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setUserCoords({ latitude, longitude });
-        },
-        (error) => {
-          console.error("Error getting user location:", error);
-        }
-      );
-    } else {
-      console.error("Geolocation is not supported by this browser.");
-    }
-  };
-
-  function getReverseGeocodingData(latitude, longitude) {
-    var apiKey = "AIzaSyBMp7w0sRedU-xNT_Z5DGFCYPFkHa-QTMg";
-    var url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`;
-
-    fetch(url)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.status === "OK") {
-          if (data.results[0]) {
-            var address = data.results[0].formatted_address;
-            console.log("address:", address);
-            setLocation(address);
-            setLocationInput(address);
-            // setLocLoading(false);
-          } else {
-            console.error("No results found");
-          }
-        } else {
-          console.error("Geocoder failed due to: " + data.status);
-        }
-      })
-      .catch((error) => console.error("Error:", error));
-  }
 
   const LocationFilter = () => {
     return (

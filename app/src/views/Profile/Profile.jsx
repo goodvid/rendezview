@@ -18,8 +18,6 @@ import {
   TextIconStack,
   EditIconButton,
 } from "../../components/StyledComponents/StyledComponents";
-import Navbar from "../../components/Navbar/Navbar";
-import concertPhoto from "../../media/concert.jpg";
 
 import { useNavigate } from "react-router-dom";
 import SettingsIcon from "@mui/icons-material/Settings";
