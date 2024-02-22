@@ -229,5 +229,11 @@ def signOutFromGoogle():
         return {"message": "Error occurred while attempting to link accounts", 'status': 401}
 
 
+# @app.route("/shareEvent", method=["POST"])
+# def generate_event_share_link():
+
+#     return
+
+
 if __name__ == '__main__':
     app.run(debug=True)
