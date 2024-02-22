@@ -148,7 +148,7 @@ function Settings() {
                             <DialogContent sx={{marginLeft: 1, paddingBottom: 0}}>Are you sure you'd like to delete your account? </DialogContent>
                             <DialogContent sx={{marginLeft: 1}}>Deleting your account is permanent.</DialogContent>
                             <DialogActions>
-                                <Button className="DeleteButton2" variant="contained" sx={{p:2, backgroundColor: "red", color: "white"}} autoFocus onClick={deleteAccountClick}>
+                                <Button className="DeleteButton2" variant="contained" sx={{p:2, backgroundColor: "red", color: "white", '&:hover': {backgroundColor: "red", color: "white"}}} autoFocus onClick={deleteAccountClick}>
                                     Delete Account
                                 </Button>
                             </DialogActions>
