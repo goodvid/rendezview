@@ -119,9 +119,9 @@ def changeemail():
 @jwt_required()
 def deleteaccount():
     current_user = get_jwt_identity()
-    print(current_user)
-    user = User.query.filter_by(email=current_user["email"]).first()
-    db.session.delete(user)
+    
+    User.query.filter_by(email=current_user["email"]).delete()
+    # db.session.delete(user)
     db.session.commit()
 
     return jsonify({"message": "Account deleted successfully"}), 200

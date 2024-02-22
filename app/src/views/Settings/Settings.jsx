@@ -62,7 +62,7 @@ function Settings() {
             if (resp.status == 200) {
               console.log(sessionStorage.getItem("token"));
               handleDeleteClose();
-              navigate("/");
+              logout();
             }
           })
           .catch((error) => {

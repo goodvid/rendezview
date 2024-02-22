@@ -22,7 +22,7 @@ class User(UserMixin, db.Model):
     picture = db.Column(db.String(50))
     friends = db.Column(db.String(1000))
 
-    blogs = db.relationship('Blog', backref='blog', lazy=True)
+    blogs = db.relationship('Blog', backref='blog', lazy=True, cascade='all, delete')
     saved_events = db.relationship(
         "Event",
         secondary=events_table,
