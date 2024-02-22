@@ -4,10 +4,12 @@ import { Alert, Box, Button, Chip, Stack, Snackbar } from "@mui/material";
 import Navbar from "../../components/Navbar/Navbar";
 import { useNavigate } from "react-router-dom";
 import "../../styles.css";
+import { withAuth } from "../withAuth";
 
 function Quiz() {
   let resp = false
   const navigate = useNavigate();
+  const [selectedStr, setSelectedStr] = useState("");
   const [minSelected, setMinSelected] = useState(false);
   const [selected, setSelected] = useState([]);
   const [tags, setTags] = useState([
@@ -31,8 +33,11 @@ function Quiz() {
         newSelected.delete(name);
       }
 
+      let newStr = Array.from(newSelected).join(",");
+
       setSelected(newSelected);
       setMinSelected(newSelected.size >= 3);
+      setSelectedStr(newStr);
     },
     [selected]
   );
@@ -59,7 +64,7 @@ function Quiz() {
           Authorization: "Bearer " + sessionStorage.getItem("token"),
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ results: selected.toString() }),
+        body: JSON.stringify({ results: selectedStr }),
       }).then((response) => {
         if (response.status === 200) {
           resp = response;
@@ -155,4 +160,4 @@ function Quiz() {
   );
 }
 
-export default Quiz;
+export default withAuth(Quiz);

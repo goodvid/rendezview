@@ -13,7 +13,7 @@ import LocalActivityIcon from "@mui/icons-material/LocalActivity";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import concertPhoto from "../../media/concert.jpg";
 import Navbar from "../../components/Navbar/Navbar";
-
+import { withAuth } from "../withAuth";
 function Profile() {
   const navigate = useNavigate();
   const response = false;
@@ -414,4 +414,4 @@ function Profile() {
   );
 }
 
-export default Profile;
+export default withAuth(Profile);
