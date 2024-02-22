@@ -92,7 +92,7 @@ function ChangeEmail() {
                     </Stack>
                     <Stack width="100%" direction="row" justifyContent="flex-end" gap="1rem">
                         <Stack direction="column" justifyContent="center">
-                            <Button className="LogoutButton2" justifyContent="center" variant="contained" color="inherit" size="large">Logout</Button>
+                            <Button className="LogoutButton2" justifyContent="center" variant="contained" sx={{backgroundColor: "#02407F"}} size="large">Logout</Button>
                         </Stack>
                         <Stack direction="column" justifyContent="center">
                             <IconButton onClick={settingsClick}>
@@ -116,7 +116,7 @@ function ChangeEmail() {
                         <TextField onChange={updateConfirmNewEmail}/>
                     </Stack>
 
-                    <Button className="SaveButton" onClick={saveClick} variant="contained" disableElevation sx={{textTransform: 'none', width: "200px", height: "50px"}}>
+                    <Button className="SaveButton" onClick={saveClick} variant="contained" disableElevation sx={{textTransform: 'none', backgroundColor: "#02407F", width: "200px", height: "50px"}}>
                         Save Changes
                     </Button>
                 </Stack>
