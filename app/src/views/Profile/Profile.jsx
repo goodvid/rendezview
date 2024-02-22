@@ -1,6 +1,6 @@
 import React from "react";
 import "./Profile.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, Avatar, Box, Chip, Stack, Rating, Button } from "@mui/material";
 import {
   YellowCard,
@@ -14,11 +14,32 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import concertPhoto from "../../media/concert.jpg";
 import Navbar from "../../components/Navbar/Navbar";
 import { withAuth } from "../withAuth";
+import axios from 'axios';
+
+
 function Profile() {
   const navigate = useNavigate();
   const response = false;
   const [friendsNum, setFriendsNum] = useState(0);
   const [groupsNum, setGroupsNum] = useState(0);
+
+  const [username, setUsername] = useState("");
+
+    useEffect(() => {
+        axios.get("http://localhost:5000/user/getusername" ,{
+            headers: {
+                "Authorization": "Bearer " + sessionStorage.getItem("token"),
+                "Content-Type": "application/json"
+            }
+        })
+        .then(res => {
+            console.log(res.data['status']);
+            setUsername(res.data['username']);
+        })
+        .catch(err => {
+            console.log(err)
+        });
+    }, []);
 
   // Dummy data; replace with actual database data
   const [upcomingEvents, setUpcomingEvents] = useState([
@@ -150,7 +171,7 @@ function Profile() {
           <SettingsIcon style={{ height: "2rem", width: "2rem" }} />
         </Box>
         <Avatar sx={{ width: "15rem", height: "15rem" }} />
-        <h1>Display Name</h1>
+        <h1> {username} </h1>
         <Stack direction="row" alignItems="center" gap="1rem">
           <NearMeIcon style={{ color: "red" }} />
           <h3>Location</h3>
