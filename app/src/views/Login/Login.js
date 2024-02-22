@@ -91,8 +91,8 @@ function Login() {
             className="w-[360px] h-[45px] border-login-blue outline rounded-md pl-2"
           />
           <Link
-            id="forgot-password"
-            to="/forgot_password"
+            id="reset-password"
+            to="/resetpassword"
             className="text-gray-500 ml-[240px]"
           >
             Forgot Password?

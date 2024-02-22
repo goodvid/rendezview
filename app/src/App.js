@@ -10,6 +10,11 @@ import Quiz from "./views/Quiz/Quiz";
 import EventDetails from "./views/EventDetails/EventDetails";
 import CreateEvent from "./views/CreateEvent/createEvent";
 import Events from "./views/Events/Events";
+import Settings from "./views/Settings/Settings";
+import ChangeUsername from "./views/Settings/ChangeUsername/ChangeUsername";
+import ChangeEmail from "./views/Settings/ChangeEmail/ChangeEmail";
+import ChangePassword from "./views/Settings/ChangePassword/ChangePassword";
+import ResetPassword from "./views/ResetPassword/ResetPassword";
 
 function App() {
   return (
@@ -25,6 +30,11 @@ function App() {
           <Route path="/eventdetails/:id" element={<EventDetails />} />
           <Route path="/newevent" element={<CreateEvent/>}/>
           <Route path="/events" element={<Events />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/changeusername" element={<ChangeUsername />} />
+          <Route path="/changeemail" element={<ChangeEmail />} />
+          <Route path="/changepassword" element={<ChangePassword />} />
+          <Route path="/resetpassword" element={<ResetPassword />} />
         </Routes>
       </BrowserRouter>
     </div>
