@@ -115,6 +115,37 @@ def changeemail():
     return jsonify({"message": "Email changed successfully"}), 200
 
 
+@app.route("/user/deleteaccount", methods=["GET"])
+@jwt_required()
+def deleteaccount():
+    current_user = get_jwt_identity()
+    print(current_user)
+    user = User.query.filter_by(email=current_user["email"]).first()
+    db.session.delete(user)
+    db.session.commit()
+
+    return jsonify({"message": "Account deleted successfully"}), 200
+
+
+@app.route("/user/resetpassword", methods=["POST"])
+def resetpassword():
+    print("Request: ")
+    print(request.json)
+
+    user = User.query.filter_by(email=request.json["email"]).first()
+    if (user == None):
+        return jsonify({'message': 'This email does not belong to an existing account.'}), 400
+    
+    if (len(request.json["newPassword"]) < 7):
+        return jsonify({'message': 'Password is too short.'}), 401
+
+    user.password = request.json["newPassword"]
+    db.session.commit()
+    access_token = create_access_token(identity=request.json["email"])
+
+    return jsonify({"message": "Password reset successfully"}), 200
+
+
 @app.route('/user/register', methods=["POST"])
 def register():
     data = request.json

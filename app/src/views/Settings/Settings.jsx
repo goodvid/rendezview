@@ -36,8 +36,38 @@ function Settings() {
         setDeleteOpen(false);
     };
 
-    const deleteAccountClick = () => {
-        handleDeleteClose();
+    let resp = "";
+
+    const deleteAccountClick = (event) => {
+        event.preventDefault();
+
+        // Send to Flask server
+        fetch("http://localhost:5000/user/deleteaccount", {
+            method: "GET",
+            headers: {
+                Authorization: "Bearer " + sessionStorage.getItem("token"),
+                "Content-Type": "application/json",
+            },
+        })
+        .then((response) => {
+            if (response.status === 200) {
+              resp = response;
+              return response.json();
+            } else {
+              alert("Error.");
+              return false;
+            }
+          })
+          .then((data) => {
+            if (resp.status == 200) {
+              console.log(sessionStorage.getItem("token"));
+              handleDeleteClose();
+              navigate("/");
+            }
+          })
+          .catch((error) => {
+            console.log("error", error);
+          });
     };
 
     const logout = () => {

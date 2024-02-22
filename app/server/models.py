@@ -78,7 +78,6 @@ class Event(db.Model):
 class Blog(db.Model):
     blogID = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.String(5000))
-    author = db.Column(db.Integer, db.ForeignKey(
-        'user.userID'), nullable=False)
+    author = db.Column(db.Integer, db.ForeignKey('user.userID'), nullable=False)
     event = db.Column(db.Integer, db.ForeignKey('event.eventID'))
     time = db.Column(db.DateTime)
