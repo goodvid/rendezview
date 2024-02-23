@@ -122,7 +122,6 @@ def changeemail():
 
     return jsonify({"message": "Email changed successfully"}), 200
 
-
 @app.route("/user/deleteaccount", methods=["GET"])
 @jwt_required()
 def deleteaccount():
@@ -193,6 +192,22 @@ def get_events():
 
     return {'status': '200', 'events': event_values}
 
+@app.route("/event/edit", methods=["POST"])
+def edit_event():
+    data = request.json
+
+    print(data)
+
+    event = Event.query.filter_by(eventID=data['event']['eventID']).first()
+
+    event.name = data['event']['name']
+    event.location = data['event']['location']
+    event.host = data['event']['hostName']
+    event.category = data['event']['category']
+
+    db.session.commit()
+
+    return {'status': '200'}
 
 @app.route('/user/getusername', methods=['GET'])
 @jwt_required()

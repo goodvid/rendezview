@@ -302,14 +302,20 @@ function EventDetails() {
     navigate("/events");
   };
 
+  const editEvent = () => {
+    sessionStorage.setItem('cur_event', JSON.stringify(eventObject));
+    navigate("/edit_event")
+  }
+
   const EditDelete = () => {
     return (
-      <div
-        className="w-[100%] flex flex-row justify-center mt-8"
-        id="EditDelete"
-      >
-        <GrayButton textAlign="left" variant="contained">
-          Edit Event
+      <div className="w-[100%] flex flex-row justify-center mt-8" id="EditDelete">
+        <GrayButton
+            textAlign="left"
+            variant="contained"
+            onClick={editEvent}
+          >
+            Edit Event
         </GrayButton>
         <RedButton textAlign="left" variant="contained" onClick={deleteEvent}>
           Delete Event
