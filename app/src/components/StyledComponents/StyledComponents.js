@@ -63,3 +63,14 @@ export const GrayButton = styled(Button)({
     boxShadow: "none",
   },
 });
+
+export const EventDetailsButton = styled(Button)({
+  paddingInline: "1.5rem",
+  boxShadow: "none",
+  textTransform: "none",
+  color: "gray",
+  "&:hover": {
+    backgroundColor: "#DEDEDE",
+    boxShadow: "none",
+  },
+});
