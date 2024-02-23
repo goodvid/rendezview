@@ -11,7 +11,7 @@ events_table = db.Table('user_events',
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key = True)
-    email = db.Column(db.String, unique=True)
+    email = db.Column(db.String(50), unique=True)
     username = db.Column(db.String(50), unique=True)
     password = db.Column(db.String(50))
     picture = db.Column(db.String(50))
@@ -48,14 +48,19 @@ class User(UserMixin, db.Model):
 
 
 class Event(db.Model):
+
+
     eventID = db.Column(db.Integer, primary_key = True)
     yelpID = db.Column(db.String(500))
     desc = db.Column(db.String(5000))
     name = db.Column(db.String(50))
     location = db.Column(db.String(50))
-    event_datetime = db.Column(db.DateTime)
+    start_time = db.Column(db.String(50))
+    end_time = db.Column(db.String(50))
     hostName = db.Column(db.String(50))
-    userID = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+
+    userID = db.Column(db.Integer, db.ForeignKey("user.id"))
+
     rating = db.Column(db.Float)
     category = db.Column(db.String(50))
 
@@ -66,7 +71,8 @@ class Event(db.Model):
             'desc': self.desc,
             'name': self.name,
             'location': self.location,
-            'event_datetime': self.event_datetime,
+            'startTime': self.start_time,
+            'endTime': self.end_time,
             'hostName' : self.hostName,
             'userID': self.userID,
             'rating' : self.rating,

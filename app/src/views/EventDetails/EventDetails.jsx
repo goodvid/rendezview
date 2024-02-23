@@ -138,7 +138,11 @@ function EventDetails() {
         <Stack direction="row" marginBlock="1rem">
           <Stack width="100%" justifyContent="flex-start" textAlign="left">
             <h1>{eventObject.name}</h1>
-            <h3 style={{ color: "#818181" }}>{eventObject.event_datetime}</h3>
+
+            <h3 style={{ color: "#818181" }}>
+              {eventObject.startTime} • {eventObject.endTime}
+            </h3>
+
           </Stack>
           <Stack
             width="100%"

@@ -306,23 +306,35 @@ def join_event():
 @app.route("/event/create", methods=["POST"])
 @jwt_required()
 def create_event():
-    #get from api
+    # get from api
     current_user = get_jwt_identity()
     user = User.query.filter_by(email=current_user).first()
 
     name = request.json["eventName"]
     eventDesc = request.json["eventDesc"]
     hostName = request.json["hostName"]
+    start_time = request.json["startTime"]
+    end_time = request.json["endTime"]
     category = request.json["tags"]
     eventType = request.json["eventType"]
     location = request.json["location"]
     userID = user.id
 
-    newEvent = Event(name=name, desc=eventDesc, location=location,
-                      hostName=hostName, userID=userID, category=category, type=eventType)
-    print(newEvent)
-    db.session.add(newEvent)
-    user.saved_events.append(newEvent)
+    new_event = Event(
+        name=name,
+        desc=eventDesc,
+        location=location,
+        hostName=hostName,
+        userID=userID,
+        category=category,
+        type=eventType,
+        start_time=start_time,
+        end_time=end_time
+    )
+    print(new_event)
+    db.session.add(new_event)
+    user.saved_events.append(new_event)
+
     db.session.commit()
     return jsonify({"message": "event set", "eventID": newEvent.eventID}), 200
 

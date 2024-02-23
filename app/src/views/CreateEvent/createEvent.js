@@ -186,4 +186,4 @@ function CreateEvent() {
       </div>
     );
 }
-export default withAuth(CreateEvent);
+export default (CreateEvent);
