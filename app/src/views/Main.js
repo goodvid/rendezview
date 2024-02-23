@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import MainNavbar from "../components/MainNavbar/MainNavbar";
 import Event from "../components/Event/Event";
 import axios from "axios";
 import {
   Box,
+  Button,
   Stack,
   TextField,
   Autocomplete,
@@ -68,15 +69,29 @@ function Main() {
     other: <MoreHorizIcon />,
   };
 
+  function useEffectSkipFirstRender(effect, deps) {
+    const isFirstRender = useRef(true);
+
+    useEffect(() => {
+      if (isFirstRender.current) {
+        isFirstRender.current = false;
+        return;
+      }
+      effect();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, deps);
+  }
+
+  useEffectSkipFirstRender(() => {
+    fetchAPIEvents();
+  }, [location, isFree, sortOn, unixStartDate, category]);
+
   useEffect(() => {
     setUnixStartDate(dayjs(startDate).unix());
   }, [startDate]);
 
-  useEffect(() => {
-    fetchAPIEvents();
-  }, [location, isFree, sortOn, unixStartDate, category]);
-
   const fetchAPIEvents = () => {
+    console.log("fetching...");
     setLoading(true);
 
     // Dynamically add parameters

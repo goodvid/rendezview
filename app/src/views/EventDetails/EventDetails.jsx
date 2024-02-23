@@ -1,6 +1,17 @@
 import React from "react";
 import { useState } from "react";
-import { Chip, Stack } from "@mui/material";
+import {
+  Chip,
+  Stack,
+  Button,
+  Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Link,
+} from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import PersonIcon from "@mui/icons-material/Person";
 import EventIcon from "@mui/icons-material/Event";
@@ -15,6 +26,7 @@ import {
   YellowButton,
   RedButton,
   GrayButton,
+  EventDetailsButton,
 } from "../../components/StyledComponents/StyledComponents";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -110,15 +122,23 @@ function EventDetails() {
       });
   };
 
+  const [open, setOpen] = React.useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
   const EventInfoSection = () => {
     return (
       <div>
         <Stack direction="row" marginBlock="1rem">
           <Stack width="100%" justifyContent="flex-start" textAlign="left">
             <h1>{eventObject.name}</h1>
-            <h3 style={{ color: "#818181" }}>
-              {eventObject.event_datetime} • {eventObject.event_datetime}
-            </h3>
+            <h3 style={{ color: "#818181" }}>{eventObject.event_datetime}</h3>
           </Stack>
           <Stack
             width="100%"
@@ -128,12 +148,50 @@ function EventDetails() {
             color="#818181"
           >
             <Stack direction="row" alignItems="center" gap="0.5rem">
-              <EventIcon />
-              <h3>Add to Calendar</h3>
+              <EventDetailsButton
+                startIcon={<EventIcon />}
+                // onClick={}
+              >
+                Add to Calendar
+              </EventDetailsButton>
             </Stack>
+
             <Stack direction="row" alignItems="center" gap="0.5rem">
-              <ShareIcon />
-              <h3>Share</h3>
+              <EventDetailsButton
+                startIcon={<ShareIcon />}
+                onClick={handleClickOpen}
+              >
+                Share
+              </EventDetailsButton>
+              <Dialog
+                open={open}
+                onClose={handleClose}
+                PaperProps={{
+                  component: "form",
+                  onSubmit: (event) => {
+                    event.preventDefault();
+                    const formData = new FormData(event.currentTarget);
+                    const formJson = Object.fromEntries(formData.entries());
+                    const email = formJson.email;
+                    console.log(email);
+                    handleClose();
+                  },
+                }}
+              >
+                <DialogTitle>Share Link</DialogTitle>
+                <DialogContent>
+                  <DialogContentText>
+                    <Link
+                      href={`http://localhost:3000/eventdetails/${eventObject.eventID}`}
+                    >
+                      http://localhost:3000/eventdetails/{eventObject.eventID}
+                    </Link>
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={handleClose}>Close</Button>
+                </DialogActions>
+              </Dialog>
             </Stack>
           </Stack>
         </Stack>
@@ -157,14 +215,27 @@ function EventDetails() {
     return (
       <Stack className="section">
         <h2>Event Details</h2>
-        <div>
+        {eventObject.desc.length > 500 ? (
           <div>
-            <p>{eventObject.desc}</p>
-            {/* <ReadMoreButton size="small" onClick={() => setShowAll(false)}>
-              Read Less
-            </ReadMoreButton> */}
+            {showAll ? (
+              <div>
+                <p>{eventObject.desc}</p>
+                <ReadMoreButton size="small" onClick={() => setShowAll(false)}>
+                  Read Less
+                </ReadMoreButton>
+              </div>
+            ) : (
+              <div>
+                <p>{eventObject.desc.substring(0, 500).concat("...")}</p>
+                <ReadMoreButton size="small" onClick={() => setShowAll(true)}>
+                  Read More
+                </ReadMoreButton>
+              </div>
+            )}
           </div>
-        </div>
+        ) : (
+          eventObject.desc
+        )}
       </Stack>
     );
   };
