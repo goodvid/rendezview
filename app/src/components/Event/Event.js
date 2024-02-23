@@ -6,7 +6,7 @@ function Event({ id, name, date, location, desc }) {
   return (
     <Link
       to={"/eventdetails/" + id}
-      className="w-[90%] h-[100%] rounded-lg outline"
+      className="w-[90%] h-[fit-content] rounded-lg outline"
     >
       <div className="w-[80%] h-[80%] flex flex-row justify-center items-center gap-5 ">
         {/* <div className=" w-[180px] h-[180px] bg-light-gray">Image</div> */}
@@ -16,9 +16,7 @@ function Event({ id, name, date, location, desc }) {
           <span className="text-left">
             {date} at {location}
           </span>
-          <div className="text-left">
-            Description: {desc}
-          </div>
+          <div className="text-left">Description: {desc}</div>
         </div>
       </div>
     </Link>

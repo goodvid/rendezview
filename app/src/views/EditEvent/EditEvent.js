@@ -49,10 +49,9 @@ function CreateEvent() {
   };
   const handleSubmit = (event) => {
     event.preventDefault();
-    fetch("http://localhost:5000/event/edit", {
+    fetch("http://127.0.0.1:5000/event/edit", {
       method: "POST",
       headers: {
-       
         "Content-Type": "application/json",
       },
       body: JSON.stringify(eventData),
