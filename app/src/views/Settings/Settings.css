@@ -1,0 +1,39 @@
+.ProfileButton:hover {
+    background-color: #D1EEFF;
+    color: black;
+}
+
+.AccountButton {
+    background-color: #FFE1E1;
+    color: black;
+}
+
+.AccountButton:hover {
+    background-color: #FFE1E1;
+    color: black;
+}
+
+.DeleteButton {
+    background-color: #FFA7A7;
+    color: black;
+}
+
+.DeleteButton:hover {
+    background-color: #FFA7A7;
+    color: black;
+}
+
+.DeleteButton2:hover {
+    background-color: red;
+    font-weight: bold;
+}
+
+.LogoutButton {
+    background-color: #FFEBC4;
+    color: black;
+}
+
+.LogoutButton:hover {
+    background-color: #FFEBC4;
+    color: black;
+}

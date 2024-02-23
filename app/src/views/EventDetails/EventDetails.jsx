@@ -1,11 +1,22 @@
 import React from "react";
 import { useState } from "react";
-import {Chip, Stack } from "@mui/material";
+import {
+  Chip,
+  Stack,
+  Button,
+  Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Link,
+} from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import PersonIcon from "@mui/icons-material/Person";
 import EventIcon from "@mui/icons-material/Event";
 import ShareIcon from "@mui/icons-material/Share";
-import { useEffect} from "react";
+import { useEffect } from "react";
 import Navbar from "../../components/Navbar/Navbar";
 import testImage from "../../media/testImage.jpeg";
 import "./EventDetails.css";
@@ -13,13 +24,18 @@ import { useParams } from "react-router-dom";
 import {
   ReadMoreButton,
   YellowButton,
+  RedButton,
+  GrayButton,
+  EventDetailsButton,
 } from "../../components/StyledComponents/StyledComponents";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function EventDetails() {
   // TODO: replace hard coded names
-    let  id  = useParams();
-    console.log(id, "ididid")
-  let resp = false
+  let id = useParams();
+  console.log(id, "ididid");
+  let resp = false;
   const [eventObject, setEventObject] = useState({
     eventID: "e",
     desc: "e",
@@ -34,7 +50,7 @@ function EventDetails() {
   });
 
   useEffect(() => {
-    fetch("http://localhost:5000/event/details", {
+    fetch("http://127.0.0.1:5000/event/details", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -48,7 +64,7 @@ function EventDetails() {
       .then((data) => {
         if (resp.status === 200) {
           console.log(data);
-          setEventObject(data.event_json)
+          setEventObject(data.event_json);
         }
       })
       .catch((error) => {
@@ -77,6 +93,8 @@ function EventDetails() {
   ]);
   const [showAll, setShowAll] = useState(false);
 
+  const navigate = useNavigate();
+
   const handleSubmit = (event) => {
     event.preventDefault();
 
@@ -87,7 +105,7 @@ function EventDetails() {
         Authorization: "Bearer " + sessionStorage.getItem("token"),
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ "event id": eventObject.eventID}),
+      body: JSON.stringify({ "event id": eventObject.eventID }),
     })
       .then((response) => {
         if (response.status === 200) {
@@ -104,15 +122,27 @@ function EventDetails() {
       });
   };
 
+  const [open, setOpen] = React.useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
   const EventInfoSection = () => {
     return (
       <div>
         <Stack direction="row" marginBlock="1rem">
           <Stack width="100%" justifyContent="flex-start" textAlign="left">
             <h1>{eventObject.name}</h1>
+
             <h3 style={{ color: "#818181" }}>
               {eventObject.startTime} • {eventObject.endTime}
             </h3>
+
           </Stack>
           <Stack
             width="100%"
@@ -122,12 +152,50 @@ function EventDetails() {
             color="#818181"
           >
             <Stack direction="row" alignItems="center" gap="0.5rem">
-              <EventIcon />
-              <h3>Add to Calendar</h3>
+              <EventDetailsButton
+                startIcon={<EventIcon />}
+                // onClick={}
+              >
+                Add to Calendar
+              </EventDetailsButton>
             </Stack>
+
             <Stack direction="row" alignItems="center" gap="0.5rem">
-              <ShareIcon />
-              <h3>Share</h3>
+              <EventDetailsButton
+                startIcon={<ShareIcon />}
+                onClick={handleClickOpen}
+              >
+                Share
+              </EventDetailsButton>
+              <Dialog
+                open={open}
+                onClose={handleClose}
+                PaperProps={{
+                  component: "form",
+                  onSubmit: (event) => {
+                    event.preventDefault();
+                    const formData = new FormData(event.currentTarget);
+                    const formJson = Object.fromEntries(formData.entries());
+                    const email = formJson.email;
+                    console.log(email);
+                    handleClose();
+                  },
+                }}
+              >
+                <DialogTitle>Share Link</DialogTitle>
+                <DialogContent>
+                  <DialogContentText>
+                    <Link
+                      href={`http://localhost:3000/eventdetails/${eventObject.eventID}`}
+                    >
+                      http://localhost:3000/eventdetails/{eventObject.eventID}
+                    </Link>
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={handleClose}>Close</Button>
+                </DialogActions>
+              </Dialog>
             </Stack>
           </Stack>
         </Stack>
@@ -226,6 +294,40 @@ function EventDetails() {
     );
   };
 
+  const deleteEvent = () => {
+    axios
+      .post("http://localhost:5000/delete_event", {
+        event: eventObject,
+      })
+      .then((res) => {
+        console.log(res.data);
+      });
+
+    navigate("/events");
+  };
+
+  const editEvent = () => {
+    sessionStorage.setItem('cur_event', JSON.stringify(eventObject));
+    navigate("/edit_event")
+  }
+
+  const EditDelete = () => {
+    return (
+      <div className="w-[100%] flex flex-row justify-center mt-8" id="EditDelete">
+        <GrayButton
+            textAlign="left"
+            variant="contained"
+            onClick={editEvent}
+          >
+            Edit Event
+        </GrayButton>
+        <RedButton textAlign="left" variant="contained" onClick={deleteEvent}>
+          Delete Event
+        </RedButton>
+      </div>
+    );
+  };
+
   return (
     <div
       style={{
@@ -244,6 +346,7 @@ function EventDetails() {
           <LocationSection />
           <OrganizerSection />
           <TagsSection />
+          {sessionStorage.getItem("token") ? <EditDelete /> : <div />}
         </Stack>
       </Stack>
     </div>

@@ -10,7 +10,7 @@ export function withAuth(Component) {
 
     // Redirect to login page if not authenticated
     
-    fetch("http://localhost:5000/check_user", {
+    /* fetch("http://localhost:5000/check_user", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -21,7 +21,7 @@ export function withAuth(Component) {
             navigate('/login');
             return null;
         }
-    })
+    })*/
 
     return <Component {...props} />;
   };

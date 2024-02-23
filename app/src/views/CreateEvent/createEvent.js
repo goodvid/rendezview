@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { withAuth } from "../withAuth";
 function CreateEvent() {
     const navigate = useNavigate();
-    
     const [color1, setColor1] = useState("")
     const [color2, setColor2] = useState("");
     const [eventData, setEventData] = useState({

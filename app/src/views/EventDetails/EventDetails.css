@@ -4,3 +4,7 @@
   gap: 1rem;
   margin-block: 1rem;
 }
+
+#EditDelete{
+  column-gap: 30%;
+}

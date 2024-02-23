@@ -1,9 +1,12 @@
 from flask import Flask,  request, jsonify, session
 from flask_session import Session
 from models import db  # Importing the db instance and models
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from models import User, Event
 from types import SimpleNamespace
+from dateutil import parser
+from sqlalchemy.exc import SQLAlchemyError
+from flask_migrate import Migrate
 
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import get_jwt_identity
@@ -12,19 +15,24 @@ from flask_jwt_extended import JWTManager
 
 from config import ApplicationConfig
 
+from apiFetch.yelpAPI import YelpAPI
+
 import os
 import json
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
+# CORS(app, resources={r"/api/*": {"origins": "http:///127.0.0.1:3000"}})
 
 app.secret_key = "super secret essay"
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config.from_object(ApplicationConfig)
 jwt = JWTManager(app)
 
+migrate = Migrate(app, db)
 
 db.init_app(app)  # Initialize db with your Flask app
+
 
 @app.route('/')
 def index():
@@ -39,27 +47,111 @@ def create_token():
     user = User.query.filter_by(email=email).first()
     print(user)
     if user and password == user.password:
-        access_token = create_access_token(identity=email)
+        access_token = create_access_token(identity={'email': email, 'name': user.username})
         return jsonify(access_token=access_token)
     else:
-        return jsonify({"message":"bad username or password"}), 401
+        return jsonify({"message": "bad username or password"}), 401
 
 
 @app.route("/user/username", methods=["POST"])
 @jwt_required()
 def username():
     current_user = get_jwt_identity()
-    
+
     print(current_user, request.json)
     user = User.query.filter_by(email=current_user).first()
     check = User.query.filter_by(username=request.json["username"]).first()
     if not check:
         user.username = request.json["username"]
-    
+
         db.session.commit()
     else:
         return jsonify({"message": "duplicate username not allowed"}), 401
     return jsonify(logged_in_as=current_user), 200
+
+
+@app.route("/user/changeusername", methods=["POST"])
+@jwt_required()
+def changeusername():
+    current_user = get_jwt_identity()
+    print("Request: ")
+    print(request.json)
+
+    user = User.query.filter_by(email=current_user["email"]).first()
+    duplicate = User.query.filter_by(username=request.json["newUsername"]).first()
+    if not duplicate:
+        user.username = request.json["newUsername"]
+        db.session.commit()
+    else:
+        return jsonify({"message": "Duplicate username not allowed."}), 401
+
+    return jsonify({"message": "Username changed successfully"}), 200
+
+
+@app.route("/user/changepassword", methods=["POST"])
+@jwt_required()
+def changepassword():
+    current_user = get_jwt_identity()
+    print("Request: ")
+    print(request.json)
+
+    user = User.query.filter_by(email=current_user["email"]).first()
+    if (len(request.json["newPassword"]) > 6):
+        user.password = request.json["newPassword"]
+        db.session.commit()
+    else:
+        return jsonify({"message": "Short password not allowed."}), 401
+
+    return jsonify({"message": "Password changed successfully"}), 200
+
+
+@app.route("/user/changeemail", methods=["POST"])
+@jwt_required()
+def changeemail():
+    current_user = get_jwt_identity()
+    print("Request: ")
+    print(request.json)
+
+    user = User.query.filter_by(email=current_user["email"]).first()
+    duplicate = User.query.filter_by(email=request.json["newEmail"]).first()
+    if not duplicate:
+        user.email = request.json["newEmail"]
+        db.session.commit()
+    else:
+        return jsonify({"message": "Duplicate email not allowed."}), 401
+
+    return jsonify({"message": "Email changed successfully"}), 200
+
+@app.route("/user/deleteaccount", methods=["GET"])
+@jwt_required()
+def deleteaccount():
+    current_user = get_jwt_identity()
+    
+    User.query.filter_by(email=current_user["email"]).delete()
+    # db.session.delete(user)
+    db.session.commit()
+
+    return jsonify({"message": "Account deleted successfully"}), 200
+
+
+@app.route("/user/resetpassword", methods=["POST"])
+def resetpassword():
+    print("Request: ")
+    print(request.json)
+
+    user = User.query.filter_by(email=request.json["email"]).first()
+    if (user == None):
+        return jsonify({'message': 'This email does not belong to an existing account.'}), 400
+    
+    if (len(request.json["newPassword"]) < 7):
+        return jsonify({'message': 'Password is too short.'}), 401
+
+    user.password = request.json["newPassword"]
+    db.session.commit()
+    access_token = create_access_token(identity=request.json["email"])
+
+    return jsonify({"message": "Password reset successfully"}), 200
+
 
 @app.route('/user/register', methods=["POST"])
 def register():
@@ -92,21 +184,85 @@ def get_events():
     event_values = []
 
     for event in events:
-        values = {'name': event.name,
+        values = {'id': event.eventID,
+                    'name': event.name,
                     'time': event.event_datetime,
                     'location': event.location}
         event_values.append(values)
 
     return {'status': '200', 'events': event_values}
 
+@app.route("/event/edit", methods=["POST"])
+def edit_event():
+    data = request.json
+
+    print(data)
+
+    event = Event.query.filter_by(eventID=data['event']['eventID']).first()
+
+    event.name = data['event']['name']
+    event.location = data['event']['location']
+    event.host = data['event']['hostName']
+    event.category = data['event']['category']
+
+    db.session.commit()
+
+    return {'status': '200'}
+
+@app.route('/user/getusername', methods=['GET'])
+@jwt_required()
+def getusername():
+    current_user = get_jwt_identity()
+
+    user = User.query.filter_by(email=current_user["email"]).first()
+    username = user.username
+
+    return {'status': '200', 'username': username}
+
+
+@app.route('/user_events', methods=['GET'])
+@jwt_required()
+def get_user_events():
+
+    user = get_jwt_identity()
+    print(user)
+
+    events = Event.query.filter_by(host=user['name'])
+
+    event_values = []
+
+    for event in events:
+        values = {'id': event.eventID,
+                    'name': event.name,
+                    'time': event.event_datetime,
+                    'location': event.location}
+        event_values.append(values)
+
+    return {'status': '200', 'events': event_values}
+
+
 @app.route('/set-username', methods=['POST'])
 def receive_data():
-    #if request.is_json:
-        data = request.get_json()
-        print("Received data:", data)  # For demonstration, print it to the console
-        #send to database
-        #item = User(name=current_user, username = data) TODO fix getting current user
-        return jsonify({"message": "Data received successfully", "yourData": data}), 200
+    # if request.is_json:
+    data = request.get_json()
+    print("Received data:", data)  # For demonstration, print it to the console
+    # send to database
+    # item = User(name=current_user, username = data) TODO fix getting current user
+    return jsonify({"message": "Data received successfully", "yourData": data}), 200
+
+
+@app.route('/delete_event', methods=['POST'])
+def delete_event():
+    data = request.json
+
+    print(data['event'])
+
+    event = Event.query.filter_by(eventID=data['event']['eventID']).first()
+
+    db.session.delete(event)
+    db.session.commit()
+
+    return {'status': '200'}
 
 @app.route("/profile/clearhistory", methods=["GET"])
 @jwt_required()
@@ -118,6 +274,7 @@ def deleteEventHistory():
 
     return jsonify({"message": "events deleted"}), 200
 
+
 @app.route("/profile/preferences", methods=["POST"])
 @jwt_required()
 def set_preferences():
@@ -126,6 +283,7 @@ def set_preferences():
     user.preferences = str(request.json["results"])
     db.session.commit()
     return jsonify({"message": "prefs set"}), 200
+
 
 @app.route("/profile/join-event", methods=["POST"])
 @jwt_required()
@@ -144,7 +302,8 @@ def join_event():
         print(user.saved_events)
         return jsonify({"message": "event joined"}), 200
 
-@app.route("/event/create", methods = ["POST"])
+
+@app.route("/event/create", methods=["POST"])
 @jwt_required()
 def create_event():
     # get from api
@@ -175,10 +334,63 @@ def create_event():
     print(new_event)
     db.session.add(new_event)
     user.saved_events.append(new_event)
-    db.session.commit()
-    return jsonify({"message": "event set", "eventID": new_event.eventID}), 200
 
-@app.route("/event/details", methods = ["POST"])
+    db.session.commit()
+    return jsonify({"message": "event set", "eventID": newEvent.eventID}), 200
+
+@app.route("/events/api", methods=["POST", "GET"])
+def fetch_api_events():
+    # Uncomment the next line to dynamically set the location based on query parameter
+    loc = request.args.get('location', default=None, type=str)
+    sort_on = request.args.get('sort_on', default=None, type=str)
+    start_date = request.args.get('start_date', default=None, type=str)
+    is_free = request.args.get('is_free', default=None, type=str)
+    category = request.args.get('category', default=None, type=str)
+
+    yelp_api_instance = YelpAPI()
+    events = yelp_api_instance.get_events_based_on_location(location=loc, is_free=is_free, sort_on=sort_on, start_date=start_date, category=category)
+    
+    # # Check the count of fetched events against existing events in the database
+    # existing_events_count = Event.query.count()
+    fetched_events_count = len(events)
+
+    try:
+        db.session.query(Event).filter(Event.yelpID.isnot(None)).delete(synchronize_session=False)
+        # db.session.query(Event).delete()
+
+        eventIDTracking = []
+        for event in events:
+            yelpID = event['id']
+            eventDesc = event['description']
+            name = event['name']
+            yelpLocation = event['location']
+            locationAddress = ', '.join(yelpLocation['display_address'])
+            eventDateTime = parser.isoparse(event['time_start'])
+            category = event['category']
+
+            # For each event, either update the existing record or create a new one
+            existingEvent = Event.query.filter_by(yelpID=yelpID).first()
+
+            if existingEvent:
+                existingEvent.desc = eventDesc
+                existingEvent.name = name
+                existingEvent.location = locationAddress
+                existingEvent.event_datetime = eventDateTime
+                existingEvent.category = category
+            else:
+                newEvent = Event(name=name, desc=eventDesc, location=locationAddress, event_datetime=eventDateTime, category=category, yelpID=yelpID)
+                db.session.add(newEvent)
+                db.session.flush()  
+                eventIDTracking.append(newEvent.eventID)
+
+        db.session.commit()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({"message": "An error occurred while processing events", "error": str(e)}), 500
+
+    return jsonify({"message": "Events processed", "eventIDs": eventIDTracking, "count": fetched_events_count, "events": events}), 200
+
+@app.route("/event/details", methods=["POST"])
 def get_details():
     id = request.json["id"]
     print("eheheh", request.json)
@@ -192,7 +404,7 @@ def get_details():
     return jsonify(event_json=event_json)
 
 
-@app.route("/check_user", methods = ["POST"])
+# @app.route("/check_user", methods = ["POST"])
 @jwt_required
 def hello():
     user = get_jwt_identity()

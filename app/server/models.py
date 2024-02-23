@@ -17,7 +17,7 @@ class User(UserMixin, db.Model):
     picture = db.Column(db.String(50))
     friends = db.Column(db.String(1000))
 
-    blogs = db.relationship('Blog', backref='blog', lazy=True)
+    blogs = db.relationship('Blog', backref='blog', lazy=True, cascade='all, delete')
     saved_events = db.relationship(
         "Event",
         secondary=events_table,
@@ -49,14 +49,18 @@ class User(UserMixin, db.Model):
 
 class Event(db.Model):
 
+
     eventID = db.Column(db.Integer, primary_key = True)
-    desc = db.Column(db.String(500))
+    yelpID = db.Column(db.String(500))
+    desc = db.Column(db.String(5000))
     name = db.Column(db.String(50))
     location = db.Column(db.String(50))
     start_time = db.Column(db.String(50))
     end_time = db.Column(db.String(50))
     hostName = db.Column(db.String(50))
+
     userID = db.Column(db.Integer, db.ForeignKey("user.id"))
+
     rating = db.Column(db.Float)
     category = db.Column(db.String(50))
 
