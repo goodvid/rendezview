@@ -107,7 +107,7 @@ class YelpAPI:
             # print(response.status_code, response.text)
             # print(self.default_search_path, self.amount, self.location,
                 #   self.sort_by, self.sort_on)
-            return jsonify({"message": "An error occurred while processing events", "error": str(e)}), 500
+            return jsonify({"message": "An error occurred while processing events"}), 500
             # print("Failed to fetch events")
 
     def get_events_based_on_category(self, category):

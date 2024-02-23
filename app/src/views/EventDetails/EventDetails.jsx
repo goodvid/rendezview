@@ -140,7 +140,7 @@ function EventDetails() {
             <h1>{eventObject.name}</h1>
 
             <h3 style={{ color: "#818181" }}>
-              {eventObject.startTime} • {eventObject.endTime}
+              {eventObject.startDate} • {eventObject.startTime}
             </h3>
 
           </Stack>
@@ -308,7 +308,7 @@ function EventDetails() {
 
   const editEvent = () => {
     sessionStorage.setItem('cur_event', JSON.stringify(eventObject));
-    navigate("/edit_event")
+    navigate(`/edit_event/${eventObject.eventID}`);
   }
 
   const EditDelete = () => {

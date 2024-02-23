@@ -70,7 +70,8 @@ function ChangeEmail() {
           })
           .then((data) => {
             if (resp.status == 200) {
-              console.log(sessionStorage.getItem("token"));
+                console.log(data)
+              sessionStorage.setItem("token", data["access_token"]);
               navigate("/settings");
             }
           })

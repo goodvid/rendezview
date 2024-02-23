@@ -21,6 +21,7 @@ import Event from '../../components/Event/Event';
 function EventList() {
 
     const [events, setEvents] = useState([]);
+   
 
     useEffect(() => {
         console.log(sessionStorage.getItem("token"));
@@ -31,30 +32,32 @@ function EventList() {
             }
         })
         .then(res => {
-            console.log(res.data['status']);
+            console.log(res.data['events']);
             setEvents(res.data['events'])
         })
     }, []);
 
     return (
-        <div className='w-full'>
-            <div className='text-left text-3xl font-bold ml-[150px] mt-[50px]'>
-                My Events
-            </div>
-            <div className='w-[70%] flex flex-row flex-wrap ml-[12%] mt-[3%]'>
-                {events.map((event, i) => {
-                    return (
-                        <Event
-                        id={event.id}
-                        name={event.name}
-                        date={event.time}
-                        location={event.location}
-                        key={i} />
-                    );
-                })}
-            </div>
+      <div className="w-full">
+        <div className="text-left text-3xl font-bold ml-[150px] mt-[50px]">
+          My Events
         </div>
-    )
+        <div className=" grid grid-cols-2 gap-4 place-content-center ml-[10%] mt-[5%]">
+          {events.map((event, i) => {
+            return (
+              <Event
+                id={event.id}
+                name={event.name}
+                date={event.time + " " + event.date}
+                location={event.location}
+                desc={event.desc}
+                key={i}
+              />
+            );
+          })}
+        </div>
+      </div>
+    );
 }
 
 function Events() {

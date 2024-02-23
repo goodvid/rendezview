@@ -31,7 +31,7 @@ function App() {
           <Route path="/eventdetails/:id" element={<EventDetails />} />
           <Route path="/newevent" element={<CreateEvent />} />
           <Route path="/events" element={<Events />} />
-          <Route path="/edit_event" element={<EditEvent />} />
+          <Route path="/edit_event/:id" element={<EditEvent />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/changeusername" element={<ChangeUsername />} />
           <Route path="/changeemail" element={<ChangeEmail />} />

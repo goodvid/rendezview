@@ -57,6 +57,8 @@ class Event(db.Model):
     location = db.Column(db.String(50))
     start_time = db.Column(db.String(50))
     end_time = db.Column(db.String(50))
+    start_date = db.Column(db.String(50))
+    event_datetime = db.Column(db.DateTime)
     hostName = db.Column(db.String(50))
 
     userID = db.Column(db.Integer, db.ForeignKey("user.id"))
@@ -67,12 +69,15 @@ class Event(db.Model):
     type = db.Column(db.String(50))
     def as_dict(self):
         return {
+            'yelpID': self.yelpID,
             'eventID': self.eventID,
             'desc': self.desc,
             'name': self.name,
             'location': self.location,
             'startTime': self.start_time,
             'endTime': self.end_time,
+            'startDate': self.start_date,
+            'event_datetime': self.event_datetime,
             'hostName' : self.hostName,
             'userID': self.userID,
             'rating' : self.rating,

@@ -1,12 +1,14 @@
 import React from "react";
-import { useState } from "react";
+import { useState,  useEffect  } from "react";
 import Navbar from "../../components/Navbar/Navbar";
 import { useNavigate } from "react-router-dom";
-import { withAuth } from "../withAuth";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
+
 function CreateEvent() {
     const navigate = useNavigate();
-    const [color1, setColor1] = useState("")
-    const [color2, setColor2] = useState("");
+    const [selected, setSelected] = useState("");
     const [eventData, setEventData] = useState({
       eventName: "",
       eventDesc: "",
@@ -20,35 +22,29 @@ function CreateEvent() {
       endDate: "",
     });
 
+    useEffect(() => {
+      console.log(eventData);
+    }, [eventData]);
+
+    const handleDateTime = (startEnd, value) => {
+      const dateString = value.format("YYYY-MM-DD");
+      const timeString = value.format("HH:mm:ss");
+
+      setEventData({
+        ...eventData,
+        [`${startEnd}Date`]: dateString,
+        [`${startEnd}Time`]: timeString,
+      });
+    };
+
      const handleChange = (event) => {
        // Update the inputData state when form fields change
        setEventData({
          ...eventData,
          [event.target.name]: event.target.value,
        });
-       console.log(eventData, event.target)
-       if (event.target.name === "eventType" && event.target.value === "Private Event"){
-        if (color1 === "bg-clear"){
-          setColor1("bg-[#A1CFFF4D]");
-          setColor2("bg-clear");
-        } else {
-          setColor1("bg-clear");
-        }
-        
-       } 
-       if (
-         event.target.name === "eventType" &&
-         event.target.value === "Public Event"
-       ) {
-         if (color2 === "bg-clear") {
-           setColor2("bg-[#A1CFFF4D]");
-           setColor1("bg-clear");
-         } else {
-           setColor2("bg-clear");
-         }
-       }
+       console.log(eventData, event.target);
      };
-
      const handleSubmit = (event) => {
       event.preventDefault();
       fetch("http://localhost:5000/event/create", {
@@ -75,6 +71,22 @@ function CreateEvent() {
           console.log("error", error);
         });
      }
+
+     const handleEventType = (type) => {
+       if (selected == type) {
+         setSelected("");
+         setEventData({
+           ...eventData,
+           ["eventType"]: "",
+         });
+       } else {
+         setSelected(type);
+         setEventData({
+           ...eventData,
+           ["eventType"]: type,
+         });
+       }
+     };
 
     return (
       <div className="w-full h-full">
@@ -114,21 +126,29 @@ function CreateEvent() {
             <button
               name="eventType"
               value="Private Event"
-              onClick={handleChange}
-              class={`${color1} border-2 border-[#02407F] hover:bg-[#A1CFFF4D] text-[#02407F] font-bold py-4 px-6 rounded`}
+              onClick={() => handleEventType("Private Event")}
+              class={`${
+                selected === "Private Event"
+                  ? "bg-[#A1CFFF4D]"
+                  : "bg-transparent"
+              } border-2 border-[#02407F] hover:bg-[#A1CFFF4D] text-[#02407F] font-bold py-4 px-6 rounded`}
             >
               Private Event
             </button>
             <button
               name="eventType"
               value="Public Event"
-              onClick={handleChange}
-              class={`${color2} border-2 border-[#02407F] hover:bg-[#A1CFFF4D] text-[#02407F] font-bold py-4 px-6 rounded`}
+              onClick={() => handleEventType("Public Event")}
+              class={`${
+                selected === "Public Event"
+                  ? "bg-[#A1CFFF4D]"
+                  : "bg-transparent"
+              } border-2 border-[#02407F] hover:bg-[#A1CFFF4D] text-[#02407F] font-bold py-4 px-6 rounded`}
             >
               Public Event
             </button>
           </div>
-          
+
           <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"></hr>
 
           <div className="text-2xl font-bold  text-left ">Location</div>
@@ -143,40 +163,27 @@ function CreateEvent() {
           <div className="text-2xl font-bold  text-left ">Date and Time</div>
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1">
-              <div className="text-m font-bold  text-left ">Start Date</div>
-              <input
-                name="startDate"
-                onChange={handleChange}
-                className="w-[60%] h-[45px] border-login-blue outline rounded-md align-left"
-              ></input>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DateTimePicker
+                  label="Start Date/Time"
+                  onChange={(value) => handleDateTime("start", value)}
+                />
+              </LocalizationProvider>
             </div>
             <div className="flex flex-col gap-1">
-              <div className="text-m font-bold  text-left ">Start Time</div>
-              <input
-                name="startTime"
-                onChange={handleChange}
-                className="w-[60%] h-[45px] border-login-blue outline rounded-md align-left"
-              ></input>
-            </div>
-            <div className="flex flex-col gap-1">
-              <div className="text-m font-bold  text-left ">End Date</div>
-              <input
-                name="endDate"
-                onChange={handleChange}
-                className="w-[60%] h-[45px] border-login-blue outline rounded-md align-left"
-              ></input>
-            </div>
-            <div className="flex flex-col gap-1">
-              <div className="text-m font-bold  text-left ">End Time</div>
-              <input
-                name="endTime"
-                onChange={handleChange}
-                className="w-[60%] h-[45px] border-login-blue outline rounded-md align-left"
-              ></input>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DateTimePicker
+                  label="End Date/Time"
+                  onChange={(value) => handleDateTime("end", value)}
+                />
+              </LocalizationProvider>
             </div>
           </div>
 
-          <button onClick={handleSubmit} class="w-[20%] h-[45px] bg-yellow-500 mt-5 text-white font-bold  rounded">
+          <button
+            onClick={handleSubmit}
+            class="w-[20%] h-[45px] bg-yellow-500 mt-5 text-white font-bold  rounded"
+          >
             Create Event
           </button>
 
