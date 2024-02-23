@@ -21,22 +21,29 @@ function Login() {
     });
   };
 
-  const handle_authentication = (event) => {
-    axios
-      .get("http://localhost:3000/authenticate")
-      .then((res) => {})
-      .catch((err) => {
-        console.log(err);
-      });
-    // console.log(event);
-    // axios.get("http://localhost:5000/authenticate", {}).then(response => {
-    //   if (response.status === 200) { resp = response; return response.json(); }
-    //   else {
-    //     alert("Error Occurred, Try again later")
-    //     return false
-    //   }
-    // }).catch(error => { console.log("error", error) })
-  };
+ const handle_authentication = () => {
+   axios
+     .get("http://localhost:5000/authenticate")
+     .then((res) => {
+       if (res.data.status === 200) {
+         // Navigate to another route on success
+         sessionStorage.setItem("token", res.data.access_token);
+         console.log("token", sessionStorage.getItem("token"));
+         navigate("/"); // Adjust '/success-route' as needed
+       } else {
+         // Handle non-success status here, if any
+         console.log(
+           "Authentication successful but with non-success status",
+           res.data
+         );
+       }
+     })
+     .catch((err) => {
+       console.log(err);
+       // Optionally, navigate to an error page or display a message
+       alert("Error Occurred: Try Again Later");
+     });
+ };
 
   const handleSubmit = (event) => {
     console.log(inputData);

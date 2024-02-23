@@ -1,6 +1,7 @@
 import React from 'react';
 import './MainNavbar.css';
 import { Link } from 'react-router-dom';
+import axios from "axios";
 import { IconButton } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Settings from '@mui/icons-material/Settings';
@@ -8,10 +9,28 @@ import Settings from '@mui/icons-material/Settings';
 function MainNavbar() {
 
     const logout = () => {
-        sessionStorage.removeItem("token");
-        console.log('removed');
-        window.location.reload();
-        navigate("/");
+      axios
+        .get("http://localhost:5000/delinkGoogle")
+        .then((res) => {
+          if (res.data.status === 200) {
+            sessionStorage.removeItem("token");
+            console.log("removed");
+            window.location.reload();
+            navigate("/");
+          } else {
+            // Handle non-success status here, if any
+            console.log(
+              "Authentication successful but with non-success status",
+              res.data
+            );
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          // Optionally, navigate to an error page or display a message
+          alert("Error Occurred: Try Again Later");
+        });
+
     }
 
     const navigate = useNavigate();
