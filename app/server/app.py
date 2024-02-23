@@ -196,7 +196,8 @@ def get_events():
         values = {'id': event.eventID,
                     'name': event.name,
                     'time': event.start_date,
-                    'location': event.location}
+                    'location': event.location,
+                    'desc': event.desc}
         event_values.append(values)
 
     # add from saved events sob
@@ -212,35 +213,35 @@ def edit_event():
 
     event = Event.query.filter_by(eventID=data['eventID']['id']).first()
 
-    event.name = request.json["eventName"] if len(request.json["eventName"]) > 1 else event.name
+    event.name = request.json["eventName"] if len(request.json["eventName"]) >= 1 else event.name
     event.desc = (
-        request.json["eventDesc"] if len(request.json["eventDesc"]) > 1 else event.desc
+        request.json["eventDesc"] if len(request.json["eventDesc"]) >= 1 else event.desc
     )
     event.hostName = (
         request.json["hostName"]
-        if len(request.json["hostName"]) > 1
+        if len(request.json["hostName"]) >= 1
         else event.hostName
     )
     event.start_time = (
         request.json["startTime"]
-        if len(request.json["startTime"]) > 1
+        if len(request.json["startTime"]) >= 1
         else event.start_time
     )
     event.start_date = (
-        request.json["startDate"] if len(request.json["startDate"]) > 1 else event.start_date
+        request.json["startDate"] if len(request.json["startDate"]) >= 1 else event.start_date
     )
     event.end_time = (
-        request.json["endTime"] if len(request.json["endTime"]) > 1 else event.end_time
+        request.json["endTime"] if len(request.json["endTime"]) >= 1 else event.end_time
     )
     event.category = (
-        request.json["tags"] if len(request.json["tags"]) > 1 else event.category
+        request.json["tags"] if len(request.json["tags"]) >= 1 else event.category
     )
     event.type = (
-        request.json["eventType"] if len(request.json["eventType"]) > 1 else event.type
+        request.json["eventType"] if len(request.json["eventType"]) >= 1 else event.type
     )
     event.location = (
         request.json["location"]
-        if len(request.json["location"]) > 1
+        if len(request.json["location"]) >= 1
         else event.location
     )
 
@@ -425,7 +426,7 @@ def fetch_api_events():
                 existingEvent.event_datetime = eventDateTime
                 existingEvent.category = category
             else:
-                newEvent = Event(name=name, desc=eventDesc, location=locationAddress, event_datetime=eventDateTime, category=category, yelpID=yelpID)
+                newEvent = Event(name=name, desc=eventDesc, location=locationAddress, start_date=eventDateTime, category=category, yelpID=yelpID)
                 db.session.add(newEvent)
                 db.session.flush()  
                 eventIDTracking.append(newEvent.eventID)

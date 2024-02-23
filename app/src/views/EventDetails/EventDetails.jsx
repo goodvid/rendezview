@@ -99,7 +99,7 @@ function EventDetails() {
     event.preventDefault();
 
     // Send data to Flask server
-    fetch("http://localhost:5000/profile/join-event", {
+    fetch("http://127.0.0.1:5000/profile/join-event", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + sessionStorage.getItem("token"),
@@ -142,7 +142,6 @@ function EventDetails() {
             <h3 style={{ color: "#818181" }}>
               {eventObject.startDate} • {eventObject.startTime}
             </h3>
-
           </Stack>
           <Stack
             width="100%"
@@ -296,7 +295,7 @@ function EventDetails() {
 
   const deleteEvent = () => {
     axios
-      .post("http://localhost:5000/delete_event", {
+      .post("http://127.0.0.1:5000/delete_event", {
         event: eventObject,
       })
       .then((res) => {
@@ -307,19 +306,18 @@ function EventDetails() {
   };
 
   const editEvent = () => {
-    sessionStorage.setItem('cur_event', JSON.stringify(eventObject));
+    sessionStorage.setItem("cur_event", JSON.stringify(eventObject));
     navigate(`/edit_event/${eventObject.eventID}`);
-  }
+  };
 
   const EditDelete = () => {
     return (
-      <div className="w-[100%] flex flex-row justify-center mt-8" id="EditDelete">
-        <GrayButton
-            textAlign="left"
-            variant="contained"
-            onClick={editEvent}
-          >
-            Edit Event
+      <div
+        className="w-[100%] flex flex-row justify-center mt-8"
+        id="EditDelete"
+      >
+        <GrayButton textAlign="left" variant="contained" onClick={editEvent}>
+          Edit Event
         </GrayButton>
         <RedButton textAlign="left" variant="contained" onClick={deleteEvent}>
           Delete Event
