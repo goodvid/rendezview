@@ -1,5 +1,3 @@
-import handle_google_api
-
 from flask import Flask,  request, jsonify, session
 from flask_session import Session
 from models import db  # Importing the db instance and models
@@ -9,7 +7,7 @@ from types import SimpleNamespace
 from dateutil import parser
 from sqlalchemy.exc import SQLAlchemyError
 from flask_migrate import Migrate
-
+import handle_google_api
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required
@@ -40,6 +38,41 @@ db.init_app(app)  # Initialize db with your Flask app
 def index():
     return "Hello, World!"
 
+
+@app.route("/authenticate", methods=["GET"])
+def link_google_account():
+    response = handle_google_api.handle_authentication()
+    print(response)
+    if response["flag"]:
+        email = response["email"]
+        # access_token = create_access_token(identity=email, username=email)
+        access_token = create_access_token(
+            identity={"email": email, "name": email}
+        )
+        # need to get user and strengthen validationm for email
+        # but for now its ok, couldn't save stuff to database
+        response = jsonify(
+            {"access_token": access_token, "message": "success", "status": 200}
+        )
+        # Specify the status code explicitly if needed, though 'status' within the JSON is also informative
+        response.status_code = 200
+        return response
+    else:
+        return {
+            "message": "Error occurred while attempting to link accounts",
+            "status": 401,
+        }
+
+@app.route("/delinkGoogle", methods=["GET"])
+def signOutFromGoogle():
+    response = handle_google_api.handle_deauthentication()
+    if response:
+        return jsonify({
+            'message': 'success',
+            'status': 200
+        })
+    else:
+        return {"message": "Error occurred while attempting to link accounts", 'status': 401}
 
 @app.route('/user/login', methods=['POST'])
 def create_token():
@@ -452,39 +485,6 @@ def get_details():
         return jsonify({"message": "event not found"}), 404
 
     return jsonify(event_json=event_json)
-
-
-@app.route("/authenticate", methods=["GET"])
-def link_google_account():
-    response = handle_google_api.handle_authentication()
-    print(response)
-    if response["flag"]:
-        email = response["email"]
-        access_token = create_access_token(identity=email)
-        # need to get user and strengthen validationm for email
-        # but for now its ok, couldn't save stuff to database
-        response = jsonify(
-            {"access_token": access_token, "message": "success", "status": 200}
-        )
-        # Specify the status code explicitly if needed, though 'status' within the JSON is also informative
-        response.status_code = 200
-        return response
-    else:
-        return {
-            "message": "Error occurred while attempting to link accounts",
-            "status": 401,
-        }
-
-@app.route("/delinkGoogle", methods=["GET"])
-def signOutFromGoogle():
-    response = handle_google_api.handle_deauthentication()
-    if response:
-        return jsonify({
-            'message': 'success',
-            'status': 200
-        })
-    else:
-        return {"message": "Error occurred while attempting to link accounts", 'status': 401}
 
 
 # @app.route("/check_user", methods = ["POST"])

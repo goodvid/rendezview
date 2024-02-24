@@ -8,15 +8,8 @@ import Settings from "@mui/icons-material/Settings";
 
 function MainNavbar() {
   const logout = () => {
-    sessionStorage.removeItem("token");
-    console.log("removed");
-    window.location.reload();
-    navigate("/");
-  };
-
-  const logout = () => {
     axios
-      .get("http://localhost:5000/delinkGoogle")
+      .get("http://127.0.0.1:5000/delinkGoogle")
       .then((res) => {
         if (res.data.status === 200) {
           sessionStorage.removeItem("token");
@@ -37,6 +30,7 @@ function MainNavbar() {
         alert("Error Occurred: Try Again Later");
       });
   };
+
   const navigate = useNavigate();
   const settingsClick = () => {
     navigate("/settings");

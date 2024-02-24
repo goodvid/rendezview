@@ -34,7 +34,7 @@ class GoogleAPI:
         self. CREDENTIAL_FILE_NAME = 'credentials.json'
         # if curr_path == '':
         #     self.BASE_PATH = os.path.join(os.getcwd(), 'apiFetch')
-        self.BASE_PATH = r"C:\Users\ndisg\Documents\rendezview\app\server\apiFetch"
+        self.BASE_PATH = "/Users/visathongdee/Documents/GitHub/rendezview/app/server/apiFetch"
         # else:
         #     self.BASE_PATH = os.path.join(curr_path, 'apiFetch')
         self.TOKEN_FILE_PATH = os.path.join(

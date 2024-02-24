@@ -343,7 +343,7 @@ function EventDetails() {
           <EventDetailsSection />
           <LocationSection />
           <OrganizerSection />
-          <TagsSection />
+          {/* <TagsSection /> */}
           {sessionStorage.getItem("token") ? <EditDelete /> : <div />}
         </Stack>
       </Stack>
