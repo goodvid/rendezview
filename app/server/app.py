@@ -396,7 +396,7 @@ def fetch_api_events():
 
     yelp_api_instance = YelpAPI()
     events = yelp_api_instance.get_events_based_on_location(location=loc, is_free=is_free, sort_on=sort_on, start_date=start_date, category=category)
-    
+
     # # Check the count of fetched events against existing events in the database
     # existing_events_count = Event.query.count()
     fetched_events_count = len(events)
@@ -407,6 +407,7 @@ def fetch_api_events():
 
         eventIDTracking = []
         for event in events:
+            print(event.json)
             yelpID = event['id']
             eventDesc = event['description']
             name = event['name']
