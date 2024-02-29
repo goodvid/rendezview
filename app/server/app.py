@@ -7,7 +7,7 @@ from types import SimpleNamespace
 from dateutil import parser
 from sqlalchemy.exc import SQLAlchemyError
 from flask_migrate import Migrate
-
+import handle_google_api
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required
@@ -38,6 +38,41 @@ db.init_app(app)  # Initialize db with your Flask app
 def index():
     return "Hello, World!"
 
+
+@app.route("/authenticate", methods=["GET"])
+def link_google_account():
+    response = handle_google_api.handle_authentication()
+    print(response)
+    if response["flag"]:
+        email = response["email"]
+        # access_token = create_access_token(identity=email, username=email)
+        access_token = create_access_token(
+            identity={"email": email, "name": email}
+        )
+        # need to get user and strengthen validationm for email
+        # but for now its ok, couldn't save stuff to database
+        response = jsonify(
+            {"access_token": access_token, "message": "success", "status": 200}
+        )
+        # Specify the status code explicitly if needed, though 'status' within the JSON is also informative
+        response.status_code = 200
+        return response
+    else:
+        return {
+            "message": "Error occurred while attempting to link accounts",
+            "status": 401,
+        }
+
+@app.route("/delinkGoogle", methods=["GET"])
+def signOutFromGoogle():
+    response = handle_google_api.handle_deauthentication()
+    if response:
+        return jsonify({
+            'message': 'success',
+            'status': 200
+        })
+    else:
+        return {"message": "Error occurred while attempting to link accounts", 'status': 401}
 
 @app.route('/user/login', methods=['POST'])
 def create_token():
@@ -196,7 +231,8 @@ def get_events():
         values = {'id': event.eventID,
                     'name': event.name,
                     'time': event.start_date,
-                    'location': event.location}
+                    'location': event.location,
+                    'desc': event.desc}
         event_values.append(values)
 
     # add from saved events sob
@@ -212,35 +248,35 @@ def edit_event():
 
     event = Event.query.filter_by(eventID=data['eventID']['id']).first()
 
-    event.name = request.json["eventName"] if len(request.json["eventName"]) > 1 else event.name
+    event.name = request.json["eventName"] if len(request.json["eventName"]) >= 1 else event.name
     event.desc = (
-        request.json["eventDesc"] if len(request.json["eventDesc"]) > 1 else event.desc
+        request.json["eventDesc"] if len(request.json["eventDesc"]) >= 1 else event.desc
     )
     event.hostName = (
         request.json["hostName"]
-        if len(request.json["hostName"]) > 1
+        if len(request.json["hostName"]) >= 1
         else event.hostName
     )
     event.start_time = (
         request.json["startTime"]
-        if len(request.json["startTime"]) > 1
+        if len(request.json["startTime"]) >= 1
         else event.start_time
     )
     event.start_date = (
-        request.json["startDate"] if len(request.json["startDate"]) > 1 else event.start_date
+        request.json["startDate"] if len(request.json["startDate"]) >= 1 else event.start_date
     )
     event.end_time = (
-        request.json["endTime"] if len(request.json["endTime"]) > 1 else event.end_time
+        request.json["endTime"] if len(request.json["endTime"]) >= 1 else event.end_time
     )
     event.category = (
-        request.json["tags"] if len(request.json["tags"]) > 1 else event.category
+        request.json["tags"] if len(request.json["tags"]) >= 1 else event.category
     )
     event.type = (
-        request.json["eventType"] if len(request.json["eventType"]) > 1 else event.type
+        request.json["eventType"] if len(request.json["eventType"]) >= 1 else event.type
     )
     event.location = (
         request.json["location"]
-        if len(request.json["location"]) > 1
+        if len(request.json["location"]) >= 1
         else event.location
     )
 
@@ -426,7 +462,7 @@ def fetch_api_events():
                 existingEvent.event_datetime = eventDateTime
                 existingEvent.category = category
             else:
-                newEvent = Event(name=name, desc=eventDesc, location=locationAddress, event_datetime=eventDateTime, category=category, yelpID=yelpID)
+                newEvent = Event(name=name, desc=eventDesc, location=locationAddress, start_date=eventDateTime, category=category, yelpID=yelpID)
                 db.session.add(newEvent)
                 db.session.flush()  
                 eventIDTracking.append(newEvent.eventID)

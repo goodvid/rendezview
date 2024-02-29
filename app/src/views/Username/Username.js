@@ -8,63 +8,59 @@ function Username() {
   const navigate = useNavigate();
 
   const checkLogin = () => {
-    console.log("t4ijewtwijr")
-    if ("token" in sessionStorage){
-      console.log("yes")
+    console.log("t4ijewtwijr");
+    if ("token" in sessionStorage) {
+      console.log("yes");
       return true;
     } else {
       console.log("nonono");
       return false;
     }
+  };
 
+  let resp = "";
+  const [inputData, setInputData] = useState("");
 
-  }
-  
-  
-  let resp = ""
-    const [inputData, setInputData] = useState('');
+  const handleChange = (event) => {
+    // Update the inputData state when form fields change
+    setInputData(event.target.value);
+  };
+  const handleSubmit = (event) => {
+    console.log(inputData);
+    event.preventDefault();
 
-     const handleChange = (event) => {
-       // Update the inputData state when form fields change
-       setInputData(event.target.value);
-     };
-     const handleSubmit = (event) => {
-       console.log(inputData);
-       event.preventDefault();
-       
+    // Send data to Flask server
+    fetch("http://127.0.0.1:5000/user/username", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + sessionStorage.getItem("token"),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username: inputData }),
+    })
+      .then((response) => {
+        if (response.status === 200) {
+          resp = response;
+          return response.json();
+        } else if (response.status == 401) {
+          alert("choose unique username");
+          return false;
+        } else {
+          alert("unauthorizeds");
+          return false;
+        }
+      })
+      .then((data) => {
+        if (resp.status == 200) {
+          console.log(sessionStorage.getItem("token"));
+          navigate("/quiz");
+        }
+      })
+      .catch((error) => {
+        console.log("error", error);
+      });
+  };
 
-       // Send data to Flask server
-       fetch("http://localhost:5000/user/username", {
-         method: "POST",
-         headers: {
-           Authorization: "Bearer " + sessionStorage.getItem("token"),
-           "Content-Type": "application/json",
-         },
-         body: JSON.stringify({ username: inputData }),
-       })
-         .then((response) => {
-           if (response.status === 200) {
-             resp = response;
-             return response.json();
-           } else if (response.status == 401) {
-             alert("choose unique username");
-             return false;
-           } else {
-             alert("unauthorizeds");
-             return false;
-           }
-         })
-         .then((data) => {
-           if (resp.status == 200) {
-             console.log(sessionStorage.getItem("token"));
-             navigate("/quiz");
-           }
-         })
-         .catch((error) => {
-           console.log("error", error);
-         });
-     };
-  
   return (
     <>
       {checkLogin() ? (
@@ -110,8 +106,6 @@ function Username() {
       )}
     </>
   );
-
-  
 }
 
 export default withAuth(Username);

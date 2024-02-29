@@ -104,7 +104,7 @@ function Main() {
     axios
       .get(`http://127.0.0.1:5000/events/api?${params}`)
       .then((response) => {
-        // console.log("API events fetched and stored:", response.data);
+        console.log("API events fetched and stored:", response.data);
         fetchAndDisplayEvents();
       })
       .catch((error) => {
@@ -299,6 +299,7 @@ function Main() {
                   location={event.location}
                   key={i}
                   id={event.id}
+                  desc={event.desc}
                 />
               );
             })

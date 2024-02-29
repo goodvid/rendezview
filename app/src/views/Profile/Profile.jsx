@@ -39,11 +39,9 @@ function Profile() {
   const [friendsNum, setFriendsNum] = useState(0);
   const [groupsNum, setGroupsNum] = useState(0);
 
-  const [username, setUsername] = useState("");
-
   useEffect(() => {
     axios
-      .get("http://localhost:5000/user/getusername", {
+      .get("http://127.0.0.1:5000/user/getusername", {
         headers: {
           Authorization: "Bearer " + sessionStorage.getItem("token"),
           "Content-Type": "application/json",
@@ -51,7 +49,8 @@ function Profile() {
       })
       .then((res) => {
         console.log(res.data["status"]);
-        setUsername(res.data["username"]);
+        console.log(res.data["username"]);
+        setDisplayName(res.data["username"]);
       })
       .catch((err) => {
         console.log(err);
@@ -97,7 +96,7 @@ function Profile() {
   const handleSubmit = () => {
     // eslint-disable-next-line no-restricted-globals
     if (confirm("are you sure you want to delete all data?")) {
-      fetch("http://localhost:5000/profile/clearhistory", {
+      fetch("http://127.0.0.1:5000/profile/clearhistory", {
         method: "GET",
         headers: {
           Authorization: "Bearer " + sessionStorage.getItem("token"),
@@ -270,8 +269,12 @@ function Profile() {
             </div>
           ))}
         </Stack>
-        <Button onClick={handleSubmit}>delete past events</Button>
-        <Button onClick={() => navigate("/newevent")}>Create event</Button>
+        <Button variant="contained" onClick={handleSubmit}>
+          delete past events
+        </Button>
+        <Button variant="contained" onClick={() => navigate("/newevent")}>
+          Create event
+        </Button>
       </Stack>
     );
   };
