@@ -434,12 +434,10 @@ def fetch_api_events():
     events = yelp_api_instance.get_events_based_on_location(location=loc, is_free=is_free, sort_on=sort_on, start_date=start_date, category=category)
     
     # # Check the count of fetched events against existing events in the database
-    # existing_events_count = Event.query.count()
     fetched_events_count = len(events)
 
     try:
         db.session.query(Event).filter(Event.yelpID.isnot(None)).delete(synchronize_session=False)
-        # db.session.query(Event).delete()
 
         eventIDTracking = []
         for event in events:
@@ -450,6 +448,7 @@ def fetch_api_events():
             locationAddress = ', '.join(yelpLocation['display_address'])
             eventDateTime = parser.isoparse(event['time_start'])
             category = event['category']
+            businessID = event['business_id']
 
             # For each event, either update the existing record or create a new one
             existingEvent = Event.query.filter_by(yelpID=yelpID).first()
@@ -461,7 +460,7 @@ def fetch_api_events():
                 existingEvent.event_datetime = eventDateTime
                 existingEvent.category = category
             else:
-                newEvent = Event(name=name, desc=eventDesc, location=locationAddress, start_date=eventDateTime, category=category, yelpID=yelpID)
+                newEvent = Event(name=name, desc=eventDesc, location=locationAddress, start_date=eventDateTime, category=category, yelpID=yelpID, hostName=businessID)
                 db.session.add(newEvent)
                 db.session.flush()  
                 eventIDTracking.append(newEvent.eventID)
@@ -472,6 +471,17 @@ def fetch_api_events():
         return jsonify({"message": "An error occurred while processing events", "error": str(e)}), 500
 
     return jsonify({"message": "Events processed", "eventIDs": eventIDTracking, "count": fetched_events_count, "events": events}), 200
+
+
+
+@app.route("/events/business", methods=["GET"])
+def fetch_business():
+    businessID = request.args.get('businessID', default=None, type=str)
+
+    yelp_api_instance = YelpAPI()
+    business = yelp_api_instance.get_business_from_id(businessID=businessID)
+
+    return jsonify({"message": "Events processed", "business": business}), 200
 
 @app.route("/event/details", methods=["POST"])
 def get_details():

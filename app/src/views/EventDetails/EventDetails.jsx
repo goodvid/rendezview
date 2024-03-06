@@ -30,26 +30,28 @@ import {
 } from "../../components/StyledComponents/StyledComponents";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { pinwheel } from "ldrs";
 
 function EventDetails() {
   // TODO: replace hard coded names
+  pinwheel.register(); // Set loading animation
   let id = useParams();
-  console.log(id, "ididid");
   let resp = false;
   const [eventObject, setEventObject] = useState({
-    eventID: "e",
-    desc: "e",
-    name: "e",
-    location: "e",
-    event_datetime: "e",
-    hostName: "e",
-    userID: "e",
-    rating: "e",
-    category: "e",
-    type: "e",
+    eventID: "",
+    desc: "",
+    name: "",
+    location: "",
+    event_datetime: "",
+    hostName: "",
+    userID: "",
+    rating: "",
+    category: "",
+    type: "",
   });
 
   useEffect(() => {
+    setLoading(true);
     fetch("http://127.0.0.1:5000/event/details", {
       method: "POST",
       headers: {
@@ -65,23 +67,20 @@ function EventDetails() {
         if (resp.status === 200) {
           console.log(data);
           setEventObject(data.event_json);
+          setLoading(false);
         }
       })
       .catch((error) => {
         console.log("error", error);
       });
   }, []);
-  const [eventName, setEventName] = useState("Event Name");
-  const [eventID, setEventId] = useState("1");
-  const [date, setDate] = useState("Saturday, February 8, 2024");
-  const [time, setTime] = useState("7:00pm");
-  const [description, setDescription] = useState(
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad"
-  );
-  const [location, setLocation] = useState(
-    "Address Street, City, State, 47906"
-  );
-  const [organizer, setOrganizer] = useState("Organizer Name");
+  const [eventName, setEventName] = useState("");
+  const [eventID, setEventId] = useState("");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
+  const [description, setDescription] = useState("");
+  const [location, setLocation] = useState("");
+  const [organizer, setOrganizer] = useState("");
   const [tags, setTags] = useState([
     "Comedy",
     "Food",
@@ -92,11 +91,13 @@ function EventDetails() {
     "DIY",
   ]);
   const [showAll, setShowAll] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    setLoading(true);
 
     // Send data to Flask server
     fetch("http://127.0.0.1:5000/profile/join-event", {
@@ -110,17 +111,60 @@ function EventDetails() {
       .then((response) => {
         if (response.status === 200) {
           alert("event joined successfully");
+          setLoading(false);
           return response.json();
         } else {
           alert("error");
+          setLoading(false);
           return false;
         }
       })
       .then(() => {})
       .catch((error) => {
         console.log("error", error);
+        setLoading(false);
       });
   };
+
+  const getYelpBusinessName = (businessID) => {
+    setLoading(true);
+
+    const params = new URLSearchParams({ businessID: businessID });
+    axios
+      .get(`http://127.0.0.1:5000/events/business?${params}`)
+      .then((response) => {
+        console.log("Business fetched: ", response.data);
+        console.log("name:", response.data.business.name);
+        setOrganizer(response.data.business.name);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching business name:", error);
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    console.log(eventObject);
+    setEventName(eventObject.name);
+    setEventId(eventObject.eventID);
+    setDate(eventObject.startDate);
+    setTime(eventObject.startTime);
+    setDescription(eventObject.desc);
+    setLocation(eventObject.location);
+
+    if (eventObject.yelpID) {
+      if (!eventObject.hostName) {
+        setOrganizer(null);
+      } else {
+        getYelpBusinessName(eventObject.hostName);
+      }
+    } else {
+      setOrganizer(eventObject.hostName);
+    }
+
+    setTags(eventObject.category);
+  }, [eventObject]);
 
   const [open, setOpen] = React.useState(false);
 
@@ -137,10 +181,10 @@ function EventDetails() {
       <div>
         <Stack direction="row" marginBlock="1rem">
           <Stack width="100%" justifyContent="flex-start" textAlign="left">
-            <h1>{eventObject.name}</h1>
+            <h1>{eventName}</h1>
 
             <h3 style={{ color: "#818181" }}>
-              {eventObject.startDate} • {eventObject.startTime}
+              {date} {time}
             </h3>
           </Stack>
           <Stack
@@ -185,9 +229,9 @@ function EventDetails() {
                 <DialogContent>
                   <DialogContentText>
                     <Link
-                      href={`http://localhost:3000/eventdetails/${eventObject.eventID}`}
+                      href={`http://localhost:3000/eventdetails/${eventID}`}
                     >
-                      http://localhost:3000/eventdetails/{eventObject.eventID}
+                      http://localhost:3000/eventdetails/{eventID}
                     </Link>
                   </DialogContentText>
                 </DialogContent>
@@ -218,18 +262,18 @@ function EventDetails() {
     return (
       <Stack className="section">
         <h2>Event Details</h2>
-        {eventObject.desc.length > 500 ? (
+        {description.length > 500 ? (
           <div>
             {showAll ? (
               <div>
-                <p>{eventObject.desc}</p>
+                <p>{description}</p>
                 <ReadMoreButton size="small" onClick={() => setShowAll(false)}>
                   Read Less
                 </ReadMoreButton>
               </div>
             ) : (
               <div>
-                <p>{eventObject.desc.substring(0, 500).concat("...")}</p>
+                <p>{description.substring(0, 500).concat("...")}</p>
                 <ReadMoreButton size="small" onClick={() => setShowAll(true)}>
                   Read More
                 </ReadMoreButton>
@@ -237,7 +281,7 @@ function EventDetails() {
             )}
           </div>
         ) : (
-          eventObject.desc
+          description
         )}
       </Stack>
     );
@@ -249,20 +293,22 @@ function EventDetails() {
         <h2>Location</h2>
         <Stack direction="row" alignItems="center" gap="1rem">
           <LocationOnIcon />
-          <h3>{eventObject.location}</h3>
+          <h3>{location}</h3>
         </Stack>
       </Stack>
     );
   };
   const OrganizerSection = () => {
     return (
-      <Stack className="section">
-        <h2>Organizer</h2>
-        <Stack direction="row" alignItems="center" gap="1rem">
-          <PersonIcon />
-          <h3>{eventObject.hostName}</h3>
+      organizer && ( // Don't show organizer section if there is no organizer
+        <Stack className="section">
+          <h2>Organizer</h2>
+          <Stack direction="row" alignItems="center" gap="1rem">
+            <PersonIcon />
+            <h3>{organizer}</h3>
+          </Stack>
         </Stack>
-      </Stack>
+      )
     );
   };
 
@@ -337,16 +383,27 @@ function EventDetails() {
       }}
     >
       <Navbar />
-      <Stack alignItems="center" marginInline="20%">
-        <Stack margin="3rem" gap="1rem">
-          <EventInfoSection />
-          <EventDetailsSection />
-          <LocationSection />
-          <OrganizerSection />
-          {/* <TagsSection /> */}
-          {sessionStorage.getItem("token") ? <EditDelete /> : <div />}
+      {loading ? (
+        <Stack width="100%" height="100%" alignItems="center">
+          <l-pinwheel
+            size="100"
+            stroke="3.5"
+            speed="0.9"
+            color="black"
+          ></l-pinwheel>
         </Stack>
-      </Stack>
+      ) : (
+        <Stack alignItems="center" marginInline="20%">
+          <Stack margin="3rem" gap="1rem">
+            <EventInfoSection />
+            <EventDetailsSection />
+            <LocationSection />
+            <OrganizerSection />
+            {/* <TagsSection /> */}
+            {sessionStorage.getItem("token") ? <EditDelete /> : <div />}
+          </Stack>
+        </Stack>
+      )}
     </div>
   );
 }
