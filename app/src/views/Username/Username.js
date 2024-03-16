@@ -30,7 +30,7 @@ function Username() {
     event.preventDefault();
 
     // Send data to Flask server
-    fetch("http://127.0.0.1:5000/user/username", {
+    fetch("http://localhost:5000/user/username", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + sessionStorage.getItem("token"),

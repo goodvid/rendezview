@@ -152,6 +152,101 @@ class GoogleAPI:
         with open(self.TOKEN_FILE_PATH, 'w') as token_file:
             json.dump(token_info, token_file, indent=2)
 
+    def add_event(self, creds, event):
+        """
+        Adds an event to the user's primary calendar.
+
+        Args:
+            creds: The OAuth2 credentials of the user.
+            event (dict): The event to add, formatted according to the Google Calendar API specification.
+
+        Returns:
+            The created event if successful, including the event ID, None otherwise.
+        """
+        try:
+            service = build('calendar', 'v3', credentials=creds)
+            event_result = service.events().insert(
+                calendarId='primary', body=event).execute()
+            event_id = event_result.get('id')  # Retrieve the event ID
+            print(f"Event created: {event_result.get('htmlLink')}")
+            print(f"Event ID: {event_id}")
+            return event_result, event_id  # This already includes the event ID
+        except HttpError as error:
+            print(f"An error occurred: {error}")
+            return None
+
+    def remove_event(self, creds, event_id):
+        """
+        Removes an event from the user's primary calendar.
+
+        Args:
+            creds: The OAuth2 credentials of the user.
+            event_id (str): The ID of the event to remove.
+
+        Returns:
+            True if the event was successfully deleted, False otherwise.
+        """
+        try:
+            service = build('calendar', 'v3', credentials=creds)
+            service.events().delete(calendarId='primary', eventId=event_id).execute()
+            print("Event deleted successfully.")
+            return True
+        except HttpError as error:
+            print(f"An error occurred: {error}")
+            return False
+
+    def create_event_dict(self, summary=None, start_date=None, end_date=None, start_time=None, end_time=None, time_zone='America/New_York'):
+        """
+        Constructs an event dictionary for Google Calendar API.
+
+        Args:
+            summary (str): The title or summary of the event.
+            start_date (str): The start date in 'YYYY-MM-DD' format.
+            end_date (str): The end date in 'YYYY-MM-DD' format. For all-day events, this should be the day after the event.
+            start_time (str, optional): The start time in 'HH:MM:SS' format. Optional for all-day events.
+            end_time (str, optional): The end time in 'HH:MM:SS' format. Optional for all-day events.
+            time_zone (str): The time zone of the event. Defaults to 'America/New_York'.
+
+        Returns:
+            dict: The event dictionary suitable for the Google Calendar API.
+        """
+        event = {}
+        if summary:
+            event['summary'] = summary
+        else:
+            event['summary'] = "No details were provided"
+
+        # Determine if this is an all-day event or not based on the presence of start_time and end_time
+        if start_time and end_time:
+            # Time-specific event
+            start_datetime = f"{start_date}T{start_time}"
+            end_datetime = f"{end_date}T{end_time}"
+            event['start'] = {
+                'dateTime': start_datetime, 'timeZone': time_zone}
+            # if no time zone is proided it will just choose America/NY time zone
+            event['end'] = {'dateTime': end_datetime, 'timeZone': time_zone}
+        else:
+            # All-day event
+            event['start'] = {'date': start_date}
+            # Note: For all-day events, the end date is exclusive.
+            event['end'] = {'date': end_date}
+
+        return event
+
+    def create_test_event(self):
+        summary = "This is a test event to see if adding to calendar works"
+        start_time = '10:00:00'
+        end_time = '11:00:00'
+        start_date = '2024-03-17'
+        end_date = '2024-03-17'
+        timeZone = 'America/New_York'
+        # need to save an event id to the database for each event that is
+        # added to the database
+        events = self.create_event_dict(summary=summary, start_date=start_date,
+                                        end_date=end_date, start_time=start_time, end_time=end_time, time_zone=timeZone)
+        pprint(events)
+        return events
+
     def log_items(self):
 
         msg = f"\nBase Path: \n{self.BASE_PATH}\nToken File Path: \n{self.TOKEN_FILE_PATH}\nCredentials File Path: \n{self.CREDENTIALS_FILE_PATH}\nCredential File Name: \n{self.CREDENTIAL_FILE_NAME}\nToken File Name: \n{self.TOKEN_FILE_NAME}\n"
@@ -161,11 +256,25 @@ class GoogleAPI:
         """
         Test function:
         """
+        # will need to save event_result/id to database
         self.log_items()
+        event_result = ""
+        event_id = ""
         while True:
             try:
                 x = input("Enter a letter: ")
-                if x == "a":
+                if x == "c":
+                    print("-------Adding event to calendar...-------------")
+                    event = self.create_test_event()
+                    creds = self.user_token_exists()
+                    event_result, event_id = self.add_event(
+                        creds=creds, event=event)
+                elif x == "e":
+                    print("-------Removing event from calendar...-------------")
+                    # just need credentials and event id to remove
+                    creds = self.user_token_exists()
+                    self.remove_event(creds=creds, event_id=event_id)
+                elif x == "a":
                     print("-------Authenticating...-------------")
                     creds = self.authenticate()
                     user_email = self.get_user_email(creds)

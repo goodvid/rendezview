@@ -9,7 +9,7 @@ import Settings from "@mui/icons-material/Settings";
 function MainNavbar() {
   const logout = () => {
     axios
-      .get("http://127.0.0.1:5000/delinkGoogle")
+      .get("http://localhost:5000/delinkGoogle")
       .then((res) => {
         if (res.data.status === 200) {
           sessionStorage.removeItem("token");

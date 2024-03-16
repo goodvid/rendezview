@@ -40,7 +40,7 @@ function ResetPassword() {
     event.preventDefault();
 
     // Send to Flask server
-    fetch("http://127.0.0.1:5000/user/resetpassword", {
+    fetch("http://localhost:5000/user/resetpassword", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + sessionStorage.getItem("token"),

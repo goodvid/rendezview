@@ -50,7 +50,7 @@ function EventDetails() {
   });
 
   useEffect(() => {
-    fetch("http://127.0.0.1:5000/event/details", {
+    fetch("http://localhost:5000/event/details", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -99,7 +99,7 @@ function EventDetails() {
     event.preventDefault();
 
     // Send data to Flask server
-    fetch("http://127.0.0.1:5000/profile/join-event", {
+    fetch("http://localhost:5000/profile/join-event", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + sessionStorage.getItem("token"),
@@ -116,7 +116,7 @@ function EventDetails() {
           return false;
         }
       })
-      .then(() => {})
+      .then(() => { })
       .catch((error) => {
         console.log("error", error);
       });
@@ -153,7 +153,7 @@ function EventDetails() {
             <Stack direction="row" alignItems="center" gap="0.5rem">
               <EventDetailsButton
                 startIcon={<EventIcon />}
-                // onClick={}
+              // onClick={}
               >
                 Add to Calendar
               </EventDetailsButton>
@@ -295,7 +295,7 @@ function EventDetails() {
 
   const deleteEvent = () => {
     axios
-      .post("http://127.0.0.1:5000/delete_event", {
+      .post("http://localhost:5000/delete_event", {
         event: eventObject,
       })
       .then((res) => {

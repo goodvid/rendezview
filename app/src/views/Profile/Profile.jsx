@@ -41,7 +41,7 @@ function Profile() {
 
   useEffect(() => {
     axios
-      .get("http://127.0.0.1:5000/user/getusername", {
+      .get("http://localhost:5000/user/getusername", {
         headers: {
           Authorization: "Bearer " + sessionStorage.getItem("token"),
           "Content-Type": "application/json",
@@ -96,7 +96,7 @@ function Profile() {
   const handleSubmit = () => {
     // eslint-disable-next-line no-restricted-globals
     if (confirm("are you sure you want to delete all data?")) {
-      fetch("http://127.0.0.1:5000/profile/clearhistory", {
+      fetch("http://localhost:5000/profile/clearhistory", {
         method: "GET",
         headers: {
           Authorization: "Bearer " + sessionStorage.getItem("token"),
@@ -111,7 +111,7 @@ function Profile() {
             return false;
           }
         })
-        .then((data) => {})
+        .then((data) => { })
         .catch((error) => {
           console.log("error", error);
         });

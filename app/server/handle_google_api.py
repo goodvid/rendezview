@@ -16,9 +16,11 @@ def handle_authentication():
         else:
             credentials = google_api_instance.authenticate()
             user_email = google_api_instance.get_user_email(credentials)
-            google_api_instance.save_credentials_and_email(credentials, user_email)
+            google_api_instance.save_credentials_and_email(
+                credentials, user_email)
             # Add the new user
-            new_user = User(email=user_email, username=user_email, password="N/A")
+            new_user = User(email=user_email,
+                            username=user_email, password="N/A")
             db.session.add(new_user)
             db.session.commit()
             # probably need another function here to actually save it to the database
