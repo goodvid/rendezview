@@ -34,7 +34,7 @@ function Profile() {
   const navigate = useNavigate();
   const response = false;
 
-  const [displayName, setDisplayName] = useState("Display Name");
+  const [displayName, setDisplayName] = useState("");
   const [profilePic, setProfilePic] = useState("");
   const [friendsNum, setFriendsNum] = useState(0);
   const [groupsNum, setGroupsNum] = useState(0);
@@ -179,7 +179,7 @@ function Profile() {
   const LeftInfoStack = () => {
     return (
       <Stack
-        width="50vh"
+        width="75vh"
         style={{
           backgroundColor: "#4D4D4D",
           color: "white",
@@ -200,7 +200,7 @@ function Profile() {
             aria-label="edit display name"
             size="large"
           >
-            <SettingsIcon fontSize="inherit" height="2rem" width="2rem" />
+            <SettingsIcon onClick={() => navigate("/settings")} fontSize="inherit" height="2rem" width="2rem" />
           </IconButton>
         </Box>
 
@@ -232,13 +232,15 @@ function Profile() {
         {/* Display Name */}
         <TextIconStack>
           <h1>{displayName}</h1>
+          {/* 
           <IconButton
             sx={{ color: "white" }}
             aria-label="edit display name"
             size="large"
           >
             <EditIcon fontSize="inherit" />
-          </IconButton>
+          </IconButton> 
+          */}
         </TextIconStack>
 
         {/* Location, Friends, Groups */}
@@ -293,7 +295,7 @@ function Profile() {
     return (
       <Stack className="profile-components">
         <h2>Upcoming Events</h2>
-        <Box sx={{ overflowX: "auto", width: "100%" }}>
+        <Box sx={{ overflowX: "auto", '&::-webkit-scrollbar': {width: '0.4em'}, width: "100%" }}>
           <Stack direction="row" gap={2} sx={{ minWidth: "max-content" }}>
             {upcomingEvents.map((event) => (
               <UpcomingEventCard
@@ -375,7 +377,7 @@ function Profile() {
     return (
       <Stack className="profile-components">
         <h2>Past Events</h2>
-        <Box sx={{ overflowX: "auto", width: "100%" }}>
+        <Box sx={{ overflowX: "auto", '&::-webkit-scrollbar': {width: '0.4em'}, width: "100%" }}>
           <Stack direction="row" gap={2} sx={{ minWidth: "max-content" }}>
             {pastEvents.map((event) => (
               <PastEventCard
@@ -439,7 +441,7 @@ function Profile() {
     return (
       <Stack className="profile-components">
         <h2>Blogs</h2>
-        <Box sx={{ overflowX: "auto", width: "100%" }}>
+        <Box sx={{ overflowX: "auto", '&::-webkit-scrollbar': {width: '0.4em'}, width: "100%" }}>
           <Stack
             direction="row"
             gap={2}
