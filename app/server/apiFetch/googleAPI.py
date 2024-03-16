@@ -247,6 +247,33 @@ class GoogleAPI:
         pprint(events)
         return events
 
+    def add_event_with_attendees(self, creds, event, attendee_emails):
+        """
+        Adds an event to the user's primary calendar and sends invitations to the provided attendees.
+
+        Args:
+            creds: The OAuth2 credentials of the user.
+            event (dict): The event to add, formatted according to the Google Calendar API specification.
+            attendee_emails (list of str): A list of email addresses to invite to the event.
+
+        Returns:
+            The created event if successful, None otherwise.
+        """
+        # Add the attendees to the event dictionary
+        attendees = [{'email': email} for email in attendee_emails]
+        event['attendees'] = attendees
+
+        try:
+            service = build('calendar', 'v3', credentials=creds)
+            event_result = service.events().insert(
+                calendarId='primary', sendUpdates='all', body=event).execute()
+            print(
+                f"Event created and invitations sent: {event_result.get('htmlLink')}")
+            return event_result
+        except HttpError as error:
+            print(f"An error occurred: {error}")
+            return None
+
     def log_items(self):
 
         msg = f"\nBase Path: \n{self.BASE_PATH}\nToken File Path: \n{self.TOKEN_FILE_PATH}\nCredentials File Path: \n{self.CREDENTIALS_FILE_PATH}\nCredential File Name: \n{self.CREDENTIAL_FILE_NAME}\nToken File Name: \n{self.TOKEN_FILE_NAME}\n"
@@ -260,10 +287,20 @@ class GoogleAPI:
         self.log_items()
         event_result = ""
         event_id = ""
+        # successfully was able to send calendar invites and add these events
+        # to the users calendars. Will just need to make sure the email is valid
+        # and construct an attendees list
+        attendees = ['Wintersoldier909@gmail.com', 'Stimilsina2034@gmail.com']
         while True:
             try:
                 x = input("Enter a letter: ")
-                if x == "c":
+                if x == "t":
+                    event = self.create_test_event()
+                    creds = self.user_token_exists()
+                    self.add_event_with_attendees(
+                        creds=creds, event=event, attendee_emails=attendees)
+
+                elif x == "c":
                     print("-------Adding event to calendar...-------------")
                     event = self.create_test_event()
                     creds = self.user_token_exists()
