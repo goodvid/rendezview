@@ -267,12 +267,43 @@ class GoogleAPI:
             service = build('calendar', 'v3', credentials=creds)
             event_result = service.events().insert(
                 calendarId='primary', sendUpdates='all', body=event).execute()
+            event_id = event_result.get('id')  # Retrieve the event ID
+            print(f"Event ID: {event_id}")
             print(
                 f"Event created and invitations sent: {event_result.get('htmlLink')}")
-            return event_result
+            return event_result, event_id
         except HttpError as error:
             print(f"An error occurred: {error}")
             return None
+
+    def get_event_rsvp_status(self, creds, event_id):
+        """
+        Retrieves the RSVP status of all invitees for a specific event.
+
+        Args:
+            creds: The OAuth2 credentials of the user.
+            event_id (str): The ID of the event.
+
+        Returns:
+            A dictionary with lists of emails categorized by their RSVP status: 'accepted', 'declined', 'needsAction'.
+        """
+        try:
+            service = build('calendar', 'v3', credentials=creds)
+            event = service.events().get(calendarId='primary', eventId=event_id).execute()
+            attendees = event.get('attendees', [])
+
+            # Categorize attendees by their response status
+            rsvp_status = {'accepted': [], 'declined': [],
+                           'needsAction': [], 'tentative': []}
+            for attendee in attendees:
+                if 'responseStatus' in attendee:
+                    rsvp_status[attendee['responseStatus']].append(
+                        attendee['email'])
+
+            return rsvp_status
+        except HttpError as error:
+            print(f"An error occurred: {error}")
+            return {}
 
     def log_items(self):
 
@@ -283,6 +314,7 @@ class GoogleAPI:
         """
         Test function:
         """
+        save_id = "hq3nap6genbl0p80uqqr51llec"
         # will need to save event_result/id to database
         self.log_items()
         event_result = ""
@@ -290,16 +322,24 @@ class GoogleAPI:
         # successfully was able to send calendar invites and add these events
         # to the users calendars. Will just need to make sure the email is valid
         # and construct an attendees list
-        attendees = ['Wintersoldier909@gmail.com', 'Stimilsina2034@gmail.com']
+        # 'Stimilsina2034@gmail.com']
+        attendees = ['Wintersoldier909@gmail.com']
         while True:
             try:
                 x = input("Enter a letter: ")
                 if x == "t":
+                    print(
+                        "-------Adding event to calendar with attendees...-------------")
                     event = self.create_test_event()
                     creds = self.user_token_exists()
-                    self.add_event_with_attendees(
+                    event_result, event_id = self.add_event_with_attendees(
                         creds=creds, event=event, attendee_emails=attendees)
-
+                elif x == "l":
+                    print("-------Getting RSVP list for an event...-------------")
+                    creds = self.user_token_exists()
+                    rsp_list = self.get_event_rsvp_status(
+                        creds=creds, event_id=save_id)
+                    pprint(rsp_list)
                 elif x == "c":
                     print("-------Adding event to calendar...-------------")
                     event = self.create_test_event()
