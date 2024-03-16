@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { Stack, Badge, IconButton, Avatar } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
 import { useNavigate } from "react-router-dom";
 import "./Register.css";
 import { Link } from "react-router-dom";
@@ -10,6 +12,7 @@ function Register() {
   const [email, setEmail] = useState("");
   const [flag, setFlag] = useState(0);
   const [message, setMessage] = useState("");
+  const [profilePic, setProfilePic] = useState("");
 
   const updateEmail = (event) => {
     if (event != null) {
@@ -85,10 +88,36 @@ function Register() {
                 className="w-[360px] h-[45px] border-login-blue outline rounded-md pl-2"
               />
             </div>
-            {/* <div className='mt-8 w-[300px]'>
-                            <span>Choose Profile Picture</span>
-                            <button className='w-[150px] h-[150px] rounded-full outline mt-4' />
-                        </div> */}
+            <div className='justify-center items-center w-[200px]'>
+              <div className="w-[360px] text-gray-500 text-left mt-[40px]">
+                <span>Choose Profile Picture</span>
+              </div>
+              <div className='relative justify-center items-center mt-4 w-[150px]'>
+                <Stack>
+                  <Badge
+                    overlap="circular"
+                    anchorOrigin={{
+                      vertical: "bottom",
+                      horizontal: "right",
+                    }}
+                    badgeContent={
+                      <IconButton
+                        style={{ color: "#4D4D4D", backgroundColor: "white" }}
+                      >
+                        <EditIcon />
+                      </IconButton>
+                    }
+                  >
+                    <Avatar
+                      sx={{ width: "150px", height: "150px" }}
+                      alt={"avatar"}
+                      src={profilePic}
+                    />
+                  </Badge>
+                  <input type="file" style={{ display: "none" }} />
+                </Stack>
+              </div>
+            </div>
           </div>
 
           {flag == 0 ? (
