@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Stack, Badge, IconButton, Avatar } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
-import { useNavigate } from "react-router-dom";
+import { Form, useNavigate } from "react-router-dom";
 import "./Register.css";
 import { Link } from "react-router-dom";
 import axios from "axios";
@@ -12,7 +12,23 @@ function Register() {
   const [email, setEmail] = useState("");
   const [flag, setFlag] = useState(0);
   const [message, setMessage] = useState("");
-  const [profilePic, setProfilePic] = useState("");
+
+  const [displayPic, setDisplayPic] = useState();
+  const [profilePic, setProfilePic] = useState();
+  const handleProfilePicChange = (event) => {
+    if (event) {
+      const file = event.target.files[0];
+      var pattern = /image-*/;
+
+      if (!file.type.match(pattern)) {
+        alert("Please choose an image file.");
+        return;
+      }
+
+      setDisplayPic(URL.createObjectURL(event.target.files[0]));
+      setProfilePic(event.target.files[0]);
+    }
+  }
 
   const updateEmail = (event) => {
     if (event != null) {
@@ -28,12 +44,17 @@ function Register() {
     }
   };
 
-  const register = () => {
-    axios
-      .post("http://127.0.0.1:5000/user/register", {
-        email: email,
-        password: password,
-      })
+  const register = (event) => {
+    let formData = new FormData();
+    formData.append("email", email);
+    formData.append("password", password);
+    formData.append('profilePicture', profilePic);
+
+    axios.post("http://127.0.0.1:5000/user/register", formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
       .then((res) => {
         console.log(res);
         const status = res.data["status"];
@@ -101,20 +122,20 @@ function Register() {
                       horizontal: "right",
                     }}
                     badgeContent={
-                      <IconButton
-                        style={{ color: "#4D4D4D", backgroundColor: "white" }}
-                      >
-                        <EditIcon />
-                      </IconButton>
+                      <label htmlFor="icon-button-file">
+                        <IconButton aria-label="upload picture" style={{background: 'white'}} component="span">
+                          <EditIcon />
+                        </IconButton>
+                      </label>
                     }
                   >
                     <Avatar
                       sx={{ width: "150px", height: "150px" }}
                       alt={"avatar"}
-                      src={profilePic}
+                      src={displayPic}
                     />
                   </Badge>
-                  <input type="file" style={{ display: "none" }} />
+                  <input accept="image/*" id="icon-button-file" type="file" style={{ display: 'none'}} onChange={handleProfilePicChange} />
                 </Stack>
               </div>
             </div>

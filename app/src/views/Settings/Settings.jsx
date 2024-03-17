@@ -46,6 +46,10 @@ function Settings() {
     navigate("/changepassword");
   };
 
+  const changeProfilePicClick = () => {
+    navigate("/changeprofilepic");
+  };
+
   // Delete Account
   const [deleteOpen, setDeleteOpen] = React.useState(false);
 
@@ -176,6 +180,7 @@ function Settings() {
                   color: "black",
                   "&:hover": { backgroundColor: "#8bd4ff", color: "black" },
                 }}
+                onClick={changeProfilePicClick}
               >
                 Change Profile Picture
               </Button>

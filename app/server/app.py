@@ -195,28 +195,39 @@ def resetpassword():
 
     return jsonify({"message": "Password reset successfully"}), 200
 
+def saveProfilePic(profile_picture):
+    picture = profile_picture.filename
+    picture_path = os.path.join(app.root_path, 'static\profile_pics', picture)
+
+    profile_picture.save(picture_path)
+    return picture_path
 
 @app.route('/user/register', methods=["POST"])
 def register():
-    data = request.json
-    email = data['email']
-    password = data['password']
+    email = request.form['email']
+    password = request.form['password']
+    picture = request.files['profilePicture']
 
     cur_users = User.query.filter_by(email=email).first()
 
     if (cur_users != None):
-        return {'status': '400', 'message': 'This email belongs to an existing account.'}
+       return {'status': '400', 'message': 'This email belongs to an existing account.'}
 
     if (len(password) < 7):
-        return {'status': '400', 'message': 'Please choose a password that is greater than 6.'}
+       return {'status': '400', 'message': 'Please choose a password that is greater than 6.'}
+    
+    profilePicPath = saveProfilePic(picture)
+
     new_user = User(email=email,
                     username=email,
-                    password=password)
+                    password=password,
+                    picture=profilePicPath)
     db.session.add(new_user)
     db.session.commit()
-    access_token = create_access_token(identity={"email": email, "name": email})
+    access_token = create_access_token(identity={"email": email, "name": email}) 
     return jsonify({"message": "Account created!", "status": 200, "access_token": access_token})
     # return jsonify(access_token), 200
+
 
 
 @app.route('/events', methods=['GET'])
