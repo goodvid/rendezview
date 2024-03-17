@@ -14,7 +14,7 @@ function Register() {
   const [message, setMessage] = useState("");
 
   const [displayPic, setDisplayPic] = useState();
-  const [profilePic, setProfilePic] = useState();
+  const [profilePic, setProfilePic] = useState(null);
   const handleProfilePicChange = (event) => {
     if (event) {
       const file = event.target.files[0];
@@ -48,7 +48,9 @@ function Register() {
     let formData = new FormData();
     formData.append("email", email);
     formData.append("password", password);
-    formData.append('profilePicture', profilePic);
+    if (profilePic) {
+      formData.append('profilePicture', profilePic);
+    }
 
     axios.post("http://127.0.0.1:5000/user/register", formData, {
       headers: {
