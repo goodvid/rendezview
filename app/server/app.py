@@ -124,7 +124,6 @@ def changeusername():
 
     return jsonify({"message": "Username changed successfully"}), 200
 
-
 @app.route("/user/changepassword", methods=["POST"])
 @jwt_required()
 def changepassword():
@@ -170,7 +169,7 @@ def deleteaccount():
     
     user = User.query.filter_by(email=current_user["email"]).first()
     # remove profile picture
-    if ("profile_pics" in user.picture):
+    if (user.picture and "profile_pics" in user.picture):
         os.remove(user.picture)
     db.session.delete(user)
     db.session.commit()
@@ -198,9 +197,9 @@ def resetpassword():
 
     return jsonify({"message": "Password reset successfully"}), 200
 
-def saveProfilePic(profile_picture):
+def saveProfilePic(profile_picture, email):
     picture = profile_picture.filename
-    picture_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir, 'public\profile_pics', picture))
+    picture_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir, 'public\profile_pics', email + "-" + picture))
     print(picture_path)
 
     profile_picture.save(picture_path)
@@ -222,7 +221,7 @@ def register():
     
     if (request.files):
         picture = request.files['profilePicture']
-        profilePicPath = saveProfilePic(picture)
+        profilePicPath = saveProfilePic(picture, email)
     else:
         profilePicPath = 'NULL'
     
@@ -324,6 +323,26 @@ def getprofilepic():
 
     return {'status': '200', 'profilePic': pic}
 
+@app.route('/user/changeprofilepic', methods=['POST'])
+@jwt_required()
+def changeprofilepic():
+    current_user = get_jwt_identity()
+
+    user = User.query.filter_by(email=current_user["email"]).first()
+    email = user.email
+    os.remove(user.picture)
+
+    if (request.files):
+        picture = request.files['profilePicture']
+        profilePicPath = saveProfilePic(picture, email)
+    else:
+        profilePicPath = 'NULL'
+
+    user.picture = profilePicPath
+    db.session.commit()
+    
+    return {'status': '200', 'profilePic': profilePicPath}
+
 @app.route("/user/deleteprofilepic", methods=["GET"])
 @jwt_required()
 def deleteprofilepic():
@@ -331,7 +350,8 @@ def deleteprofilepic():
     
     user = User.query.filter_by(email=current_user["email"]).first()
     # remove profile picture
-    os.remove(user.picture)
+    if (user.picture and "profile_pics" in user.picture):
+        os.remove(user.picture)
     user.picture = ""
     db.session.commit()
 
