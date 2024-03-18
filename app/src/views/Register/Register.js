@@ -63,16 +63,15 @@ function Register() {
         const message = res.data["message"];
         const token = res.data["access_token"];
 
-        if (status === "200") {
+        if (status === 200) {
           setFlag(2);
+          sessionStorage.setItem("token", token);
+
+          setMessage(message);
+          navigate("/username");
         } else {
           setFlag(1);
         }
-
-        sessionStorage.setItem("token", token);
-
-        setMessage(message);
-        navigate("/username");
       })
       .catch((err) => {
         console.log(err);

@@ -211,11 +211,6 @@ def register():
     form = jsonify({"email": request.form['email'], "password": request.form['password']})
     email = form.json['email']
     password = form.json['password']
-    if (request.files):
-        picture = request.files['profilePicture']
-        profilePicPath = saveProfilePic(picture)
-    else:
-        profilePicPath = 'NULL'
 
     cur_users = User.query.filter_by(email=email).first()
 
@@ -224,6 +219,12 @@ def register():
 
     if (len(password) < 7):
        return {'status': '400', 'message': 'Please choose a password that is greater than 6.'}
+    
+    if (request.files):
+        picture = request.files['profilePicture']
+        profilePicPath = saveProfilePic(picture)
+    else:
+        profilePicPath = 'NULL'
     
     new_user = User(email=email,
                     username=email,
