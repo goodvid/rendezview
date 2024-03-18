@@ -55,6 +55,22 @@ function Profile() {
       .catch((err) => {
         console.log(err);
       });
+
+      axios
+      .get("http://127.0.0.1:5000/user/getprofilepic", {
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        console.log(res.data["status"]);
+        setProfilePic(res.data["profilePic"]);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
   }, []);
 
   // Dummy data; replace with actual database data
@@ -222,7 +238,6 @@ function Profile() {
           >
             <Avatar
               sx={{ width: "15rem", height: "15rem" }}
-              alt={"avatar"}
               src={profilePic}
             />
           </Badge>
