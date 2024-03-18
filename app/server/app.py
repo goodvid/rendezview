@@ -170,7 +170,8 @@ def deleteaccount():
     
     user = User.query.filter_by(email=current_user["email"]).first()
     # remove profile picture
-    os.remove(user.picture)
+    if ("profile_pics" in user.picture):
+        os.remove(user.picture)
     db.session.delete(user)
     db.session.commit()
 
@@ -321,6 +322,19 @@ def getprofilepic():
     pic = pic[slice(pic.find('\profile_pics'), None)].replace('\\', '/')
 
     return {'status': '200', 'profilePic': pic}
+
+@app.route("/user/deleteprofilepic", methods=["GET"])
+@jwt_required()
+def deleteprofilepic():
+    current_user = get_jwt_identity()
+    
+    user = User.query.filter_by(email=current_user["email"]).first()
+    # remove profile picture
+    os.remove(user.picture)
+    user.picture = ""
+    db.session.commit()
+
+    return jsonify({"message": "Profile picture deleted successfully"}), 200
 
 
 @app.route('/user_events', methods=['GET'])

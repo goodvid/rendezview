@@ -81,6 +81,37 @@ function Settings() {
 
   let resp = "";
 
+  const deleteProfilePictureClick = (event) => {
+    event.preventDefault();
+
+    // Send to Flask server
+    fetch("http://127.0.0.1:5000/user/deleteprofilepic", {
+      method: "GET",
+      headers: {
+        Authorization: "Bearer " + sessionStorage.getItem("token"),
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        if (response.status === 200) {
+          resp = response;
+          window.location.reload();
+          return response.json();
+        } else {
+          alert("Error.");
+          return false;
+        }
+      })
+      .then((data) => {
+        if (resp.status == 200) {
+          console.log(sessionStorage.getItem("token"));
+        }
+      })
+      .catch((error) => {
+        console.log("error", error);
+      });
+  };
+
   const deleteAccountClick = (event) => {
     event.preventDefault();
 
@@ -202,6 +233,23 @@ function Settings() {
               >
                 Change Profile Picture
               </Button>
+
+              <Button
+                variant="contained"
+                disableElevation
+                sx={{
+                  textTransform: "none",
+                  width: "200px",
+                  height: "50px",
+                  backgroundColor: "#D1EEFF",
+                  color: "black",
+                  "&:hover": { backgroundColor: "#8bd4ff", color: "black" },
+                }}
+                onClick={deleteProfilePictureClick}
+              >
+                Delete Profile Picture
+              </Button>
+              
             </Stack>
           </Stack>
 
