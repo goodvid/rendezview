@@ -197,7 +197,8 @@ def resetpassword():
 
 def saveProfilePic(profile_picture):
     picture = profile_picture.filename
-    picture_path = os.path.join(app.root_path, 'static\profile_pics', picture)
+    picture_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir, 'public\profile_pics', picture))
+    print(picture_path)
 
     profile_picture.save(picture_path)
     return picture_path
@@ -307,6 +308,17 @@ def getusername():
     username = user.username
 
     return {'status': '200', 'username': username}
+
+@app.route('/user/getprofilepic', methods=['GET'])
+@jwt_required()
+def getprofilepic():
+    current_user = get_jwt_identity()
+
+    user = User.query.filter_by(email=current_user["email"]).first()
+    pic = user.picture
+    pic = pic[slice(pic.find('\profile_pics'), None)].replace('\\', '/')
+
+    return {'status': '200', 'profilePic': pic}
 
 
 @app.route('/user_events', methods=['GET'])
