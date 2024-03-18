@@ -71,18 +71,26 @@ function Profile() {
         console.log(err);
       });
 
+      axios
+      .get("http://127.0.0.1:5000/user/getpreferences", {
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        console.log(res.data["status"]);
+        const preferences = res.data["preferences"];
+        setTags(preferences.split(","));
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
   }, []);
 
   // Dummy data; replace with actual database data
-  const [tags, setTags] = useState([
-    "Comedy",
-    "Food",
-    "Film",
-    "Travel",
-    "Rock",
-    "Yoga",
-    "DIY",
-  ]);
+  const [tags, setTags] = useState([]);
   const [upcomingEvents, setUpcomingEvents] = useState([
     {
       id: 1,

@@ -312,6 +312,17 @@ def getusername():
 
     return {'status': '200', 'username': username}
 
+@app.route('/user/getpreferences', methods=['GET'])
+@jwt_required()
+def getpreferences():
+    current_user = get_jwt_identity()
+
+    user = User.query.filter_by(email=current_user["email"]).first()
+    preferences = user.preferences
+
+    return {'status': '200', 'preferences': preferences}
+
+
 @app.route('/user/getprofilepic', methods=['GET'])
 @jwt_required()
 def getprofilepic():
