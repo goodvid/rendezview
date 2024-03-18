@@ -222,26 +222,10 @@ function Profile() {
 
         {/* Profile Picture */}
         <Stack>
-          <Badge
-            overlap="circular"
-            anchorOrigin={{
-              vertical: "bottom",
-              horizontal: "right",
-            }}
-            badgeContent={
-              <IconButton
-                style={{ color: "#4D4D4D", backgroundColor: "white" }}
-              >
-                <EditIcon />
-              </IconButton>
-            }
-          >
-            <Avatar
+          <Avatar
               sx={{ width: "15rem", height: "15rem" }}
               src={profilePic}
             />
-          </Badge>
-          <input type="file" style={{ display: "none" }} />
         </Stack>
 
         {/* Display Name */}

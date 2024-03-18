@@ -330,7 +330,8 @@ def changeprofilepic():
 
     user = User.query.filter_by(email=current_user["email"]).first()
     email = user.email
-    os.remove(user.picture)
+    if (user.picture and "profile_pics" in user.picture):
+        os.remove(user.picture)
 
     if (request.files):
         picture = request.files['profilePicture']

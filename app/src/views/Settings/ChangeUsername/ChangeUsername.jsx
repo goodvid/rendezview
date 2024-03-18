@@ -33,10 +33,26 @@ function ChangeUsername() {
     }
   };
 
+  const [username, setUsername] = useState("");
   const [profilePic, setProfilePic] = useState("");
 
   useEffect(() => {
-      axios
+    axios
+    .get("http://127.0.0.1:5000/user/getusername", {
+      headers: {
+        Authorization: "Bearer " + sessionStorage.getItem("token"),
+        "Content-Type": "application/json",
+      },
+    })
+    .then((res) => {
+      console.log(res.data["status"]);
+      setUsername(res.data["username"]);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+    
+    axios
       .get("http://127.0.0.1:5000/user/getprofilepic", {
         headers: {
           Authorization: "Bearer " + sessionStorage.getItem("token"),
@@ -117,7 +133,7 @@ function ChangeUsername() {
                   verticalAlign: "middle",
                 }}
               >
-                Name
+                {username}
               </h1>
             </Stack>
             <Stack
