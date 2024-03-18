@@ -168,8 +168,10 @@ def changeemail():
 def deleteaccount():
     current_user = get_jwt_identity()
     
-    User.query.filter_by(email=current_user["email"]).delete()
-    # db.session.delete(user)
+    user = User.query.filter_by(email=current_user["email"]).first()
+    # remove profile picture
+    os.remove(user.picture)
+    db.session.delete(user)
     db.session.commit()
 
     return jsonify({"message": "Account deleted successfully"}), 200
