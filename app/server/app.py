@@ -168,9 +168,7 @@ def deleteaccount():
     current_user = get_jwt_identity()
     
     user = User.query.filter_by(email=current_user["email"]).first()
-    # remove profile picture
-    if (user.picture and "profile_pics" in user.picture):
-        os.remove(user.picture)
+    deleteprofilepic()
     db.session.delete(user)
     db.session.commit()
 
@@ -200,9 +198,9 @@ def resetpassword():
 def saveProfilePic(profile_picture, email):
     picture = profile_picture.filename
     picture_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir, 'public\profile_pics', email + "-" + picture))
-    print(picture_path)
 
     profile_picture.save(picture_path)
+    picture_path = picture_path[slice(picture_path.find('\profile_pics'), None)].replace('\\', '/')
     return picture_path
 
 @app.route('/user/register', methods=["POST"])
@@ -330,7 +328,8 @@ def getprofilepic():
 
     user = User.query.filter_by(email=current_user["email"]).first()
     pic = user.picture
-    pic = pic[slice(pic.find('\profile_pics'), None)].replace('\\', '/')
+    # print("PATH: " + os.path.abspath(os.path.join(os.getcwd(), os.pardir, 'public' + pic)))
+    # pic = pic[slice(pic.find('\profile_pics'), None)].replace('\\', '/')
 
     return {'status': '200', 'profilePic': pic}
 
@@ -341,11 +340,10 @@ def changeprofilepic():
 
     user = User.query.filter_by(email=current_user["email"]).first()
     email = user.email
-    if (user.picture and "profile_pics" in user.picture):
-        os.remove(user.picture)
 
     if (request.files):
         picture = request.files['profilePicture']
+        deleteprofilepic()
         profilePicPath = saveProfilePic(picture, email)
     else:
         profilePicPath = 'NULL'
@@ -363,7 +361,8 @@ def deleteprofilepic():
     user = User.query.filter_by(email=current_user["email"]).first()
     # remove profile picture
     if (user.picture and "profile_pics" in user.picture):
-        os.remove(user.picture)
+        abspath = os.path.abspath(os.path.join(os.getcwd(), os.pardir, 'public' + user.picture))
+        os.remove(abspath)
     user.picture = ""
     db.session.commit()
 
