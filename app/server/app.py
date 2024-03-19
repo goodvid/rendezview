@@ -321,6 +321,40 @@ def get_user_events():
     return {'status': '200', 'events': event_values}
 
 
+@app.route('/joined_events', methods=["POST", "GET"])
+@jwt_required()
+def joined_events():
+    current_user = get_jwt_identity()
+    print(current_user)
+    user = User.query.filter_by(email=current_user["email"]).first()
+
+    saved_events = user.saved_events
+
+    events = []
+
+    for event in saved_events:
+        print(user.id, "curr user")
+        print(len(saved_events), event.userID, event.eventID)
+        if event.userID != user.id:
+
+            newe = Event.query.filter_by(
+                eventID=event.eventID, userID=event.userID
+            ).first()
+            print(newe, "ahahahahah")
+            values = {
+                "id": newe.eventID,
+                "name": newe.name if newe.name else "No name",
+                "time": newe.start_time if newe.start_time else "No time",
+                "date": newe.start_date if newe.start_date else "No date",
+                "location": newe.location if newe.location else "No location",
+                "desc": newe.desc if newe.desc else "No description",
+            }
+            events.append(values)
+
+    print("here are saved events", len(events))
+    return {"status": "200", "events": events}
+
+
 @app.route('/set-username', methods=['POST'])
 def receive_data():
     # if request.is_json:
@@ -330,6 +364,20 @@ def receive_data():
     # item = User(name=current_user, username = data) TODO fix getting current user
     return jsonify({"message": "Data received successfully", "yourData": data}), 200
 
+@app.route('/get_all_usernames', methods=["POST", "GET"])
+def get_users():
+    name = request.get_json()
+    print("check json", name)
+
+    query = db.session.query(User.username).all()
+    query = db.session.query(User).filter(User.username.like("%" + name + "%")).all()
+    names = [q.username for q in query]
+
+    print(query, "names", names)
+    return {"status": "200", "names": names}
+
+# @app.route('/add_friend', methods=['POST'])
+# def add_friend():
 
 @app.route('/delete_event', methods=['POST'])
 def delete_event():
@@ -416,7 +464,7 @@ def create_event():
     )
     print(new_event.desc, "description", eventDesc)
     db.session.add(new_event)
-    user.saved_events.append(new_event)
+    #user.saved_events.append(new_event)
 
     db.session.commit()
     return jsonify({"message": "event set", "eventID": new_event.eventID}), 200
@@ -487,8 +535,8 @@ def get_details():
     return jsonify(event_json=event_json)
 
 
-# @app.route("/check_user", methods = ["POST"])
-@jwt_required
+@app.route("/check_user", methods=["POST", "GET"])
+@jwt_required()
 def hello():
     user = get_jwt_identity()
     return jsonify(logged_in=user), 200

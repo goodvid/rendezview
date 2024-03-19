@@ -1,7 +1,7 @@
 import "./Profile.css";
 import { React, useState, useEffect } from "react";
 import {
-  Card,
+  
   Avatar,
   Button,
   Box,
@@ -16,7 +16,7 @@ import {
   BlueCard,
   ReadMoreButton,
   TextIconStack,
-  EditIconButton,
+  
 } from "../../components/StyledComponents/StyledComponents";
 
 import { useNavigate } from "react-router-dom";

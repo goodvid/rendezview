@@ -16,6 +16,7 @@ import ChangeUsername from "./views/Settings/ChangeUsername/ChangeUsername";
 import ChangeEmail from "./views/Settings/ChangeEmail/ChangeEmail";
 import ChangePassword from "./views/Settings/ChangePassword/ChangePassword";
 import ResetPassword from "./views/ResetPassword/ResetPassword";
+import Friends from "./views/Friends/AddFriends"
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
           <Route path="/changeemail" element={<ChangeEmail />} />
           <Route path="/changepassword" element={<ChangePassword />} />
           <Route path="/resetpassword" element={<ResetPassword />} />
+          <Route path="/addfriends" element={<Friends/>}></Route>
         </Routes>
       </BrowserRouter>
     </div>

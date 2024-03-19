@@ -8,7 +8,7 @@ function Username() {
   const navigate = useNavigate();
 
   const checkLogin = () => {
-    console.log("t4ijewtwijr");
+    //console.log("t4ijewtwijr");
     if ("token" in sessionStorage) {
       console.log("yes");
       return true;
