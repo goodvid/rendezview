@@ -31,6 +31,8 @@ import {
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { pinwheel } from "ldrs";
+import categories from "../eventCategories.json";
+import Event from "../../components/Event/Event";
 
 function EventDetails() {
   // TODO: replace hard coded names
@@ -51,6 +53,7 @@ function EventDetails() {
   });
 
   useEffect(() => {
+    // Fetch event object
     setLoading(true);
     fetch("http://127.0.0.1:5000/event/details", {
       method: "POST",
@@ -73,7 +76,7 @@ function EventDetails() {
       .catch((error) => {
         console.log("error", error);
       });
-  }, []);
+  }, [id]);
   const [eventName, setEventName] = useState("");
   const [eventID, setEventId] = useState("");
   const [date, setDate] = useState("");
@@ -81,17 +84,10 @@ function EventDetails() {
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
   const [organizer, setOrganizer] = useState("");
-  const [tags, setTags] = useState([
-    "Comedy",
-    "Food",
-    "Film",
-    "Travel",
-    "Rock",
-    "Yoga",
-    "DIY",
-  ]);
+  const [category, setCategory] = useState("");
   const [showAll, setShowAll] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [similarEvents, setSimilarEvents] = useState([]);
 
   const navigate = useNavigate();
 
@@ -163,8 +159,11 @@ function EventDetails() {
       setOrganizer(eventObject.hostName);
     }
 
-    setTags(eventObject.category);
-  }, [eventObject]);
+    setCategory(eventObject.category);
+
+    // Get similar events
+    fetchSimilarEvents();
+  }, [eventObject, id]);
 
   const [open, setOpen] = React.useState(false);
 
@@ -298,6 +297,7 @@ function EventDetails() {
       </Stack>
     );
   };
+
   const OrganizerSection = () => {
     return (
       organizer && ( // Don't show organizer section if there is no organizer
@@ -312,30 +312,26 @@ function EventDetails() {
     );
   };
 
-  const TagsSection = () => {
+  const CategorySection = () => {
     return (
-      <Stack className="section">
-        <h2>Tags</h2>
-        <Stack direction="row" alignItems="center" gap="1rem">
-          <Stack
-            direction="row"
-            gap="1rem"
-            justifyContent="space-start"
-            flexWrap="wrap"
-            width="100%"
-          >
-            {tags.map(
-              (
-                name //TODO add proper tags
-              ) => (
-                <div>
-                  <Chip key={name} label={name} />
-                </div>
-              )
-            )}
+      category && ( // Don't show organizer section if there is no organizer
+        <Stack className="section">
+          <h2>Category</h2>
+          {/* <h2>{category}</h2> */}
+          <Stack direction="row" alignItems="center" gap="1rem">
+            <Stack
+              direction="row"
+              gap="1rem"
+              justifyContent="space-start"
+              flexWrap="wrap"
+              width="100%"
+            >
+              {categories.find((cat) => cat.value === category)?.name ||
+                "Category not found"}
+            </Stack>
           </Stack>
         </Stack>
-      </Stack>
+      )
     );
   };
 
@@ -372,6 +368,61 @@ function EventDetails() {
     );
   };
 
+  const isOwner = () => {
+    // TODO: check if the current logged in user is the same as the userID of the event
+    return true;
+  };
+
+  const fetchSimilarEvents = () => {
+    console.log("fetching...");
+    setLoading(true);
+
+    axios
+      .get("http://127.0.0.1:5000/events")
+      .then((response) => {
+        console.log(
+          "Similar events fetched:",
+          response.data["events"]
+            .filter((event) => event.category === eventObject.category)
+            .sort(() => 0.5 - Math.random())
+            .slice(0, 3)
+        );
+        setSimilarEvents(
+          response.data["events"]
+            .filter((event) => event.category === eventObject.category)
+            .sort(() => 0.5 - Math.random())
+            .slice(0, 3)
+        );
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching events:", error);
+        setLoading(false);
+      });
+  };
+
+  const SimilarEventsSection = () => {
+    return (
+      <Stack className="section">
+        <h2>Explore Similar Events</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {similarEvents.map((event, i) => {
+            return (
+              <Event
+                id={event.id}
+                name={event.name}
+                date={event.time + " " + event.date}
+                location={event.location}
+                desc={event.desc}
+                key={i}
+              />
+            );
+          })}
+        </div>
+      </Stack>
+    );
+  };
+
   return (
     <div
       style={{
@@ -393,14 +444,16 @@ function EventDetails() {
           ></l-pinwheel>
         </Stack>
       ) : (
-        <Stack alignItems="center" marginInline="20%">
+        <Stack alignItems="center" marginInline="10%">
           <Stack margin="3rem" gap="1rem">
             <EventInfoSection />
             <EventDetailsSection />
             <LocationSection />
             <OrganizerSection />
-            {/* <TagsSection /> */}
-            {sessionStorage.getItem("token") ? <EditDelete /> : <div />}
+            <CategorySection />
+            {isOwner() &&
+              (sessionStorage.getItem("token") ? <EditDelete /> : <div />)}
+            <SimilarEventsSection />
           </Stack>
         </Stack>
       )}

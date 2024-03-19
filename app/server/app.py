@@ -232,6 +232,7 @@ def get_events():
                     'name': event.name,
                     'time': event.start_date,
                     'location': event.location,
+                    'category': event.category,
                     'desc': event.desc}
         event_values.append(values)
 
