@@ -29,10 +29,10 @@ import axios from "axios";
 
 function FriendsList() {
   const navigate = useNavigate();
-  const response = false;
 
   const [displayName, setDisplayName] = useState("");
   const [profilePic, setProfilePic] = useState("");
+  const [tags, setTags] = useState([]);
   const [friendsNum, setFriendsNum] = useState(0);
   const [groupsNum, setGroupsNum] = useState(0);
 
@@ -52,18 +52,39 @@ function FriendsList() {
       .catch((err) => {
         console.log(err);
       });
-  }, []);
 
-  // Dummy data; replace with actual database data
-  const [tags, setTags] = useState([
-    "Comedy",
-    "Food",
-    "Film",
-    "Travel",
-    "Rock",
-    "Yoga",
-    "DIY",
-  ]);
+      axios
+      .get("http://127.0.0.1:5000/user/getprofilepic", {
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        console.log(res.data["status"]);
+        setProfilePic(res.data["profilePic"]);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
+      axios
+      .get("http://127.0.0.1:5000/user/getpreferences", {
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        console.log(res.data["status"]);
+        const preferences = res.data["preferences"];
+        setTags(preferences.split(","));
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
+  }, []);
 
   const LeftInfoStack = () => {
     return (
@@ -169,7 +190,7 @@ function FriendsList() {
 
   const RightFriendsStack = () => {
     return (
-      <Stack width="100vw" overflow="hidden">
+      <Stack width="100%" overflow="hidden">
         <h1> test </h1>
       </Stack>
     );
@@ -187,7 +208,8 @@ function FriendsList() {
     >
       <Navbar />
       <Stack
-        width="100vw"
+        width="100%"
+        height="100%"
         direction="row"
         gap="2rem"
         justifyContent="space-between"

@@ -4,3 +4,11 @@
   overflow: visible;
   margin: 1rem 0rem 1rem 1rem;
 }
+
+.friendsNum:hover {
+  font-weight: bold;
+}
+
+.groupsNum:hover {
+  font-weight: bold;
+}
