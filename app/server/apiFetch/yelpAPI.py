@@ -87,7 +87,8 @@ class YelpAPI:
             print(business)
             return business
         else:
-            return jsonify({"message": "An error occurred while processing events"}), 500
+            return {"error": "An error occurred while processing events", "status": response.status_code}
+            # return jsonify({"message": "An error occurred while processing events"}), 500
 
     def get_events_based_on_location(self, location="", is_free="", sort_on="", start_date="", category=""):
         # Set parameters only if its passed in 

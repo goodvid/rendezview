@@ -48,8 +48,11 @@ class User(UserMixin, db.Model):
 
 
 class Event(db.Model):
+    userID = db.Column(db.Integer, db.ForeignKey("user.id"))
     eventID = db.Column(db.Integer, primary_key = True)
     yelpID = db.Column(db.String(500))
+    googleID = db.Column(db.String(100))
+
     desc = db.Column(db.String(5000))
     name = db.Column(db.String(50))
     location = db.Column(db.String(50))
@@ -58,11 +61,10 @@ class Event(db.Model):
     start_date = db.Column(db.String(50))
     event_datetime = db.Column(db.DateTime)
     hostName = db.Column(db.String(50))
-
-    userID = db.Column(db.Integer, db.ForeignKey("user.id"))
-
     rating = db.Column(db.Float)
     category = db.Column(db.String(50))
+    longitude = db.Column(db.Float)
+    latitude = db.Column(db.Float)
 
     type = db.Column(db.String(50))
     def as_dict(self):

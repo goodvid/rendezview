@@ -233,6 +233,8 @@ def get_events():
                     'time': event.start_date,
                     'location': event.location,
                     'category': event.category,
+                    'latitude': event.latitude,
+                    'longitude': event.longitude,
                     'desc': event.desc}
         event_values.append(values)
 
@@ -450,6 +452,8 @@ def fetch_api_events():
             eventDateTime = parser.isoparse(event['time_start'])
             category = event['category']
             businessID = event['business_id']
+            latitude = event['latitude']
+            longitude = event['longitude']
 
             # For each event, either update the existing record or create a new one
             existingEvent = Event.query.filter_by(yelpID=yelpID).first()
@@ -461,7 +465,7 @@ def fetch_api_events():
                 existingEvent.event_datetime = eventDateTime
                 existingEvent.category = category
             else:
-                newEvent = Event(name=name, desc=eventDesc, location=locationAddress, start_date=eventDateTime, category=category, yelpID=yelpID, hostName=businessID)
+                newEvent = Event(name=name, desc=eventDesc, location=locationAddress, start_date=eventDateTime, category=category, yelpID=yelpID, hostName=businessID, latitude=latitude, longitude=longitude)
                 db.session.add(newEvent)
                 db.session.flush()  
                 eventIDTracking.append(newEvent.eventID)
@@ -481,6 +485,9 @@ def fetch_business():
 
     yelp_api_instance = YelpAPI()
     business = yelp_api_instance.get_business_from_id(businessID=businessID)
+
+    if 'error' in business:
+        return jsonify({"message": "Events processed", "business": ""}), 200
 
     return jsonify({"message": "Events processed", "business": business}), 200
 
