@@ -14,7 +14,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(50), unique=True)
     username = db.Column(db.String(50), unique=True)
     password = db.Column(db.String(50))
-    picture = db.Column(db.String(100))
+    picture = db.Column(db.String(50))
     friends = db.Column(db.String(1000))
 
     blogs = db.relationship('Blog', backref='blog', lazy=True, cascade='all, delete')

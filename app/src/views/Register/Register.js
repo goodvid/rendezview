@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Stack, Badge, IconButton, Avatar } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import { Form, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "./Register.css";
 import { Link } from "react-router-dom";
 import axios from "axios";
@@ -12,23 +10,6 @@ function Register() {
   const [email, setEmail] = useState("");
   const [flag, setFlag] = useState(0);
   const [message, setMessage] = useState("");
-
-  const [displayPic, setDisplayPic] = useState();
-  const [profilePic, setProfilePic] = useState(null);
-  const handleProfilePicChange = (event) => {
-    if (event) {
-      const file = event.target.files[0];
-      var pattern = /image-*/;
-
-      if (!file.type.match(pattern)) {
-        alert("Please choose an image file.");
-        return;
-      }
-
-      setDisplayPic(URL.createObjectURL(event.target.files[0]));
-      setProfilePic(event.target.files[0]);
-    }
-  }
 
   const updateEmail = (event) => {
     if (event != null) {
@@ -44,34 +25,28 @@ function Register() {
     }
   };
 
-  const register = (event) => {
-    let formData = new FormData();
-    formData.append("email", email);
-    formData.append("password", password);
-    if (profilePic) {
-      formData.append('profilePicture', profilePic);
-    }
-
-    axios.post("http://127.0.0.1:5000/user/register", formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    })
+  const register = () => {
+    axios
+      .post("http://127.0.0.1:5000/user/register", {
+        email: email,
+        password: password,
+      })
       .then((res) => {
         console.log(res);
         const status = res.data["status"];
         const message = res.data["message"];
         const token = res.data["access_token"];
 
-        if (status === 200) {
+        if (status === "200") {
           setFlag(2);
-          sessionStorage.setItem("token", token);
-
-          setMessage(message);
-          navigate("/username");
         } else {
           setFlag(1);
         }
+
+        sessionStorage.setItem("token", token);
+
+        setMessage(message);
+        navigate("/username");
       })
       .catch((err) => {
         console.log(err);
@@ -110,36 +85,10 @@ function Register() {
                 className="w-[360px] h-[45px] border-login-blue outline rounded-md pl-2"
               />
             </div>
-            <div className='justify-center items-center w-[200px]'>
-              <div className="w-[360px] text-gray-500 text-left mt-[40px]">
-                <span>Choose Profile Picture</span>
-              </div>
-              <div className='relative justify-center items-center mt-4 w-[150px]'>
-                <Stack>
-                  <Badge
-                    overlap="circular"
-                    anchorOrigin={{
-                      vertical: "bottom",
-                      horizontal: "right",
-                    }}
-                    badgeContent={
-                      <label htmlFor="icon-button-file">
-                        <IconButton aria-label="upload picture" style={{background: 'white'}} component="span">
-                          <EditIcon />
-                        </IconButton>
-                      </label>
-                    }
-                  >
-                    <Avatar
-                      sx={{ width: "150px", height: "150px" }}
-                      alt={"avatar"}
-                      src={displayPic}
-                    />
-                  </Badge>
-                  <input accept="image/*" id="icon-button-file" type="file" style={{ display: 'none'}} onChange={handleProfilePicChange} />
-                </Stack>
-              </div>
-            </div>
+            {/* <div className='mt-8 w-[300px]'>
+                            <span>Choose Profile Picture</span>
+                            <button className='w-[150px] h-[150px] rounded-full outline mt-4' />
+                        </div> */}
           </div>
 
           {flag == 0 ? (
