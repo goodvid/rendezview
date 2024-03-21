@@ -18,6 +18,8 @@ import {
   TextIconStack,
   EditIconButton,
 } from "../../../components/StyledComponents/StyledComponents";
+import Friend from "../../../components/Friend/Friend";
+
 
 import { useNavigate } from "react-router-dom";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -142,15 +144,6 @@ function FriendsList() {
         {/* Display Name */}
         <TextIconStack>
           <h1>{displayName}</h1>
-          {/* 
-          <IconButton
-            sx={{ color: "white" }}
-            aria-label="edit display name"
-            size="large"
-          >
-            <EditIcon fontSize="inherit" />
-          </IconButton> 
-          */}
         </TextIconStack>
 
         {/* Location, Friends, Groups */}
@@ -190,8 +183,13 @@ function FriendsList() {
 
   const RightFriendsStack = () => {
     return (
-      <Stack width="100%" overflow="hidden">
-        <h1> test </h1>
+      <Stack 
+        className = "profile-components"
+        width="100%" overflow="hidden" alignItems="flex-start"
+      >
+        <h2>Friends</h2>
+        <Friend></Friend>
+        <Friend></Friend>
       </Stack>
     );
   };
