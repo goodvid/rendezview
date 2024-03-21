@@ -73,7 +73,7 @@ def signOutFromGoogle():
             'status': 200
         })
     else:
-        return {"message": "Error occurred while attempting to link accounts", 'status': 401}
+        return {"message": "Error occurred while attempting to delink account", 'status': 401}
 
 
 @app.route('/user/login', methods=['POST'])
@@ -506,7 +506,42 @@ def get_details():
     return jsonify(event_json=event_json)
 
 
+@app.route("/events/addToCalendar", methods=["POST"])
+def add_event_to_calendar():
+    # the event id that I sent will be different
+    data = request.json
+    event_id = data.get('eventID')  # Ensure this matches your JS payload
+    event = Event.query.filter_by(eventID=event_id).first()
+    if event:
+        response = handle_google_api.add_to_calendar(event=event)
+        if response["status"] == 200:
+            return jsonify({"status": 200, "message": "Success"}), 200
+        else:
+            return jsonify({"status": 400, "message": "Something went wrong with add to calendar"}), 400
+    else:
+        return jsonify({"status": 404, "message": "Event not found"}), 404
+
+
+@app.route("/events/addToCalendar", methods=["POST"])
+def remove_from_calendar():
+    # the event id I get back will be slightly different
+    data = request.json
+    # Ensure this matches your JS payload
+    event_id = data.get('eventID')
+    event = Event.query.filter_by(eventID=event_id).first()
+    if event:
+        response = handle_google_api.add_to_calendar(event=event)
+        if response["status"] == 200:
+            return jsonify({"status": 200, "message": "Success"}), 200
+        else:
+            return jsonify({"status": 400, "message": "Something went wrong with add to calendar"}), 400
+    else:
+        return jsonify({"status": 404, "message": "Event not found"}), 404
+
+    return
 # @app.route("/check_user", methods = ["POST"])
+
+
 @jwt_required
 def hello():
     user = get_jwt_identity()

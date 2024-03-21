@@ -16,6 +16,7 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import PersonIcon from "@mui/icons-material/Person";
 import EventIcon from "@mui/icons-material/Event";
 import ShareIcon from "@mui/icons-material/Share";
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useEffect } from "react";
 import Navbar from "../../components/Navbar/Navbar";
 import testImage from "../../media/testImage.jpeg";
@@ -91,9 +92,46 @@ function EventDetails() {
     "Yoga",
     "DIY",
   ]);
+
   const [showAll, setShowAll] = useState(false);
 
   const navigate = useNavigate();
+
+  const [isAddedToCalendar, setIsAddedToCalendar] = useState(false);
+
+  const removeFromCalendar = () => {
+    // Implement the actual removal logic here, similar to addToCalendar
+    // For demonstration, just setting the state back to false
+    alert("Successfully removed from Calendar!");
+    setIsAddedToCalendar(false);
+    // You would typically make a fetch call to your backend here
+  };
+
+  const addToCalendar = () => {
+    // Assuming your eventObject contains an eventID field with the correct value
+    const eventData = { eventID: eventObject.eventID };
+
+    fetch("http://localhost:5000/events/addToCalendar", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(eventData),
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 200) {
+          alert("Successfully Added to the Calendar");
+          setIsAddedToCalendar(true);
+        } else {
+          alert("Error Adding to Calendar: " + data.message);
+          setIsAddedToCalendar(false);
+        }
+      })
+      .catch(error => {
+        console.error("Error:", error);
+      });
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -152,10 +190,11 @@ function EventDetails() {
           >
             <Stack direction="row" alignItems="center" gap="0.5rem">
               <EventDetailsButton
-                startIcon={<EventIcon />}
-              // onClick={}
+                startIcon={isAddedToCalendar ? <DeleteIcon /> : <EventIcon />}
+                onClick={isAddedToCalendar ? removeFromCalendar : addToCalendar}
+                style={{ backgroundColor: isAddedToCalendar ? "#e57373" : "inital" }}
               >
-                Add to Calendar
+                {isAddedToCalendar ? "Remove from Calendar" : "Add to Calendar"}
               </EventDetailsButton>
             </Stack>
 
