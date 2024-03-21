@@ -3,9 +3,7 @@ import { Avatar, Button, Stack, IconButton, TextField } from "@mui/material/";
 import SettingsIcon from "@mui/icons-material/Settings";
 import MainNavbar from "../../../components/MainNavbar/MainNavbar";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect, React } from "react";
-import axios from "axios";
-
+import { useState } from "react";
 
 function ChangeUsername() {
   const navigate = useNavigate();
@@ -32,42 +30,6 @@ function ChangeUsername() {
       setconfirmNewUsername(event.target.value);
     }
   };
-
-  const [username, setUsername] = useState("");
-  const [profilePic, setProfilePic] = useState("");
-
-  useEffect(() => {
-    axios
-    .get("http://127.0.0.1:5000/user/getusername", {
-      headers: {
-        Authorization: "Bearer " + sessionStorage.getItem("token"),
-        "Content-Type": "application/json",
-      },
-    })
-    .then((res) => {
-      console.log(res.data["status"]);
-      setUsername(res.data["username"]);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-    
-    axios
-      .get("http://127.0.0.1:5000/user/getprofilepic", {
-        headers: {
-          Authorization: "Bearer " + sessionStorage.getItem("token"),
-          "Content-Type": "application/json",
-        },
-      })
-      .then((res) => {
-        console.log(res.data["status"]);
-        setProfilePic(res.data["profilePic"]);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-      
-  }, []);
 
   let resp = "";
 
@@ -124,7 +86,7 @@ function ChangeUsername() {
             borderRadius="16px"
             sx={{ p: 5, bgcolor: "#ECECEC" }}
           >
-            <Avatar src={profilePic} sx={{ width: 100, height: 100 }} />
+            <Avatar sx={{ width: 100, height: 100 }} />
             <Stack direction="column" justifyContent="center">
               <h1
                 style={{
@@ -133,7 +95,7 @@ function ChangeUsername() {
                   verticalAlign: "middle",
                 }}
               >
-                {username}
+                Name
               </h1>
             </Stack>
             <Stack

@@ -1,6 +1,6 @@
 import * as React from "react";
 import "./Settings.css";
-import { Avatar, Button, Stack, IconButton, requirePropFactory } from "@mui/material/";
+import { Avatar, Button, Stack, IconButton } from "@mui/material/";
 import SettingsIcon from "@mui/icons-material/Settings";
 import CloseIcon from "@mui/icons-material/Close";
 import MainNavbar from "../../components/MainNavbar/MainNavbar";
@@ -16,7 +16,6 @@ function Settings() {
   const navigate = useNavigate();
 
   const [username, setUsername] = useState("");
-  const [profilePic, setProfilePic] = useState("");
 
   useEffect(() => {
     axios
@@ -33,23 +32,6 @@ function Settings() {
       .catch((err) => {
         console.log(err);
       });
-
-    
-      axios
-      .get("http://127.0.0.1:5000/user/getprofilepic", {
-        headers: {
-          Authorization: "Bearer " + sessionStorage.getItem("token"),
-          "Content-Type": "application/json",
-        },
-      })
-      .then((res) => {
-        console.log(res.data["status"]);
-        setProfilePic(res.data["profilePic"]);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-
   }, []);
 
   const changeUsernameClick = () => {
@@ -64,10 +46,6 @@ function Settings() {
     navigate("/changepassword");
   };
 
-  const changeProfilePicClick = () => {
-    navigate("/changeprofilepic");
-  };
-
   // Delete Account
   const [deleteOpen, setDeleteOpen] = React.useState(false);
 
@@ -80,37 +58,6 @@ function Settings() {
   };
 
   let resp = "";
-
-  const deleteProfilePictureClick = (event) => {
-    event.preventDefault();
-
-    // Send to Flask server
-    fetch("http://127.0.0.1:5000/user/deleteprofilepic", {
-      method: "GET",
-      headers: {
-        Authorization: "Bearer " + sessionStorage.getItem("token"),
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => {
-        if (response.status === 200) {
-          resp = response;
-          window.location.reload();
-          return response.json();
-        } else {
-          alert("Error.");
-          return false;
-        }
-      })
-      .then((data) => {
-        if (resp.status == 200) {
-          console.log(sessionStorage.getItem("token"));
-        }
-      })
-      .catch((error) => {
-        console.log("error", error);
-      });
-  };
 
   const deleteAccountClick = (event) => {
     event.preventDefault();
@@ -162,7 +109,7 @@ function Settings() {
             borderRadius="16px"
             sx={{ p: 5, bgcolor: "#171B26" }}
           >
-            <Avatar src={profilePic} sx={{ width: 100, height: 100 }} />
+            <Avatar sx={{ width: 100, height: 100 }} />
             <Stack direction="column" justifyContent="center">
               <h1
                 style={{
@@ -229,27 +176,9 @@ function Settings() {
                   color: "black",
                   "&:hover": { backgroundColor: "#8bd4ff", color: "black" },
                 }}
-                onClick={changeProfilePicClick}
               >
                 Change Profile Picture
               </Button>
-
-              <Button
-                variant="contained"
-                disableElevation
-                sx={{
-                  textTransform: "none",
-                  width: "200px",
-                  height: "50px",
-                  backgroundColor: "#D1EEFF",
-                  color: "black",
-                  "&:hover": { backgroundColor: "#8bd4ff", color: "black" },
-                }}
-                onClick={deleteProfilePictureClick}
-              >
-                Delete Profile Picture
-              </Button>
-              
             </Stack>
           </Stack>
 
