@@ -279,31 +279,33 @@ function Main() {
             ))}
           </Stack>
         </div>
-        <div className="flex flex-row flex-wrap gap-5 pl-10 pt-10">
+        <div className="flex flex-row flex-wrap gap-5 p-10 pt-10">
           <FilteringTab />
-          {loading ? (
-            <Stack width="100%" height="100%" alignItems="center">
-              <l-pinwheel
-                size="100"
-                stroke="3.5"
-                speed="0.9"
-                color="black"
-              ></l-pinwheel>
-            </Stack>
-          ) : (
-            events.reverse().map((event, i) => {
-              return (
-                <Event
-                  name={event.name}
-                  date={event.time}
-                  location={event.location}
-                  key={i}
-                  id={event.id}
-                  desc={event.desc}
-                />
-              );
-            })
-          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 ">
+            {loading ? (
+              <Stack width="100%" height="100%" alignItems="center">
+                <l-pinwheel
+                  size="100"
+                  stroke="3.5"
+                  speed="0.9"
+                  color="black"
+                ></l-pinwheel>
+              </Stack>
+            ) : (
+              events.reverse().map((event, i) => {
+                return (
+                  <Event
+                    name={event.name}
+                    date={dayjs(event.time).toString()}
+                    location={event.location}
+                    key={i}
+                    id={event.id}
+                    desc={event.desc}
+                  />
+                );
+              })
+            )}
+          </div>
         </div>
       </div>
     </div>
