@@ -2,7 +2,7 @@ from flask import Flask,  request, jsonify, session
 from flask_session import Session
 from models import db  # Importing the db instance and models
 from flask_cors import CORS, cross_origin
-from models import User, Event
+from models import User, Event, EventRating
 from types import SimpleNamespace
 from dateutil import parser
 from sqlalchemy.exc import SQLAlchemyError
@@ -504,6 +504,67 @@ def get_details():
 
     return jsonify(event_json=event_json)
 
+
+@app.route("/get_user_id", methods=["GET"])
+@jwt_required()
+def get_user_id():
+
+    msg = ""
+    current_user = get_jwt_identity()
+
+    if current_user:
+        userEmail = current_user.get('email')
+        user = User.query.filter_by(email=userEmail).first()
+        if user:
+            msg = user.id 
+    
+    return jsonify({"userID": msg}), 200
+
+
+@app.route('/rate_event', methods=['POST'])
+def rate_event():
+    event_id = request.json.get('eventID')
+    user_id = request.json.get('userID')
+    rating = request.json.get('rating')
+    yelp_id = request.json.get('yelpID')
+
+    if (yelp_id) :
+        existing_rating = EventRating.query.filter_by(yelpID=yelp_id, userID=user_id).first()
+    else:
+        existing_rating = EventRating.query.filter_by(eventID=event_id, userID=user_id).first()
+
+    if existing_rating:
+        existing_rating.rating = rating
+        message = "Event rating updated successfully!"
+    else:
+        new_rating = EventRating(eventID=event_id, yelpID=yelp_id, userID=user_id, rating=rating)
+        db.session.add(new_rating)
+        message = "Event rated successfully!"
+
+    db.session.commit()
+
+    return jsonify({"message": message}), 201
+
+@app.route('/get_rating', methods=['POST'])
+def get_rating():
+    event_id = request.json.get('eventID')
+    yelp_id = request.json.get('yelpID')
+    user_id = request.json.get('userID')
+
+    rating = 0
+    if (yelp_id) :
+        existing_entry = EventRating.query.filter_by(yelpID=yelp_id, userID=user_id).first()
+    else:
+        existing_entry = EventRating.query.filter_by(eventID=event_id, userID=user_id).first()
+
+    if existing_entry:
+        message = "Successfully got rating"
+        rating = existing_entry.rating
+    else:
+        rating = 0
+        message = "Not yet rated"
+
+    return jsonify({"message": message, "rating": rating}), 201
 
 # @app.route("/check_user", methods = ["POST"])
 @jwt_required

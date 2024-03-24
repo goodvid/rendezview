@@ -1,10 +1,20 @@
 import React from "react";
 import { useState } from "react";
+import { useEffect } from "react";
+import Navbar from "../../components/Navbar/Navbar";
+import testImage from "../../media/testImage.jpeg";
+import "./EventDetails.css";
+import { useParams } from "react-router-dom";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { pinwheel } from "ldrs";
+import categories from "../eventCategories.json";
+import Event from "../../components/Event/Event";
+import dayjs from "dayjs";
+
 import {
-  Chip,
   Stack,
   Button,
-  Paper,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -16,11 +26,11 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import PersonIcon from "@mui/icons-material/Person";
 import EventIcon from "@mui/icons-material/Event";
 import ShareIcon from "@mui/icons-material/Share";
-import { useEffect } from "react";
-import Navbar from "../../components/Navbar/Navbar";
-import testImage from "../../media/testImage.jpeg";
-import "./EventDetails.css";
-import { useParams } from "react-router-dom";
+import ThumbUpAltIcon from "@mui/icons-material/ThumbUpAlt";
+import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
+import ThumbDownAltIcon from "@mui/icons-material/ThumbDownAlt";
+import ThumbDownOffAltIcon from "@mui/icons-material/ThumbDownOffAlt";
+import IconButton from "@mui/material/IconButton";
 import {
   ReadMoreButton,
   YellowButton,
@@ -28,17 +38,25 @@ import {
   GrayButton,
   EventDetailsButton,
 } from "../../components/StyledComponents/StyledComponents";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import { pinwheel } from "ldrs";
-import categories from "../eventCategories.json";
-import Event from "../../components/Event/Event";
 
 function EventDetails() {
   // TODO: replace hard coded names
   pinwheel.register(); // Set loading animation
   let id = useParams();
   let resp = false;
+  const [eventName, setEventName] = useState("");
+  const [eventID, setEventId] = useState("");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
+  const [description, setDescription] = useState("");
+  const [location, setLocation] = useState("");
+  const [organizer, setOrganizer] = useState("");
+  const [category, setCategory] = useState("");
+  const [showAll, setShowAll] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [similarEvents, setSimilarEvents] = useState([]);
+  const [rating, setRating] = useState(0);
+  const [userID, setUserID] = useState("");
   const [eventObject, setEventObject] = useState({
     eventID: "",
     desc: "",
@@ -52,7 +70,14 @@ function EventDetails() {
     type: "",
   });
 
+  const navigate = useNavigate();
+
   useEffect(() => {
+    fetchEventObject();
+    getUserID();
+  }, [id]);
+
+  const fetchEventObject = () => {
     // Fetch event object
     setLoading(true);
     fetch("http://127.0.0.1:5000/event/details", {
@@ -76,20 +101,95 @@ function EventDetails() {
       .catch((error) => {
         console.log("error", error);
       });
-  }, [id]);
-  const [eventName, setEventName] = useState("");
-  const [eventID, setEventId] = useState("");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
-  const [description, setDescription] = useState("");
-  const [location, setLocation] = useState("");
-  const [organizer, setOrganizer] = useState("");
-  const [category, setCategory] = useState("");
-  const [showAll, setShowAll] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [similarEvents, setSimilarEvents] = useState([]);
+  };
 
-  const navigate = useNavigate();
+  const getUserID = () => {
+    setLoading(true);
+
+    console.log("user id");
+    fetch("http://127.0.0.1:5000/get_user_id", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + sessionStorage.getItem("token"),
+      },
+    })
+      .then((response) => {
+        if (resp.status != 200) {
+          console.log("not logged in");
+          return;
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("userID:", data.userID);
+        setUserID(data.userID);
+      })
+      .catch((error) => {
+        console.log("error", error);
+      });
+  };
+
+  useEffect(() => {
+    // console.log("rating:", rating);
+    if (userID && eventID && rating) {
+      updateRating(eventID, userID, rating);
+    }
+  }, [rating]);
+
+  const updateRating = (eventID, userID, rating) => {
+    // console.log("eventID:", eventID);
+    // console.log("yelpID:", eventObject.yelpID);
+    // console.log("userID:", userID);
+    // console.log("rating:", rating);
+
+    fetch("http://127.0.0.1:5000/rate_event", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        eventID: eventID,
+        yelpID: eventObject.yelpID,
+        userID: userID,
+        rating: rating,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => console.log(data))
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  };
+
+  useEffect(() => {
+    if (eventID && userID) {
+      getRating();
+    }
+  }, [id, eventID, userID, rating]);
+
+  const getRating = () => {
+    fetch("http://127.0.0.1:5000/get_rating", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        eventID: eventID,
+        yelpID: eventObject.yelpID,
+        userID: userID,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        // console.log("rating json:", data);
+        // console.log("get rating:", data.rating);
+        setRating(data.rating);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -130,7 +230,7 @@ function EventDetails() {
       .get(`http://127.0.0.1:5000/events/business?${params}`)
       .then((response) => {
         console.log("Business fetched: ", response.data);
-        console.log("name:", response.data.business.name);
+        // console.log("name:", response.data.business.name);
         setOrganizer(response.data.business.name);
         setLoading(false);
       })
@@ -173,6 +273,24 @@ function EventDetails() {
 
   const handleClose = () => {
     setOpen(false);
+  };
+
+  const handleRating = (vote) => {
+    if (rating === vote) {
+      setRating(0);
+    } else {
+      setRating(vote);
+    }
+  };
+
+  const checkIfPast = () => {
+    const eventDate = dayjs(date);
+    const diff = dayjs().diff(eventDate);
+    if (diff < 0) {
+      return false;
+    } else {
+      return true;
+    }
   };
 
   const EventInfoSection = () => {
@@ -244,7 +362,7 @@ function EventDetails() {
         <Stack>
           <img src={testImage} style={{ borderRadius: "1rem" }} />
         </Stack>
-        <Stack alignItems="flex-start" marginTop="1rem">
+        <Stack alignItems="flex-start" marginTop="1rem" direction="row">
           <YellowButton
             textAlign="left"
             variant="contained"
@@ -252,6 +370,28 @@ function EventDetails() {
           >
             Join Event
           </YellowButton>
+
+          {sessionStorage.getItem("token") && checkIfPast() ? (
+            <Stack direction="row" marginInline="2rem">
+              <IconButton
+                onClick={() => handleRating(1)}
+                aria-label="like"
+                size="small"
+              >
+                {rating === 1 ? <ThumbUpAltIcon /> : <ThumbUpOffAltIcon />}
+              </IconButton>
+
+              <IconButton
+                onClick={() => handleRating(-1)}
+                aria-label="like"
+                size="small"
+              >
+                {rating === -1 ? <ThumbDownAltIcon /> : <ThumbDownOffAltIcon />}
+              </IconButton>
+            </Stack>
+          ) : (
+            <div />
+          )}
         </Stack>
       </div>
     );
@@ -327,7 +467,7 @@ function EventDetails() {
               width="100%"
             >
               {categories.find((cat) => cat.value === category)?.name ||
-                "Category not found"}
+                category}
             </Stack>
           </Stack>
         </Stack>

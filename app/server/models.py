@@ -91,3 +91,13 @@ class Blog(db.Model):
     author = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     event = db.Column(db.Integer, db.ForeignKey('event.eventID'))
     time = db.Column(db.DateTime)
+
+class EventRating(db.Model):
+    userID = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    eventID = db.Column(db.Integer, db.ForeignKey('event.eventID'), primary_key=True)
+    yelpID = db.Column(db.String(500), nullable=True, default="")
+    rating = db.Column(db.Integer, nullable=False, default=0)
+
+    event = db.relationship('Event', backref=db.backref('ratings', lazy='dynamic'))
+    user = db.relationship('User', backref=db.backref('ratings', lazy='dynamic'))
+    
