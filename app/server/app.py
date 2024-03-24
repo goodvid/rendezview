@@ -566,6 +566,35 @@ def get_rating():
 
     return jsonify({"message": message, "rating": rating}), 201
 
+
+@app.route('/get_avg_rating', methods=['POST'])
+def get_avg_rating():
+    event_id = request.json.get('eventID')
+    yelp_id = request.json.get('yelpID')
+
+    if (yelp_id) :
+        ratingFrom = "yelpID"
+        existingEntries = EventRating.query.filter_by(yelpID=yelp_id).all()
+        posEntries = EventRating.query.filter_by(yelpID=yelp_id, rating=1).all()
+    else:
+        ratingFrom = "eventID"
+        existingEntries = EventRating.query.filter_by(eventID=event_id).all()
+        posEntries = EventRating.query.filter_by(eventID=event_id, rating=1).all()
+
+    if existingEntries:
+
+        numOfRatings = len(existingEntries)
+        posRatings = len(posEntries)
+        avgRating = round((posRatings / numOfRatings) * 100, 2)
+
+        message = "Successfully got rating"
+    else:
+        avgRating = 0
+        numOfRatings = 0
+        message = "Not yet rated"
+
+    return jsonify({"message": message, "ratingFrom": ratingFrom, "avgRating": avgRating, "numOfRatings": numOfRatings, "posRatings": posRatings}), 201
+
 # @app.route("/check_user", methods = ["POST"])
 @jwt_required
 def hello():

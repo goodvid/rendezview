@@ -57,6 +57,8 @@ function EventDetails() {
   const [similarEvents, setSimilarEvents] = useState([]);
   const [rating, setRating] = useState(0);
   const [userID, setUserID] = useState("");
+  const [avgRating, setAvgRating] = useState(null);
+  const [numOfRatings, setNumOfRatings] = useState(0);
   const [eventObject, setEventObject] = useState({
     eventID: "",
     desc: "",
@@ -168,6 +170,12 @@ function EventDetails() {
     }
   }, [id, eventID, userID, rating]);
 
+  useEffect(() => {
+    if (eventID || userID) {
+      getAvgRating();
+    }
+  }, [id, eventID]);
+
   const getRating = () => {
     fetch("http://127.0.0.1:5000/get_rating", {
       method: "POST",
@@ -185,6 +193,28 @@ function EventDetails() {
         // console.log("rating json:", data);
         // console.log("get rating:", data.rating);
         setRating(data.rating);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  };
+
+  const getAvgRating = () => {
+    fetch("http://127.0.0.1:5000/get_avg_rating", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        eventID: eventID,
+        yelpID: eventObject.yelpID,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("avgRating:", data);
+        setAvgRating(data.avgRating);
+        setNumOfRatings(data.numOfRatings);
       })
       .catch((error) => {
         console.error("Error:", error);
@@ -372,22 +402,42 @@ function EventDetails() {
           </YellowButton>
 
           {sessionStorage.getItem("token") && checkIfPast() ? (
-            <Stack direction="row" marginInline="2rem">
-              <IconButton
-                onClick={() => handleRating(1)}
-                aria-label="like"
-                size="small"
+            <Stack
+              direction="row"
+              marginInline="2rem"
+              alignItems="center"
+              justifyItems="center"
+              gap="1rem"
+            >
+              <Stack
+                direction="row"
+                // marginInline="2rem"
+                alignItems="center"
+                gap="0.5rem"
               >
-                {rating === 1 ? <ThumbUpAltIcon /> : <ThumbUpOffAltIcon />}
-              </IconButton>
+                <IconButton
+                  onClick={() => handleRating(1)}
+                  aria-label="like"
+                  size="small"
+                >
+                  {rating === 1 ? <ThumbUpAltIcon /> : <ThumbUpOffAltIcon />}
+                </IconButton>
 
-              <IconButton
-                onClick={() => handleRating(-1)}
-                aria-label="like"
-                size="small"
-              >
-                {rating === -1 ? <ThumbDownAltIcon /> : <ThumbDownOffAltIcon />}
-              </IconButton>
+                <IconButton
+                  onClick={() => handleRating(-1)}
+                  aria-label="like"
+                  size="small"
+                >
+                  {rating === -1 ? (
+                    <ThumbDownAltIcon />
+                  ) : (
+                    <ThumbDownOffAltIcon />
+                  )}
+                </IconButton>
+              </Stack>
+              <p>
+                {avgRating}% ({numOfRatings})
+              </p>
             </Stack>
           ) : (
             <div />
