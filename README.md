@@ -14,3 +14,9 @@ You can also look at login.js, username.js and register.js and its respective fl
 
 Note that session storage only works for the current session. If you close the tab or duplicate it, the session storage is reset 
 
+## [database version control](https://flask-migrate.readthedocs.io/en/latest/)
+- ` pip install Flask-Migrate `
+- to migrate (or commit) do 
+`flask --app app.py db migrate`
+- to upgrade (or push) do
+`flask --app app.py db upgrade` 
