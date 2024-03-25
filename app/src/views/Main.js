@@ -41,14 +41,16 @@ import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 
 function Main() {
   const [events, setEvents] = useState([]);
-  const [location, setLocation] = useState("");
+  const [location, setLocation] = useState("West Lafayette, Indiana, US");
   const [startDate, setStartDate] = useState(null);
   const [unixStartDate, setUnixStartDate] = useState("");
   const [isFree, setIsFree] = useState("");
   const [sortOn, setSortOn] = useState("time_start");
   const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
-  const [locationInput, setLocationInput] = useState("");
+  const [locationInput, setLocationInput] = useState(
+    "West Lafayette, Indiana, US"
+  );
   const [userCoords, setUserCoords] = useState(null);
   const [locLoading, setLocLoading] = useState(false);
   pinwheel.register(); // Set loading animation
@@ -69,22 +71,26 @@ function Main() {
     other: <MoreHorizIcon />,
   };
 
-  function useEffectSkipFirstRender(effect, deps) {
-    const isFirstRender = useRef(true);
+  useEffect(() => {
+    fetchAndDisplayEvents();
+    getIPGeolocation();
+  }, []);
 
-    useEffect(() => {
-      if (isFirstRender.current) {
-        isFirstRender.current = false;
-        return;
-      }
-      effect();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, deps);
-  }
+  const isFirstRender = useRef(true);
 
-  useEffectSkipFirstRender(() => {
+  useEffect(() => {
+    if (isFirstRender.current || location == "West Lafayette, Indiana, US") {
+      isFirstRender.current = false;
+      return;
+    }
+
+    console.log("Location changed, fetching events...");
     fetchAPIEvents();
   }, [location, isFree, sortOn, unixStartDate, category]);
+
+  useEffect(() => {
+    console.log("location changed", location);
+  }, [location]);
 
   useEffect(() => {
     setUnixStartDate(dayjs(startDate).unix());
@@ -101,6 +107,7 @@ function Main() {
     if (sortOn) params.append("sort_on", sortOn);
     if (unixStartDate) params.append("start_date", unixStartDate);
     if (category) params.append("category", category);
+    console.log("url:", `http://127.0.0.1:5000/events/api?${params}`);
     axios
       .get(`http://127.0.0.1:5000/events/api?${params}`)
       .then((response) => {
@@ -114,11 +121,21 @@ function Main() {
   };
 
   const fetchAndDisplayEvents = () => {
+    const params = new URLSearchParams();
+    if (location) params.append("location", location);
+    if (isFree) params.append("is_free", isFree);
+    if (sortOn) params.append("sort_on", sortOn);
+    if (unixStartDate) params.append("start_date", unixStartDate);
+    if (category) params.append("category", category);
+    // console.log("url:", `http://127.0.0.1:5000/events/api?${params}`);
     axios
-      .get("http://127.0.0.1:5000/events")
+      .get(`http://127.0.0.1:5000/filtered_events?${params}`)
       .then((response) => {
-        // console.log("events status: ", response.data["status"]);
-        console.log("Events fetched:", response.data["events"]);
+        console.log("events status: ", response.data["status"]);
+        console.log("All events:", response.data["all_events"]);
+        console.log("Fetched events:", response.data["fetched_events"]);
+        console.log("User events:", response.data["user_events"]);
+        console.log("filters:", response.data["filters"]);
         setEvents(response.data["events"]);
         setLoading(false);
       })
@@ -133,10 +150,6 @@ function Main() {
     setLocationInput(place.formatted_address);
   }, []);
 
-  useEffect(() => {
-    getIPGeolocation();
-  }, []);
-
   const getIPGeolocation = () => {
     setLocLoading(true);
     fetch("https://ipinfo.io/json?token=f92cb4e0401c19")
@@ -145,8 +158,11 @@ function Main() {
         const { city, region, country } = data;
         const formattedAddress = `${city}, ${region}, ${country}`;
 
-        setLocation(formattedAddress);
-        setLocationInput(formattedAddress);
+        if (formattedAddress != location) {
+          console.log("new location:", formattedAddress);
+          // setLocation(formattedAddress);
+          setLocationInput(formattedAddress);
+        }
         setLocLoading(false);
       })
       .catch((error) => {

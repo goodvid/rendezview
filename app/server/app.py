@@ -14,6 +14,8 @@ from flask_jwt_extended import jwt_required
 from flask_jwt_extended import JWTManager
 
 from config import ApplicationConfig
+from datetime import datetime
+from dateutil import parser
 
 from apiFetch.yelpAPI import YelpAPI
 
@@ -236,6 +238,7 @@ def get_events():
                     'category': event.category,
                     'latitude': event.latitude,
                     'longitude': event.longitude,
+                    'yelpID': event.yelpID,
                     'desc': event.desc}
         event_values.append(values)
 
@@ -243,6 +246,62 @@ def get_events():
 
     return {'status': '200', 'events': event_values}
 
+
+@app.route('/filtered_events', methods=['GET'])
+def get_filtered_events():
+    loc = request.args.get('location', default="West Lafayette, IN, USA", type=str)
+    sort_on = request.args.get('sort_on', default=None, type=str)
+    start_date = request.args.get('start_date', default=None, type=str)
+    is_free = request.args.get('is_free', default=None, type=str)
+    category = request.args.get('category', default=None, type=str)
+
+    events = Event.query.all()
+
+    event_values = []
+    fetched_events = []
+    user_events = []
+
+    filters = [loc, sort_on, start_date, is_free, category]
+    for event in events:
+        values = {'id': event.eventID,
+                    'name': event.name,
+                    'start_date': event.start_date,
+                    'location': event.location,
+                    'category': event.category,
+                    'latitude': event.latitude,
+                    'longitude': event.longitude,
+                    'yelpID': event.yelpID,
+                    'desc': event.desc}
+
+        if event.yelpID is None:  # Filter user_events
+            passes_filters = True
+   
+            if loc is not None and values["location"] != loc:
+                passes_filters = False
+
+            if category is not None and values["category"] != category:
+                passes_filters = False
+
+            if start_date is not None:
+                values_start_date = datetime.strptime(values["start_date"], '%Y-%m-%d').date()
+
+                # Assuming start_date is a string in "2010-09-24 20:00:00-04:00" (datetime) format
+                start_date_datetime = parser.parse(start_date)
+                start_date_date = start_date_datetime.date()
+
+                if values_start_date <= start_date_date:
+                    passes_filters = False
+
+            if passes_filters:
+                user_events.append(values)
+                
+        else:
+            fetched_events.append(values)
+
+        event_values.append(values)
+        events = fetched_events + user_events
+
+    return {'status': '200', 'filters': filters, 'events': events, 'all_events': event_values, 'fetched_events': fetched_events, 'user_events': user_events}
 
 @app.route("/event/edit", methods=["POST"])
 def edit_event():
@@ -438,7 +497,7 @@ def fetch_api_events():
     yelp_api_instance = YelpAPI()
     events = yelp_api_instance.get_events_based_on_location(location=loc, is_free=is_free, sort_on=sort_on, start_date=start_date, category=category)
     
-    # # Check the count of fetched events against existing events in the database
+    # Check the count of fetched events against existing events in the database
     fetched_events_count = len(events)
 
     try:
