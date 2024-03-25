@@ -26,6 +26,7 @@ import NearMeIcon from "@mui/icons-material/NearMe";
 import EditIcon from "@mui/icons-material/Edit";
 import LocalActivityIcon from "@mui/icons-material/LocalActivity";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import concertPhoto from "../../media/concert.jpg";
 import Navbar from "../../components/Navbar/Navbar";
 import { withAuth } from "../withAuth";
@@ -41,6 +42,7 @@ function Profile() {
   const [friendsNum, setFriendsNum] = useState(0);
   const [groupsNum, setGroupsNum] = useState(0);
   const [userEvents, setUserEvents] = useState([]);
+  const [hostRating, setHostRating] = useState(null);
 
   useEffect(() => {
     axios
@@ -71,6 +73,8 @@ function Profile() {
         console.log("userEvents:", res.data["events"]);
         setUserEvents(res.data["events"]);
       });
+
+    getHostRating();
   }, []);
 
   useEffect(() => {
@@ -86,9 +90,25 @@ function Profile() {
         past.push(event);
       }
     });
+    // console.log("pastEvents:", past);
     setPastEvents(past);
     setUpcomingEvents(upcoming);
   }, [userEvents]);
+
+  const getHostRating = () => {
+    axios
+      .get("http://127.0.0.1:5000/user/get_host_rating", {
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        // console.log("hostRating object:", res.data);
+        // console.log("hostRating:", res.data.hostRating);
+        setHostRating(res.data.hostRating);
+      });
+  };
 
   // Dummy data; replace with actual database data
   const [tags, setTags] = useState([
@@ -226,6 +246,11 @@ function Profile() {
           </IconButton>
         </TextIconStack>
 
+        <TextIconStack>
+          <ThumbUpIcon />
+          <h3>{hostRating}%</h3>
+        </TextIconStack>
+
         {/* Location, Friends, Groups */}
         <TextIconStack>
           <NearMeIcon style={{ color: "red" }} />
@@ -328,6 +353,7 @@ function Profile() {
                   key={i}
                   id={event.id}
                   desc={event.desc}
+                  rating={event.rating}
                 />
               );
             })}

@@ -19,6 +19,7 @@ from apiFetch.yelpAPI import YelpAPI
 
 import os
 import json
+import statistics
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -318,6 +319,7 @@ def get_user_events():
                     'time': event.start_time if event.start_time else "No time",
                     'date': event.start_date if event.start_date else "No date",
                     'location': event.location if event.location else "No location",
+                    'rating': event.rating if event.rating is not None else None,
                     'desc': event.desc if event.desc else "No description"}
         event_values.append(values)
 
@@ -572,6 +574,7 @@ def get_avg_rating():
     event_id = request.json.get('eventID')
     yelp_id = request.json.get('yelpID')
 
+    # Get all ratings for event
     if (yelp_id) :
         ratingFrom = "yelpID"
         existingEntries = EventRating.query.filter_by(yelpID=yelp_id).all()
@@ -581,19 +584,59 @@ def get_avg_rating():
         existingEntries = EventRating.query.filter_by(eventID=event_id).all()
         posEntries = EventRating.query.filter_by(eventID=event_id, rating=1).all()
 
+    # Calculate everage rating
     if existingEntries:
-
         numOfRatings = len(existingEntries)
         posRatings = len(posEntries)
         avgRating = round((posRatings / numOfRatings) * 100, 2)
 
         message = "Successfully got rating"
+        
+        if (yelp_id) :
+            updatingEvent = Event.query.filter_by(yelpID=yelp_id).first()
+            
+        else:
+            updatingEvent = Event.query.filter_by(eventID=event_id).first()
+        
+        updatingEvent.rating = avgRating
+        db.session.commit()
     else:
         avgRating = 0
         numOfRatings = 0
+        posRatings = 0
         message = "Not yet rated"
 
-    return jsonify({"message": message, "ratingFrom": ratingFrom, "avgRating": avgRating, "numOfRatings": numOfRatings, "posRatings": posRatings}), 201
+    return jsonify({"message": message, "eventID": event_id, "ratingFrom": ratingFrom, "avgRating": avgRating, "numOfRatings": numOfRatings, "posRatings": posRatings}), 201
+
+@app.route('/user/get_host_rating', methods=['GET'])
+@jwt_required()
+def get_host_rating():
+    current_user = get_jwt_identity()
+
+    user = User.query.filter_by(email=current_user["email"]).first()
+    userID = user.id
+
+    eventsHosted = Event.query.filter_by(userID=userID).all()
+
+    if eventsHosted:
+        eventsHosted = [event.eventID for event in eventsHosted]
+    else:
+        eventsHosted = []
+
+    eventRatings = []
+    for id in eventsHosted:
+        eventRatings.extend(Event.query.filter(
+        Event.eventID == id,
+        Event.rating != None 
+    ).all())
+
+    # eventRatings = [{"eventID": rating.eventID, "rating": rating.rating} for rating in eventRatings]
+    eventRatingsArr = [rating.rating for rating in eventRatings]
+
+    hostRating = round(statistics.mean(eventRatingsArr), 2)
+
+    return {'status': '200', 'userID': userID, "eventsHosted": eventsHosted, "eventRatings": eventRatingsArr, "hostRating": hostRating}
+
 
 # @app.route("/check_user", methods = ["POST"])
 @jwt_required

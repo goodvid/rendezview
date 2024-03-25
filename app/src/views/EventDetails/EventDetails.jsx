@@ -79,6 +79,58 @@ function EventDetails() {
     getUserID();
   }, [id]);
 
+  useEffect(() => {
+    console.log(eventObject);
+    setEventName(eventObject.name);
+    setEventId(eventObject.eventID);
+    setDate(eventObject.startDate);
+    setTime(eventObject.startTime);
+    setDescription(eventObject.desc);
+    setLocation(eventObject.location);
+
+    if (eventObject.yelpID) {
+      if (!eventObject.hostName) {
+        setOrganizer(null);
+      } else {
+        getYelpBusinessName(eventObject.hostName);
+      }
+    } else {
+      setOrganizer(eventObject.hostName);
+    }
+
+    setCategory(eventObject.category);
+
+    // Get similar events
+    fetchSimilarEvents();
+  }, [eventObject, id]);
+
+  useEffect(() => {
+    console.log("useEffect rating:", rating);
+    if (userID && eventID && rating) {
+      updateRating(eventID, userID, rating)
+        .then(() => {
+          getAvgRating();
+        })
+        .catch((error) => {
+          console.error("Failed to update rating:", error);
+        });
+    }
+  }, [rating]);
+
+  useEffect(() => {
+    if (eventID && userID) {
+      console.log("getRating");
+      getRating();
+    }
+  }, [id, eventID, userID]);
+
+  useEffect(() => {
+    if (eventID || userID) {
+      console.log("get average rating");
+      getAvgRating();
+    }
+  }, [id, eventID]);
+
   const fetchEventObject = () => {
     // Fetch event object
     setLoading(true);
@@ -132,20 +184,11 @@ function EventDetails() {
       });
   };
 
-  useEffect(() => {
-    // console.log("rating:", rating);
-    if (userID && eventID && rating) {
-      updateRating(eventID, userID, rating);
-    }
-  }, [rating]);
-
   const updateRating = (eventID, userID, rating) => {
-    // console.log("eventID:", eventID);
-    // console.log("yelpID:", eventObject.yelpID);
-    // console.log("userID:", userID);
-    // console.log("rating:", rating);
+    console.log("updateRating");
 
-    fetch("http://127.0.0.1:5000/rate_event", {
+    // Return the fetch promise
+    return fetch("http://127.0.0.1:5000/rate_event", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -157,26 +200,24 @@ function EventDetails() {
         rating: rating,
       }),
     })
-      .then((response) => response.json())
-      .then((data) => console.log(data))
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log(data);
+        return data;
+      })
       .catch((error) => {
         console.error("Error:", error);
+        throw error;
       });
   };
 
-  useEffect(() => {
-    if (eventID && userID) {
-      getRating();
-    }
-  }, [id, eventID, userID, rating]);
-
-  useEffect(() => {
-    if (eventID || userID) {
-      getAvgRating();
-    }
-  }, [id, eventID]);
-
   const getRating = () => {
+    setLoading(true);
     fetch("http://127.0.0.1:5000/get_rating", {
       method: "POST",
       headers: {
@@ -191,15 +232,18 @@ function EventDetails() {
       .then((response) => response.json())
       .then((data) => {
         // console.log("rating json:", data);
-        // console.log("get rating:", data.rating);
+        console.log("get rating:", data.rating);
         setRating(data.rating);
+        setLoading(false);
       })
       .catch((error) => {
         console.error("Error:", error);
+        setLoading(false);
       });
   };
 
   const getAvgRating = () => {
+    console.log("getAvgRating");
     fetch("http://127.0.0.1:5000/get_avg_rating", {
       method: "POST",
       headers: {
@@ -269,31 +313,6 @@ function EventDetails() {
         setLoading(false);
       });
   };
-
-  useEffect(() => {
-    console.log(eventObject);
-    setEventName(eventObject.name);
-    setEventId(eventObject.eventID);
-    setDate(eventObject.startDate);
-    setTime(eventObject.startTime);
-    setDescription(eventObject.desc);
-    setLocation(eventObject.location);
-
-    if (eventObject.yelpID) {
-      if (!eventObject.hostName) {
-        setOrganizer(null);
-      } else {
-        getYelpBusinessName(eventObject.hostName);
-      }
-    } else {
-      setOrganizer(eventObject.hostName);
-    }
-
-    setCategory(eventObject.category);
-
-    // Get similar events
-    fetchSimilarEvents();
-  }, [eventObject, id]);
 
   const [open, setOpen] = React.useState(false);
 
@@ -435,9 +454,13 @@ function EventDetails() {
                   )}
                 </IconButton>
               </Stack>
-              <p>
-                {avgRating}% ({numOfRatings})
-              </p>
+              {numOfRatings > 0 ? (
+                <p>
+                  {avgRating}% ({numOfRatings})
+                </p>
+              ) : (
+                <p>(Event not rated)</p>
+              )}
             </Stack>
           ) : (
             <div />
