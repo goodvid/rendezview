@@ -71,6 +71,8 @@ function Profile() {
         console.log("userEvents:", res.data["events"]);
         setUserEvents(res.data["events"]);
       });
+
+    getHostRating();
   }, []);
 
   useEffect(() => {
@@ -89,6 +91,21 @@ function Profile() {
     setPastEvents(past);
     setUpcomingEvents(upcoming);
   }, [userEvents]);
+
+  const getHostRating = () => {
+    axios
+      .get("http://127.0.0.1:5000/user/get_host_rating", {
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        console.log("userID:", res.data);
+        // console.log("userEvents:", res.data["events"]);
+        // setUserEvents(res.data["events"]);
+      });
+  };
 
   // Dummy data; replace with actual database data
   const [tags, setTags] = useState([
