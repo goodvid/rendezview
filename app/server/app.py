@@ -19,6 +19,7 @@ from apiFetch.yelpAPI import YelpAPI
 
 import os
 import json
+import statistics
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -318,6 +319,7 @@ def get_user_events():
                     'time': event.start_time if event.start_time else "No time",
                     'date': event.start_date if event.start_date else "No date",
                     'location': event.location if event.location else "No location",
+                    'rating': event.rating if event.rating is not None else None,
                     'desc': event.desc if event.desc else "No description"}
         event_values.append(values)
 
@@ -621,16 +623,19 @@ def get_host_rating():
     else:
         eventsHosted = []
 
-    # eventRatings = [EventRating.query.filter_by(eventID=id).all() for id in eventsHosted]
-
     eventRatings = []
     for id in eventsHosted:
-        eventRatings.extend(EventRating.query.filter_by(eventID=id).all())
+        eventRatings.extend(Event.query.filter(
+        Event.eventID == id,
+        Event.rating != None 
+    ).all())
 
-    eventRatingsSerialized = [{"eventID": rating.eventID, "rating": rating.rating} for rating in eventRatings]
+    # eventRatings = [{"eventID": rating.eventID, "rating": rating.rating} for rating in eventRatings]
+    eventRatingsArr = [rating.rating for rating in eventRatings]
 
+    hostRating = round(statistics.mean(eventRatingsArr), 2)
 
-    return {'status': '200', 'userID': userID, "eventsHosted": eventsHosted, "eventRatings": eventRatingsSerialized}
+    return {'status': '200', 'userID': userID, "eventsHosted": eventsHosted, "eventRatings": eventRatingsArr, "hostRating": hostRating}
 
 
 # @app.route("/check_user", methods = ["POST"])
