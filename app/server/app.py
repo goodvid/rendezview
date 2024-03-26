@@ -2,16 +2,18 @@ from flask import Flask,  request, jsonify, session
 from flask_session import Session
 from models import db  # Importing the db instance and models
 from flask_cors import CORS, cross_origin
-from models import User, Event, EventRating
+from models import User, Event, EventRating, Status
 from types import SimpleNamespace
 from dateutil import parser
 from sqlalchemy.exc import SQLAlchemyError
 from flask_migrate import Migrate
 import handle_google_api
-from flask_jwt_extended import create_access_token
-from flask_jwt_extended import get_jwt_identity
-from flask_jwt_extended import jwt_required
-from flask_jwt_extended import JWTManager
+from flask_jwt_extended import (create_access_token,
+                                get_jwt_identity,
+                                jwt_required,
+                                JWTManager,
+                                get_jwt
+)
 
 from config import ApplicationConfig
 
@@ -20,6 +22,8 @@ from apiFetch.yelpAPI import YelpAPI
 import os
 import json
 import statistics
+
+from blocklist import BLOCKLIST
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -33,7 +37,6 @@ jwt = JWTManager(app)
 migrate = Migrate(app, db)
 
 db.init_app(app)  # Initialize db with your Flask app
-
 
 @app.route('/')
 def index():
@@ -65,8 +68,11 @@ def link_google_account():
         }
 
 @app.route("/delinkGoogle", methods=["GET"])
+@jwt_required
 def signOutFromGoogle():
     response = handle_google_api.handle_deauthentication()
+    jti = get_jwt()["jti"]
+    BLOCKLIST.add(jti)
     if response:
         return jsonify({
             'message': 'success',
@@ -175,6 +181,30 @@ def deleteaccount():
 
     return jsonify({"message": "Account deleted successfully"}), 200
 
+@app.route("/user/set_status", methods=["POST"])
+# @jwt_required()
+def set_status():
+    data = request.json
+    other_email = data['email']
+    status_data = data['status']
+
+    current_user = get_jwt_identity()
+
+    current_email = current_user['email']
+
+    status = Status.query.filter_by(user=current_email, friend=other_email)
+
+    if status:
+        status.status = status_data
+        db.session.commit()
+    else:
+        new_status = Status(user=current_email,
+                    friend=other_email,
+                    status=status_data)
+        db.session.add(new_status)
+        db.session.commit()
+
+    return jsonify({"message": "Account deleted successfully"}), 200
 
 @app.route("/user/resetpassword", methods=["POST"])
 def resetpassword():
@@ -298,6 +328,15 @@ def getusername():
 
     return {'status': '200', 'username': username}
 
+@app.route('/user/get_user', methods=['POST'])
+def get_user():
+    data = request.json
+    user = User.query.filter_by(email=data['email']).first()
+
+    if user == None:
+        return {'status': '400', 'username': "None"}
+    else:
+        return {'status': '200', 'username': user.username}
 
 @app.route('/user_events', methods=['GET'])
 @jwt_required()
@@ -437,7 +476,7 @@ def fetch_api_events():
 
     yelp_api_instance = YelpAPI()
     events = yelp_api_instance.get_events_based_on_location(location=loc, is_free=is_free, sort_on=sort_on, start_date=start_date, category=category)
-    
+
     # # Check the count of fetched events against existing events in the database
     fetched_events_count = len(events)
 
@@ -446,6 +485,7 @@ def fetch_api_events():
 
         eventIDTracking = []
         for event in events:
+            print(event.json)
             yelpID = event['id']
             eventDesc = event['description']
             name = event['name']
