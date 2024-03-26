@@ -255,9 +255,10 @@ function Profile() {
           <NearMeIcon style={{ color: "red" }} />
           <h3>Location</h3>
         </TextIconStack>
-        <h3>
-          {friendsNum} FRIENDS • {groupsNum} GROUPS
-        </h3>
+        <Stack direction="row" gap="0.5rem"> 
+            <h3 className="friendsNum"> {friendsNum} FRIENDS</h3>
+            <h3 className="groupsNum"> • {groupsNum} GROUPS</h3>
+        </Stack>
 
         {/* User Tags */}
         <Stack
@@ -540,7 +541,7 @@ function Profile() {
     >
       <Navbar />
       <Stack
-        width="100vw"
+        width="100%"
         direction="row"
         gap="2rem"
         justifyContent="space-between"
