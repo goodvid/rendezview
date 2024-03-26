@@ -1,17 +1,29 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import "./Event.css";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 
-function Event({ id, name, date, location, desc }) {
+function ProfileEvent({ id, name, date, location, desc, rating }) {
   const navigate = useNavigate();
   const eventLink = "/eventdetails/" + id;
+
+  const checkIfPast = () => {
+    const eventDate = dayjs(date);
+    const diff = dayjs().diff(eventDate);
+    if (diff < 0) {
+      return false;
+    } else {
+      return true;
+    }
+  };
+
   return (
     <div
       onClick={() => navigate(eventLink)}
-      className="w-full h-full rounded-lg border-2 border-[#1C3659] flex justify-between items-start gap-5 p-1"
+      className="w-[30rem] h-full bg-white rounded-lg border-[3px] border-[#F2C879] flex justify-between items-start gap-5 p-1"
     >
       {/* <div className=" w-[180px] h-[180px] bg-light-gray">Image</div> */}
       <div className="w-full flex flex-col p-[1rem] gap-5">
@@ -25,8 +37,16 @@ function Event({ id, name, date, location, desc }) {
             <LocationOnIcon sx={{ color: "#1C3659" }} />
             <p className="text-left">{location}</p>
           </div>
+          {checkIfPast() && (
+            <div className="flex flex-row gap-3">
+              <ThumbUpIcon sx={{ color: "#1C3659" }} />
+              {rating != null ? <p>{rating}%</p> : <p>Event not rated</p>}
+            </div>
+          )}
           <div className="flex flex-row mt-1">
-            <p className="text-left font-normal">{desc}</p>
+            <p className="text-left font-normal">
+              {desc.substring(0, 200).concat("...")}
+            </p>
           </div>
         </div>
       </div>
@@ -34,4 +54,4 @@ function Event({ id, name, date, location, desc }) {
   );
 }
 
-export default Event;
+export default ProfileEvent;

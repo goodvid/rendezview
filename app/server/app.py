@@ -2,7 +2,7 @@ from flask import Flask,  request, jsonify, session
 from flask_session import Session
 from models import db  # Importing the db instance and models
 from flask_cors import CORS, cross_origin
-from models import User, Event, Status
+from models import User, Event, EventRating, Status
 from types import SimpleNamespace
 from dateutil import parser
 from sqlalchemy.exc import SQLAlchemyError
@@ -21,6 +21,7 @@ from apiFetch.yelpAPI import YelpAPI
 
 import os
 import json
+import statistics
 
 from blocklist import BLOCKLIST
 
@@ -262,6 +263,9 @@ def get_events():
                     'name': event.name,
                     'time': event.start_date,
                     'location': event.location,
+                    'category': event.category,
+                    'latitude': event.latitude,
+                    'longitude': event.longitude,
                     'desc': event.desc}
         event_values.append(values)
 
@@ -354,6 +358,7 @@ def get_user_events():
                     'time': event.start_time if event.start_time else "No time",
                     'date': event.start_date if event.start_date else "No date",
                     'location': event.location if event.location else "No location",
+                    'rating': event.rating if event.rating is not None else None,
                     'desc': event.desc if event.desc else "No description"}
         event_values.append(values)
 
@@ -473,12 +478,10 @@ def fetch_api_events():
     events = yelp_api_instance.get_events_based_on_location(location=loc, is_free=is_free, sort_on=sort_on, start_date=start_date, category=category)
 
     # # Check the count of fetched events against existing events in the database
-    # existing_events_count = Event.query.count()
     fetched_events_count = len(events)
 
     try:
         db.session.query(Event).filter(Event.yelpID.isnot(None)).delete(synchronize_session=False)
-        # db.session.query(Event).delete()
 
         eventIDTracking = []
         for event in events:
@@ -490,6 +493,9 @@ def fetch_api_events():
             locationAddress = ', '.join(yelpLocation['display_address'])
             eventDateTime = parser.isoparse(event['time_start'])
             category = event['category']
+            businessID = event['business_id']
+            latitude = event['latitude']
+            longitude = event['longitude']
 
             # For each event, either update the existing record or create a new one
             existingEvent = Event.query.filter_by(yelpID=yelpID).first()
@@ -501,7 +507,7 @@ def fetch_api_events():
                 existingEvent.event_datetime = eventDateTime
                 existingEvent.category = category
             else:
-                newEvent = Event(name=name, desc=eventDesc, location=locationAddress, start_date=eventDateTime, category=category, yelpID=yelpID)
+                newEvent = Event(name=name, desc=eventDesc, location=locationAddress, start_date=eventDateTime, category=category, yelpID=yelpID, hostName=businessID, latitude=latitude, longitude=longitude)
                 db.session.add(newEvent)
                 db.session.flush()  
                 eventIDTracking.append(newEvent.eventID)
@@ -512,6 +518,20 @@ def fetch_api_events():
         return jsonify({"message": "An error occurred while processing events", "error": str(e)}), 500
 
     return jsonify({"message": "Events processed", "eventIDs": eventIDTracking, "count": fetched_events_count, "events": events}), 200
+
+
+
+@app.route("/events/business", methods=["GET"])
+def fetch_business():
+    businessID = request.args.get('businessID', default=None, type=str)
+
+    yelp_api_instance = YelpAPI()
+    business = yelp_api_instance.get_business_from_id(businessID=businessID)
+
+    if 'error' in business:
+        return jsonify({"message": "Events processed", "business": ""}), 200
+
+    return jsonify({"message": "Events processed", "business": business}), 200
 
 @app.route("/event/details", methods=["POST"])
 def get_details():
@@ -525,6 +545,137 @@ def get_details():
         return jsonify({"message": "event not found"}), 404
 
     return jsonify(event_json=event_json)
+
+
+@app.route("/get_user_id", methods=["GET"])
+@jwt_required()
+def get_user_id():
+
+    msg = ""
+    current_user = get_jwt_identity()
+
+    if current_user:
+        userEmail = current_user.get('email')
+        user = User.query.filter_by(email=userEmail).first()
+        if user:
+            msg = user.id 
+    
+    return jsonify({"userID": msg}), 200
+
+
+@app.route('/rate_event', methods=['POST'])
+def rate_event():
+    event_id = request.json.get('eventID')
+    user_id = request.json.get('userID')
+    rating = request.json.get('rating')
+    yelp_id = request.json.get('yelpID')
+
+    if (yelp_id) :
+        existing_rating = EventRating.query.filter_by(yelpID=yelp_id, userID=user_id).first()
+    else:
+        existing_rating = EventRating.query.filter_by(eventID=event_id, userID=user_id).first()
+
+    if existing_rating:
+        existing_rating.rating = rating
+        message = "Event rating updated successfully!"
+    else:
+        new_rating = EventRating(eventID=event_id, yelpID=yelp_id, userID=user_id, rating=rating)
+        db.session.add(new_rating)
+        message = "Event rated successfully!"
+
+    db.session.commit()
+
+    return jsonify({"message": message}), 201
+
+@app.route('/get_rating', methods=['POST'])
+def get_rating():
+    event_id = request.json.get('eventID')
+    yelp_id = request.json.get('yelpID')
+    user_id = request.json.get('userID')
+
+    rating = 0
+    if (yelp_id) :
+        existing_entry = EventRating.query.filter_by(yelpID=yelp_id, userID=user_id).first()
+    else:
+        existing_entry = EventRating.query.filter_by(eventID=event_id, userID=user_id).first()
+
+    if existing_entry:
+        message = "Successfully got rating"
+        rating = existing_entry.rating
+    else:
+        rating = 0
+        message = "Not yet rated"
+
+    return jsonify({"message": message, "rating": rating}), 201
+
+
+@app.route('/get_avg_rating', methods=['POST'])
+def get_avg_rating():
+    event_id = request.json.get('eventID')
+    yelp_id = request.json.get('yelpID')
+
+    # Get all ratings for event
+    if (yelp_id) :
+        ratingFrom = "yelpID"
+        existingEntries = EventRating.query.filter_by(yelpID=yelp_id).all()
+        posEntries = EventRating.query.filter_by(yelpID=yelp_id, rating=1).all()
+    else:
+        ratingFrom = "eventID"
+        existingEntries = EventRating.query.filter_by(eventID=event_id).all()
+        posEntries = EventRating.query.filter_by(eventID=event_id, rating=1).all()
+
+    # Calculate everage rating
+    if existingEntries:
+        numOfRatings = len(existingEntries)
+        posRatings = len(posEntries)
+        avgRating = round((posRatings / numOfRatings) * 100, 2)
+
+        message = "Successfully got rating"
+        
+        if (yelp_id) :
+            updatingEvent = Event.query.filter_by(yelpID=yelp_id).first()
+            
+        else:
+            updatingEvent = Event.query.filter_by(eventID=event_id).first()
+        
+        updatingEvent.rating = avgRating
+        db.session.commit()
+    else:
+        avgRating = 0
+        numOfRatings = 0
+        posRatings = 0
+        message = "Not yet rated"
+
+    return jsonify({"message": message, "eventID": event_id, "ratingFrom": ratingFrom, "avgRating": avgRating, "numOfRatings": numOfRatings, "posRatings": posRatings}), 201
+
+@app.route('/user/get_host_rating', methods=['GET'])
+@jwt_required()
+def get_host_rating():
+    current_user = get_jwt_identity()
+
+    user = User.query.filter_by(email=current_user["email"]).first()
+    userID = user.id
+
+    eventsHosted = Event.query.filter_by(userID=userID).all()
+
+    if eventsHosted:
+        eventsHosted = [event.eventID for event in eventsHosted]
+    else:
+        eventsHosted = []
+
+    eventRatings = []
+    for id in eventsHosted:
+        eventRatings.extend(Event.query.filter(
+        Event.eventID == id,
+        Event.rating != None 
+    ).all())
+
+    # eventRatings = [{"eventID": rating.eventID, "rating": rating.rating} for rating in eventRatings]
+    eventRatingsArr = [rating.rating for rating in eventRatings]
+
+    hostRating = round(statistics.mean(eventRatingsArr), 2)
+
+    return {'status': '200', 'userID': userID, "eventsHosted": eventsHosted, "eventRatings": eventRatingsArr, "hostRating": hostRating}
 
 
 # @app.route("/check_user", methods = ["POST"])
