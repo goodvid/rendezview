@@ -21,7 +21,12 @@ import {
   DialogContentText,
   DialogActions,
   Link,
+  TextField,
+  List,
+  ListItem,
+  ListItemText
 } from "@mui/material";
+
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import PersonIcon from "@mui/icons-material/Person";
 import EventIcon from "@mui/icons-material/Event";
@@ -131,6 +136,44 @@ function EventDetails() {
       getAvgRating();
     }
   }, [id, eventID]);
+
+  const [isAddedToCalendar, setIsAddedToCalendar] = useState(false);
+
+  const removeFromCalendar = () => {
+    // Implement the actual removal logic here, similar to addToCalendar
+    // For demonstration, just setting the state back to false
+    alert("Successfully removed from Calendar!");
+    setIsAddedToCalendar(false);
+    // You would typically make a fetch call to your backend here
+  };
+
+  const addToCalendar = () => {
+    // Assuming your eventObject contains an eventID field with the correct value
+    const eventData = { eventID: eventObject.eventID };
+
+    fetch("http://localhost:5000/events/addToCalendar", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(eventData),
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 200) {
+          alert("Successfully Added to the Calendar");
+          setIsAddedToCalendar(true);
+        } else {
+          alert("Error Adding to Calendar: " + data.message);
+          setIsAddedToCalendar(false);
+        }
+      })
+      .catch(error => {
+        console.error("Error:", error);
+      });
+  };
+
+
 
   const fetchEventObject = () => {
     // Fetch event object
@@ -316,6 +359,82 @@ function EventDetails() {
   };
 
   const [open, setOpen] = React.useState(false);
+  const [email, setEmail] = useState(''); // define up here
+  const [emailsList, setEmailsList] = useState([]);
+
+  const changeEmail = (event) => {
+    if (event != null) {
+      setEmail(event.target.value);
+    }
+  };
+
+  const handleAddEmail = (event) => {
+    if (email) { // Check if email is not empty
+      setEmailsList((prevEmails) => [...prevEmails, email]);
+      setEmail(''); // Reset the email input field after adding
+    }
+  };
+  const displayEmail = (event) => {
+    event.preventDefault();
+    console.log('Emails to share with:', emailsList);
+    setEmailsList([]); // This resets the emailsList to an empty array
+    setEmail('');
+    handleClose();
+  };
+
+  const dummyRSVPList = [
+    { name: 'John Doe', status: 'accepted' },
+    { name: 'Jane Smith', status: 'declined' },
+    { name: 'Alice Johnson', status: 'no response' },
+    { name: 'Bob Brown', status: 'accepted' },
+  ];
+
+
+  const [openRSVP, setOpenRSVP] = useState(false);
+  const [currentFilter, setCurrentFilter] = useState('all');
+  const [displayList, setDisplayList] = useState(dummyRSVPList);
+
+  const getRSVPList = (newFilter) => {
+    setCurrentFilter(newFilter); // Update the current filter state
+
+    const filteredList = newFilter === 'all'
+      ? dummyRSVPList
+      : dummyRSVPList.filter(item => item.status === newFilter);
+
+    setDisplayList(filteredList); // Update the displayed list based on the filter
+  };
+  // const [currentFilter, setCurrentFilter] = useState('all');
+  // const [displayList, setDisplayList] = useState(dummyRSVPList);
+
+  // const getRSVPList = (filter) => {
+  //   // Filter the list based on the filter parameter
+  //   switch (filter) {
+  //     case 'all':
+  //       setDisplayList(dummyRSVPList);
+  //       break;
+  //     case 'accepted':
+  //       setDisplayList(dummyRSVPList.filter(item => item.status === 'accepted'));
+  //       break;
+  //     case 'declined':
+  //       setDisplayList(dummyRSVPList.filter(item => item.status === 'declined'));
+  //       break;
+  //     case 'no response':
+  //       setDisplayList(dummyRSVPList.filter(item => item.status === 'no response'));
+  //       break;
+  //     default:
+  //       setDisplayList(dummyRSVPList);
+  //   }
+  //   setCurrentFilter(filter);
+  // };
+
+  const handleOpenRSVPDialog = () => {
+    setOpenRSVP(true);
+    getRSVPList('all'); // Default to showing all
+  };
+
+  const handleCloseRSVPDialog = () => {
+    setOpenRSVP(false);
+  };
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -323,6 +442,8 @@ function EventDetails() {
 
   const handleClose = () => {
     setOpen(false);
+    setEmailsList([]); // This resets the emailsList to an empty array
+    setEmail('');
   };
 
   const handleRating = (vote) => {
@@ -341,135 +462,6 @@ function EventDetails() {
     } else {
       return true;
     }
-  };
-
-  const EventInfoSection = () => {
-    return (
-      <div>
-        <Stack direction="row" marginBlock="1rem">
-          <Stack width="100%" justifyContent="flex-start" textAlign="left">
-            <h1>{eventName}</h1>
-
-            <h3 style={{ color: "#818181" }}>
-              {date} {time}
-            </h3>
-          </Stack>
-          <Stack
-            width="100%"
-            direction="row"
-            justifyContent="flex-end"
-            gap="1rem"
-            color="#818181"
-          >
-            <Stack direction="row" alignItems="center" gap="0.5rem">
-              <EventDetailsButton
-                startIcon={isAddedToCalendar ? <DeleteIcon /> : <EventIcon />}
-                onClick={isAddedToCalendar ? removeFromCalendar : addToCalendar}
-                style={{ backgroundColor: isAddedToCalendar ? "#e57373" : "inital" }}
-              >
-                {isAddedToCalendar ? "Remove from Calendar" : "Add to Calendar"}
-              </EventDetailsButton>
-            </Stack>
-
-            <Stack direction="row" alignItems="center" gap="0.5rem">
-              <EventDetailsButton
-                startIcon={<ShareIcon />}
-                onClick={handleClickOpen}
-              >
-                Share
-              </EventDetailsButton>
-              <Dialog
-                open={open}
-                onClose={handleClose}
-                PaperProps={{
-                  component: "form",
-                  onSubmit: (event) => {
-                    event.preventDefault();
-                    const formData = new FormData(event.currentTarget);
-                    const formJson = Object.fromEntries(formData.entries());
-                    const email = formJson.email;
-                    console.log(email);
-                    handleClose();
-                  },
-                }}
-              >
-                <DialogTitle>Share Link</DialogTitle>
-                <DialogContent>
-                  <DialogContentText>
-                    <Link
-                      href={`http://localhost:3000/eventdetails/${eventID}`}
-                    >
-                      http://localhost:3000/eventdetails/{eventID}
-                    </Link>
-                  </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={handleClose}>Close</Button>
-                </DialogActions>
-              </Dialog>
-            </Stack>
-          </Stack>
-        </Stack>
-        <Stack>
-          <img src={testImage} style={{ borderRadius: "1rem" }} />
-        </Stack>
-        <Stack alignItems="flex-start" marginTop="1rem" direction="row">
-          <YellowButton
-            textAlign="left"
-            variant="contained"
-            onClick={handleSubmit}
-          >
-            Join Event
-          </YellowButton>
-
-          {sessionStorage.getItem("token") && checkIfPast() ? (
-            <Stack
-              direction="row"
-              marginInline="2rem"
-              alignItems="center"
-              justifyItems="center"
-              gap="1rem"
-            >
-              <Stack
-                direction="row"
-                // marginInline="2rem"
-                alignItems="center"
-                gap="0.5rem"
-              >
-                <IconButton
-                  onClick={() => handleRating(1)}
-                  aria-label="like"
-                  size="small"
-                >
-                  {rating === 1 ? <ThumbUpAltIcon /> : <ThumbUpOffAltIcon />}
-                </IconButton>
-
-                <IconButton
-                  onClick={() => handleRating(-1)}
-                  aria-label="like"
-                  size="small"
-                >
-                  {rating === -1 ? (
-                    <ThumbDownAltIcon />
-                  ) : (
-                    <ThumbDownOffAltIcon />
-                  )}
-                </IconButton>
-              </Stack>
-              {numOfRatings > 0 ? (
-                <p>
-                  {avgRating}% ({numOfRatings})
-                </p>
-              ) : (
-                <p>(Event not rated)</p>
-              )}
-            </Stack>
-          ) : (
-            <div />
-          )}
-        </Stack>
-      </div>
-    );
   };
 
   const EventDetailsSection = () => {
@@ -532,7 +524,6 @@ function EventDetails() {
       category && ( // Don't show organizer section if there is no organizer
         <Stack className="section">
           <h2>Category</h2>
-          {/* <h2>{category}</h2> */}
           <Stack direction="row" alignItems="center" gap="1rem">
             <Stack
               direction="row"
@@ -661,7 +652,180 @@ function EventDetails() {
       ) : (
         <Stack alignItems="center" marginInline="10%">
           <Stack margin="3rem" gap="1rem">
-            <EventInfoSection />
+            <div>
+              <Stack direction="row" marginBlock="1rem">
+                <Stack width="100%" justifyContent="flex-start" textAlign="left">
+                  <h1>{eventName}</h1>
+
+                  <h3 style={{ color: "#818181" }}>
+                    {date} {time}
+                  </h3>
+                </Stack>
+                <Stack
+                  width="100%"
+                  direction="row"
+                  justifyContent="flex-end"
+                  gap="1rem"
+                  color="#818181"
+                >
+                  <Stack direction="row" alignItems="center" gap="0.5rem">
+                    <EventDetailsButton
+                      startIcon={isAddedToCalendar ? <DeleteIcon /> : <EventIcon />}
+                      onClick={isAddedToCalendar ? removeFromCalendar : addToCalendar}
+                      style={{ backgroundColor: isAddedToCalendar ? "#e57373" : "inital" }}
+                    >
+                      {isAddedToCalendar ? "Remove from Calendar" : "Add to Calendar"}
+                    </EventDetailsButton>
+                  </Stack>
+
+                  <Stack direction="row" alignItems="center" gap="0.5rem">
+                    <EventDetailsButton
+                      startIcon={<ShareIcon />}
+                      onClick={handleClickOpen}
+                    >
+                      Share
+                    </EventDetailsButton>
+                    <Dialog open={open} onClose={handleClose} PaperProps={{
+                      component: "form",
+                      onSubmit: (event) => {
+                        event.preventDefault(); // Prevent the default form submission action
+                        displayEmail(event); // Now handle the logic to display emails or whatever your submit action is
+                      }
+                    }}>
+                      <DialogTitle>Share Link</DialogTitle>
+                      <DialogContent>
+                        <DialogContentText>
+                          Use this link to share:
+                          <Link href={`http://localhost:5000/eventdetails/${eventID}`}>
+                            http://localhost:5000/eventdetails/{eventID}
+                          </Link>
+                        </DialogContentText>
+                        <TextField
+                          label="Email Address"
+                          type="email"
+                          fullWidth
+                          variant="outlined"
+                          onChange={changeEmail}
+                          margin="normal"
+                        />
+                        <Button
+                          onClick={handleAddEmail}
+                          type="button" // Important to specify type="button" to prevent form submission
+                          color="primary"
+                          variant="contained"
+                        >
+                          Add Email
+                        </Button>
+                        <List>
+                          {emailsList.map((email, index) => (
+                            <ListItem key={index}>{email}</ListItem>
+                          ))}
+                        </List>
+                      </DialogContent>
+                      <DialogActions>
+                        <Button onClick={handleClose}>Close</Button>
+                        <Button type="submit" color="primary">Share</Button>
+                      </DialogActions>
+                    </Dialog>
+                  </Stack>
+                </Stack>
+              </Stack>
+              <Stack>
+                <img src={testImage} style={{ borderRadius: "1rem" }} />
+              </Stack>
+              <Stack alignItems="flex-start" marginTop="1rem" direction="row">
+                <YellowButton
+                  textAlign="left"
+                  variant="contained"
+                  onClick={handleSubmit}
+                >
+                  Join Event
+                </YellowButton>
+
+                {sessionStorage.getItem("token") && checkIfPast() ? (
+                  <Stack
+                    direction="row"
+                    marginInline="2rem"
+                    alignItems="center"
+                    justifyItems="center"
+                    gap="1rem"
+                  >
+                    <Stack
+                      direction="row"
+                      // marginInline="2rem"
+                      alignItems="center"
+                      gap="0.5rem"
+                    >
+                      {/* <GrayButton variant="contained" color="primary" onClick={() => console.log('Clicked')}>Test Button</GrayButton> */}
+
+                      <GrayButton
+                        textAlign="Center"
+                        variant="contained"
+                        onClick={handleOpenRSVPDialog}
+                      >
+                        See RSVP List
+                      </GrayButton>
+                      <Dialog open={openRSVP} onClose={handleCloseRSVPDialog}>
+                        <DialogTitle>RSVP List</DialogTitle>
+                        <DialogContent>
+                          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+                            {['all', 'accepted', 'declined', 'no response'].map((filter) => (
+                              <Button
+                                key={filter}
+                                // color={currentFilter === filter ? '' : 'green'}
+                                onClick={() => getRSVPList(filter)}
+                                style={{ margin: '0 10px' }}
+                              >
+                                {filter.charAt(0).toUpperCase() + filter.slice(1)}
+                              </Button>
+                            ))}
+                          </div>
+                          <List>
+                            {displayList.map((item, index) => (
+                              <ListItem key={index}>
+                                <ListItemText primary={item.name} secondary={`Status: ${item.status.charAt(0).toUpperCase() + item.status.slice(1)}`} />
+                              </ListItem>
+                            ))}
+                          </List>
+                        </DialogContent>
+                        <DialogActions>
+                          <GrayButton onClick={handleCloseRSVPDialog}>Close</GrayButton>
+                        </DialogActions>
+                      </Dialog>
+                      <IconButton
+                        onClick={() => handleRating(1)}
+                        aria-label="like"
+                        size="small"
+                      >
+                        {rating === 1 ? <ThumbUpAltIcon /> : <ThumbUpOffAltIcon />}
+                      </IconButton>
+
+                      <IconButton
+                        onClick={() => handleRating(-1)}
+                        aria-label="like"
+                        size="small"
+                      >
+                        {rating === -1 ? (
+                          <ThumbDownAltIcon />
+                        ) : (
+                          <ThumbDownOffAltIcon />
+                        )}
+                      </IconButton>
+                    </Stack>
+                    {numOfRatings > 0 ? (
+                      <p>
+                        {avgRating}% ({numOfRatings})
+                      </p>
+                    ) : (
+                      <p>(Event not rated)</p>
+                    )}
+                  </Stack>
+                ) : (
+                  <div />
+                )}
+              </Stack>
+            </div>
+
             <EventDetailsSection />
             <LocationSection />
             <OrganizerSection />

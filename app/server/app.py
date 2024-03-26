@@ -674,6 +674,9 @@ def get_host_rating():
 def add_event_to_calendar():
     # the event id that I sent will be different
     data = request.json
+    print("-------Logs------")
+    print(data)
+    print("-------Logs------")
     event_id = data.get('eventID')  # Ensure this matches your JS payload
     event = Event.query.filter_by(eventID=event_id).first()
     if event:
@@ -681,7 +684,7 @@ def add_event_to_calendar():
         if response["status"] == 200:
             return jsonify({"status": 200, "message": "Success"}), 200
         else:
-            return jsonify({"status": 400, "message": "Something went wrong with add to calendar"}), 400
+            return jsonify({"status": 200, "message": "Something went wrong with add to calendar"}), 400
     else:
         return jsonify({"status": 404, "message": "Event not found"}), 404
 

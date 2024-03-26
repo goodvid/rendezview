@@ -23,7 +23,7 @@ def add_to_calendar(event):
         event_location = event.location
         print(event_name, event_description, event_start_time,
               event_end_time, event_start_date, event_end_date, event_location)
-        return {"flag": False, "status": 200}
+        return {"flag": True, "status": 200}
         # -----------------------------
     except Exception as e:
         print(e)
