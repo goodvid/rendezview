@@ -14,17 +14,21 @@ function Friends(){
     fetch("http://127.0.0.1:5000/get_all_usernames", {
       method: "POST",
       headers: {
-       
+        Authorization: "Bearer " + sessionStorage.getItem("token"),
+        "Content-Type": "application/json",
+
         "Content-Type": "application/json",
       },
       body: JSON.stringify(username),
-    }). then((res) => {
-      //setUsers(res.)
-      return (res.json())
-    }).then((data) => {
-      setUsers(data["names"])
-      console.log(data, users)
-    });
+    })
+      .then((res) => {
+        //setUsers(res.)
+        return res.json();
+      })
+      .then((data) => {
+        setUsers(data["names"]);
+        console.log(data, users);
+      });
   }
   return (
     <>
@@ -43,13 +47,13 @@ function Friends(){
             onClick={handleSubmit}
             class="w-[20%] h-[45px] bg-yellow-500 mt-5 text-white font-bold  rounded"
           >
-            hh
+            Search
           </button>
         </div>
       </div>
       <div>
-        {users.map((user, i) => {
-          return <User name={user} />;
+        {users.map((user, _) => {
+          return <User name={user.name} isFriend={user.isFriend} relationship={user.relationship} id={user.id} />;
         })}
       </div>
     </>
