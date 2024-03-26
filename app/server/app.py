@@ -2,7 +2,7 @@ from flask import Flask,  request, jsonify, session
 from flask_session import Session
 from models import db  # Importing the db instance and models
 from flask_cors import CORS, cross_origin
-from models import User, Event
+from models import User, Event, Status
 from types import SimpleNamespace
 from dateutil import parser
 from sqlalchemy.exc import SQLAlchemyError
@@ -364,20 +364,72 @@ def receive_data():
     # item = User(name=current_user, username = data) TODO fix getting current user
     return jsonify({"message": "Data received successfully", "yourData": data}), 200
 
-@app.route('/get_all_usernames', methods=["POST", "GET"])
+
+@app.route("/get_all_usernames", methods=["POST", "GET"])
+@jwt_required()
 def get_users():
     name = request.get_json()
     print("check json", name)
 
-    query = db.session.query(User.username).all()
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(email=current_user["email"]).first()
+
+    #query = db.session.query(User.username).all()
     query = db.session.query(User).filter(User.username.like("%" + name + "%")).all()
-    names = [q.username for q in query]
+
+    names = []
+    for q in query:
+        if q.id == user.id:
+            continue
+        status = Status.query.filter_by(user=user.id,friend=q.id).first()
+
+        if (status):
+            person = {"name": q.username, "isFriend": True, "relationship": status.status, "id": q.id}
+            names.append(person)
+        else:
+            person = {
+                "name": q.username,
+                "isFriend": False,
+                "relationship": "",
+                "id": q.id,
+            }
+            names.append(person)
 
     print(query, "names", names)
     return {"status": "200", "names": names}
 
-# @app.route('/add_friend', methods=['POST'])
-# def add_friend():
+
+@app.route("/add_friend", methods=["GET", "POST"])
+@jwt_required()
+def add_friend():
+    data = request.get_json()
+    
+    print(data, "check data")
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(email=current_user["email"]).first()
+
+    friend_id = data
+
+    new_friend = Status(user=user.id, friend=friend_id, status="follow")
+    db.session.add(new_friend)
+    db.session.commit()
+    return {"status": "200"}
+
+
+@app.route("/delete_friend", methods=["POST"])
+@jwt_required()
+def delete_friend():
+    data = request.json()
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(email=current_user["email"]).first()
+
+    friend = Status.query.filter_by(user=user, friend=data["id"]).first()
+    db.session.delete(friend)
+    db.session.commit()
+
+    return {"status": "200"}
+    
+
 
 @app.route('/delete_event', methods=['POST'])
 def delete_event():

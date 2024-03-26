@@ -9,11 +9,7 @@ events_table = db.Table('user_events',
     db.Column('event_id', db.Integer, db.ForeignKey('event.eventID'), primary_key=True)
 )
 
-friends_table = db.Table(
-    "friends",
-    db.Column("friend 1", db.Integer, db.ForeignKey("user.id"), primary_key=True),
-    db.Column("friend 2", db.Integer, db.ForeignKey("user.id"), primary_key=True),
-)
+
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key = True)
