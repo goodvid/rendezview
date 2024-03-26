@@ -91,3 +91,9 @@ class Blog(db.Model):
     author = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     event = db.Column(db.Integer, db.ForeignKey('event.eventID'))
     time = db.Column(db.DateTime)
+
+class Status(db.Model):
+    sid = db.Column(db.Integer, primary_key = True)
+    user = db.Column(db.String(5000), db.ForeignKey('user.email'))
+    friend = db.Column(db.String(5000), db.ForeignKey('user.email'))
+    status = db.Column(db.String(5000))
