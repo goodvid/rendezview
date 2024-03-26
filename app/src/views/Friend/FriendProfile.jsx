@@ -171,7 +171,8 @@ function FriendProfile() {
   const LeftInfoStack = () => {
     return (
       <Stack
-        width="50vh"
+        width="full"
+        height="100vh"
         style={{
           backgroundColor: "#4D4D4D",
           color: "white",
@@ -482,15 +483,7 @@ function FriendProfile() {
         exists ?
         <div>
           <Navbar />
-          <Stack
-            width="100vw"
-            direction="row"
-            gap="2rem"
-            justifyContent="space-between"
-          >
-            <LeftInfoStack />
-            <RightEventStack />
-          </Stack>
+          <LeftInfoStack />
         </div>
         :
         <div>
