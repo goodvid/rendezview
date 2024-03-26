@@ -1,10 +1,20 @@
 import React from "react";
 import { useState } from "react";
+import { useEffect } from "react";
+import Navbar from "../../components/Navbar/Navbar";
+import testImage from "../../media/testImage.jpeg";
+import "./EventDetails.css";
+import { useParams } from "react-router-dom";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { pinwheel } from "ldrs";
+import categories from "../eventCategories.json";
+import Event from "../../components/Event/Event";
+import dayjs from "dayjs";
+
 import {
-  Chip,
   Stack,
   Button,
-  Paper,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -16,11 +26,11 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import PersonIcon from "@mui/icons-material/Person";
 import EventIcon from "@mui/icons-material/Event";
 import ShareIcon from "@mui/icons-material/Share";
-import { useEffect } from "react";
-import Navbar from "../../components/Navbar/Navbar";
-import testImage from "../../media/testImage.jpeg";
-import "./EventDetails.css";
-import { useParams } from "react-router-dom";
+import ThumbUpAltIcon from "@mui/icons-material/ThumbUpAlt";
+import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
+import ThumbDownAltIcon from "@mui/icons-material/ThumbDownAlt";
+import ThumbDownOffAltIcon from "@mui/icons-material/ThumbDownOffAlt";
+import IconButton from "@mui/material/IconButton";
 import {
   ReadMoreButton,
   YellowButton,
@@ -28,28 +38,102 @@ import {
   GrayButton,
   EventDetailsButton,
 } from "../../components/StyledComponents/StyledComponents";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
 
 function EventDetails() {
   // TODO: replace hard coded names
+  pinwheel.register(); // Set loading animation
   let id = useParams();
-  console.log(id, "ididid");
   let resp = false;
+  const [eventName, setEventName] = useState("");
+  const [eventID, setEventId] = useState("");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
+  const [description, setDescription] = useState("");
+  const [location, setLocation] = useState("");
+  const [organizer, setOrganizer] = useState("");
+  const [category, setCategory] = useState("");
+  const [showAll, setShowAll] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [similarEvents, setSimilarEvents] = useState([]);
+  const [rating, setRating] = useState(0);
+  const [userID, setUserID] = useState("");
+  const [avgRating, setAvgRating] = useState(null);
+  const [numOfRatings, setNumOfRatings] = useState(0);
   const [eventObject, setEventObject] = useState({
-    eventID: "e",
-    desc: "e",
-    name: "e",
-    location: "e",
-    event_datetime: "e",
-    hostName: "e",
-    userID: "e",
-    rating: "e",
-    category: "e",
-    type: "e",
+    eventID: "",
+    desc: "",
+    name: "",
+    location: "",
+    event_datetime: "",
+    hostName: "",
+    userID: "",
+    rating: "",
+    category: "",
+    type: "",
   });
 
+  const navigate = useNavigate();
+
   useEffect(() => {
+    fetchEventObject();
+    getUserID();
+  }, [id]);
+
+  useEffect(() => {
+    console.log(eventObject);
+    setEventName(eventObject.name);
+    setEventId(eventObject.eventID);
+    setDate(eventObject.startDate);
+    setTime(eventObject.startTime);
+    setDescription(eventObject.desc);
+    setLocation(eventObject.location);
+
+    if (eventObject.yelpID) {
+      if (!eventObject.hostName) {
+        setOrganizer(null);
+      } else {
+        getYelpBusinessName(eventObject.hostName);
+      }
+    } else {
+      setOrganizer(eventObject.hostName);
+    }
+
+    setCategory(eventObject.category);
+
+    // Get similar events
+    fetchSimilarEvents();
+  }, [eventObject, id]);
+
+  useEffect(() => {
+    console.log("useEffect rating:", rating);
+    if (userID && eventID && rating) {
+      updateRating(eventID, userID, rating)
+        .then(() => {
+          getAvgRating();
+        })
+        .catch((error) => {
+          console.error("Failed to update rating:", error);
+        });
+    }
+  }, [rating]);
+
+  useEffect(() => {
+    if (eventID && userID) {
+      console.log("getRating");
+      getRating();
+    }
+  }, [id, eventID, userID]);
+
+  useEffect(() => {
+    if (eventID || userID) {
+      console.log("get average rating");
+      getAvgRating();
+    }
+  }, [id, eventID]);
+
+  const fetchEventObject = () => {
+    // Fetch event object
+    setLoading(true);
     fetch("http://127.0.0.1:5000/event/details", {
       method: "POST",
       headers: {
@@ -65,38 +149,125 @@ function EventDetails() {
         if (resp.status === 200) {
           console.log(data);
           setEventObject(data.event_json);
+          setLoading(false);
         }
       })
       .catch((error) => {
         console.log("error", error);
       });
-  }, []);
-  const [eventName, setEventName] = useState("Event Name");
-  const [eventID, setEventId] = useState("1");
-  const [date, setDate] = useState("Saturday, February 8, 2024");
-  const [time, setTime] = useState("7:00pm");
-  const [description, setDescription] = useState(
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad"
-  );
-  const [location, setLocation] = useState(
-    "Address Street, City, State, 47906"
-  );
-  const [organizer, setOrganizer] = useState("Organizer Name");
-  const [tags, setTags] = useState([
-    "Comedy",
-    "Food",
-    "Film",
-    "Travel",
-    "Rock",
-    "Yoga",
-    "DIY",
-  ]);
-  const [showAll, setShowAll] = useState(false);
+  };
 
-  const navigate = useNavigate();
+  const getUserID = () => {
+    setLoading(true);
+
+    console.log("user id");
+    fetch("http://127.0.0.1:5000/get_user_id", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + sessionStorage.getItem("token"),
+      },
+    })
+      .then((response) => {
+        if (resp.status != 200) {
+          console.log("not logged in");
+          return;
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("userID:", data.userID);
+        setUserID(data.userID);
+      })
+      .catch((error) => {
+        console.log("error", error);
+      });
+  };
+
+  const updateRating = (eventID, userID, rating) => {
+    console.log("updateRating");
+
+    // Return the fetch promise
+    return fetch("http://127.0.0.1:5000/rate_event", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        eventID: eventID,
+        yelpID: eventObject.yelpID,
+        userID: userID,
+        rating: rating,
+      }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log(data);
+        return data;
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        throw error;
+      });
+  };
+
+  const getRating = () => {
+    setLoading(true);
+    fetch("http://127.0.0.1:5000/get_rating", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        eventID: eventID,
+        yelpID: eventObject.yelpID,
+        userID: userID,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        // console.log("rating json:", data);
+        console.log("get rating:", data.rating);
+        setRating(data.rating);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setLoading(false);
+      });
+  };
+
+  const getAvgRating = () => {
+    console.log("getAvgRating");
+    fetch("http://127.0.0.1:5000/get_avg_rating", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        eventID: eventID,
+        yelpID: eventObject.yelpID,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("avgRating:", data);
+        setAvgRating(data.avgRating);
+        setNumOfRatings(data.numOfRatings);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    setLoading(true);
 
     // Send data to Flask server
     fetch("http://127.0.0.1:5000/profile/join-event", {
@@ -110,15 +281,36 @@ function EventDetails() {
       .then((response) => {
         if (response.status === 200) {
           alert("event joined successfully");
+          setLoading(false);
           return response.json();
         } else {
           alert("error");
+          setLoading(false);
           return false;
         }
       })
       .then(() => {})
       .catch((error) => {
         console.log("error", error);
+        setLoading(false);
+      });
+  };
+
+  const getYelpBusinessName = (businessID) => {
+    setLoading(true);
+
+    const params = new URLSearchParams({ businessID: businessID });
+    axios
+      .get(`http://127.0.0.1:5000/events/business?${params}`)
+      .then((response) => {
+        console.log("Business fetched: ", response.data);
+        // console.log("name:", response.data.business.name);
+        setOrganizer(response.data.business.name);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching business name:", error);
+        setLoading(false);
       });
   };
 
@@ -132,15 +324,33 @@ function EventDetails() {
     setOpen(false);
   };
 
+  const handleRating = (vote) => {
+    if (rating === vote) {
+      setRating(0);
+    } else {
+      setRating(vote);
+    }
+  };
+
+  const checkIfPast = () => {
+    const eventDate = dayjs(date);
+    const diff = dayjs().diff(eventDate);
+    if (diff < 0) {
+      return false;
+    } else {
+      return true;
+    }
+  };
+
   const EventInfoSection = () => {
     return (
       <div>
         <Stack direction="row" marginBlock="1rem">
           <Stack width="100%" justifyContent="flex-start" textAlign="left">
-            <h1>{eventObject.name}</h1>
+            <h1>{eventName}</h1>
 
             <h3 style={{ color: "#818181" }}>
-              {eventObject.startDate} • {eventObject.startTime}
+              {date} {time}
             </h3>
           </Stack>
           <Stack
@@ -185,9 +395,9 @@ function EventDetails() {
                 <DialogContent>
                   <DialogContentText>
                     <Link
-                      href={`http://localhost:3000/eventdetails/${eventObject.eventID}`}
+                      href={`http://localhost:3000/eventdetails/${eventID}`}
                     >
-                      http://localhost:3000/eventdetails/{eventObject.eventID}
+                      http://localhost:3000/eventdetails/{eventID}
                     </Link>
                   </DialogContentText>
                 </DialogContent>
@@ -201,7 +411,7 @@ function EventDetails() {
         <Stack>
           <img src={testImage} style={{ borderRadius: "1rem" }} />
         </Stack>
-        <Stack alignItems="flex-start" marginTop="1rem">
+        <Stack alignItems="flex-start" marginTop="1rem" direction="row">
           <YellowButton
             textAlign="left"
             variant="contained"
@@ -209,6 +419,52 @@ function EventDetails() {
           >
             Join Event
           </YellowButton>
+
+          {sessionStorage.getItem("token") && checkIfPast() ? (
+            <Stack
+              direction="row"
+              marginInline="2rem"
+              alignItems="center"
+              justifyItems="center"
+              gap="1rem"
+            >
+              <Stack
+                direction="row"
+                // marginInline="2rem"
+                alignItems="center"
+                gap="0.5rem"
+              >
+                <IconButton
+                  onClick={() => handleRating(1)}
+                  aria-label="like"
+                  size="small"
+                >
+                  {rating === 1 ? <ThumbUpAltIcon /> : <ThumbUpOffAltIcon />}
+                </IconButton>
+
+                <IconButton
+                  onClick={() => handleRating(-1)}
+                  aria-label="like"
+                  size="small"
+                >
+                  {rating === -1 ? (
+                    <ThumbDownAltIcon />
+                  ) : (
+                    <ThumbDownOffAltIcon />
+                  )}
+                </IconButton>
+              </Stack>
+              {numOfRatings > 0 ? (
+                <p>
+                  {avgRating}% ({numOfRatings})
+                </p>
+              ) : (
+                <p>(Event not rated)</p>
+              )}
+            </Stack>
+          ) : (
+            <div />
+          )}
         </Stack>
       </div>
     );
@@ -218,18 +474,18 @@ function EventDetails() {
     return (
       <Stack className="section">
         <h2>Event Details</h2>
-        {eventObject.desc.length > 500 ? (
+        {description.length > 500 ? (
           <div>
             {showAll ? (
               <div>
-                <p>{eventObject.desc}</p>
+                <p>{description}</p>
                 <ReadMoreButton size="small" onClick={() => setShowAll(false)}>
                   Read Less
                 </ReadMoreButton>
               </div>
             ) : (
               <div>
-                <p>{eventObject.desc.substring(0, 500).concat("...")}</p>
+                <p>{description.substring(0, 500).concat("...")}</p>
                 <ReadMoreButton size="small" onClick={() => setShowAll(true)}>
                   Read More
                 </ReadMoreButton>
@@ -237,7 +493,7 @@ function EventDetails() {
             )}
           </div>
         ) : (
-          eventObject.desc
+          description
         )}
       </Stack>
     );
@@ -249,47 +505,46 @@ function EventDetails() {
         <h2>Location</h2>
         <Stack direction="row" alignItems="center" gap="1rem">
           <LocationOnIcon />
-          <h3>{eventObject.location}</h3>
-        </Stack>
-      </Stack>
-    );
-  };
-  const OrganizerSection = () => {
-    return (
-      <Stack className="section">
-        <h2>Organizer</h2>
-        <Stack direction="row" alignItems="center" gap="1rem">
-          <PersonIcon />
-          <h3>{eventObject.hostName}</h3>
+          <h3>{location}</h3>
         </Stack>
       </Stack>
     );
   };
 
-  const TagsSection = () => {
+  const OrganizerSection = () => {
     return (
-      <Stack className="section">
-        <h2>Tags</h2>
-        <Stack direction="row" alignItems="center" gap="1rem">
-          <Stack
-            direction="row"
-            gap="1rem"
-            justifyContent="space-start"
-            flexWrap="wrap"
-            width="100%"
-          >
-            {tags.map(
-              (
-                name //TODO add proper tags
-              ) => (
-                <div>
-                  <Chip key={name} label={name} />
-                </div>
-              )
-            )}
+      organizer && ( // Don't show organizer section if there is no organizer
+        <Stack className="section">
+          <h2>Organizer</h2>
+          <Stack direction="row" alignItems="center" gap="1rem">
+            <PersonIcon />
+            <h3>{organizer}</h3>
           </Stack>
         </Stack>
-      </Stack>
+      )
+    );
+  };
+
+  const CategorySection = () => {
+    return (
+      category && ( // Don't show organizer section if there is no organizer
+        <Stack className="section">
+          <h2>Category</h2>
+          {/* <h2>{category}</h2> */}
+          <Stack direction="row" alignItems="center" gap="1rem">
+            <Stack
+              direction="row"
+              gap="1rem"
+              justifyContent="space-start"
+              flexWrap="wrap"
+              width="100%"
+            >
+              {categories.find((cat) => cat.value === category)?.name ||
+                category}
+            </Stack>
+          </Stack>
+        </Stack>
+      )
     );
   };
 
@@ -326,6 +581,61 @@ function EventDetails() {
     );
   };
 
+  const isOwner = () => {
+    // TODO: check if the current logged in user is the same as the userID of the event
+    return true;
+  };
+
+  const fetchSimilarEvents = () => {
+    console.log("fetching...");
+    setLoading(true);
+
+    axios
+      .get("http://127.0.0.1:5000/events")
+      .then((response) => {
+        console.log(
+          "Similar events fetched:",
+          response.data["events"]
+            .filter((event) => event.category === eventObject.category)
+            .sort(() => 0.5 - Math.random())
+            .slice(0, 3)
+        );
+        setSimilarEvents(
+          response.data["events"]
+            .filter((event) => event.category === eventObject.category)
+            .sort(() => 0.5 - Math.random())
+            .slice(0, 3)
+        );
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching events:", error);
+        setLoading(false);
+      });
+  };
+
+  const SimilarEventsSection = () => {
+    return (
+      <Stack className="section">
+        <h2>Explore Similar Events</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {similarEvents.map((event, i) => {
+            return (
+              <Event
+                id={event.id}
+                name={event.name}
+                date={event.time + " " + event.date}
+                location={event.location}
+                desc={event.desc}
+                key={i}
+              />
+            );
+          })}
+        </div>
+      </Stack>
+    );
+  };
+
   return (
     <div
       style={{
@@ -337,16 +647,29 @@ function EventDetails() {
       }}
     >
       <Navbar />
-      <Stack alignItems="center" marginInline="20%">
-        <Stack margin="3rem" gap="1rem">
-          <EventInfoSection />
-          <EventDetailsSection />
-          <LocationSection />
-          <OrganizerSection />
-          {/* <TagsSection /> */}
-          {sessionStorage.getItem("token") ? <EditDelete /> : <div />}
+      {loading ? (
+        <Stack width="100%" height="100%" alignItems="center">
+          <l-pinwheel
+            size="100"
+            stroke="3.5"
+            speed="0.9"
+            color="black"
+          ></l-pinwheel>
         </Stack>
-      </Stack>
+      ) : (
+        <Stack alignItems="center" marginInline="10%">
+          <Stack margin="3rem" gap="1rem">
+            <EventInfoSection />
+            <EventDetailsSection />
+            <LocationSection />
+            <OrganizerSection />
+            <CategorySection />
+            {isOwner() &&
+              (sessionStorage.getItem("token") ? <EditDelete /> : <div />)}
+            <SimilarEventsSection />
+          </Stack>
+        </Stack>
+      )}
     </div>
   );
 }

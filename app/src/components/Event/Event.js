@@ -1,25 +1,36 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "./Event.css";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import { useNavigate } from "react-router-dom";
 
 function Event({ id, name, date, location, desc }) {
+  const navigate = useNavigate();
+  const eventLink = "/eventdetails/" + id;
   return (
-    <Link
-      to={"/eventdetails/" + id}
-      className="w-[90%] h-[fit-content] rounded-lg outline"
+    <div
+      onClick={() => navigate(eventLink)}
+      className="w-full h-full rounded-lg border-2 border-[#1C3659] flex justify-between items-start gap-5 p-1"
     >
-      <div className="w-[80%] h-[80%] flex flex-row justify-center items-center gap-5 ">
-        {/* <div className=" w-[180px] h-[180px] bg-light-gray">Image</div> */}
-        <div className="w-[100%] h-[100%] flex flex-col p-[1rem]">
-          <span className="text-left font-bold">{name}</span>
-          {/* <span className="text-left">Tags</span> */}
-          <span className="text-left">
-            {date} at {location}
-          </span>
-          <div className="text-left">Description: {desc}</div>
+      {/* <div className=" w-[180px] h-[180px] bg-light-gray">Image</div> */}
+      <div className="w-full flex flex-col p-[1rem] gap-5">
+        <h3 className="text-left font-bold">{name}</h3>
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-row gap-3">
+            <AccessTimeIcon sx={{ color: "#1C3659" }} />
+            <p className="text-left">{date}</p>
+          </div>
+          <div className="flex flex-row gap-3">
+            <LocationOnIcon sx={{ color: "#1C3659" }} />
+            <p className="text-left">{location}</p>
+          </div>
+          <div className="flex flex-row mt-1">
+            <p className="text-left font-normal">{desc}</p>
+          </div>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
 
