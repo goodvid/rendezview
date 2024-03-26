@@ -27,7 +27,7 @@ function Register() {
 
   const register = () => {
     axios
-      .post("http://127.0.0.1:5000/user/register", {
+      .post("http://localhost:5000/user/register", {
         email: email,
         password: password,
       })

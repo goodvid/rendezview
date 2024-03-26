@@ -19,7 +19,7 @@ function Settings() {
 
   useEffect(() => {
     axios
-      .get("http://127.0.0.1:5000/user/getusername", {
+      .get("http://localhost:5000/user/getusername", {
         headers: {
           Authorization: "Bearer " + sessionStorage.getItem("token"),
           "Content-Type": "application/json",
@@ -63,7 +63,7 @@ function Settings() {
     event.preventDefault();
 
     // Send to Flask server
-    fetch("http://127.0.0.1:5000/user/deleteaccount", {
+    fetch("http://localhost:5000/user/deleteaccount", {
       method: "GET",
       headers: {
         Authorization: "Bearer " + sessionStorage.getItem("token"),

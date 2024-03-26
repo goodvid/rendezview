@@ -46,7 +46,7 @@ function Profile() {
 
   useEffect(() => {
     axios
-      .get("http://127.0.0.1:5000/user/getusername", {
+      .get("http://localhost:5000/user/getusername", {
         headers: {
           Authorization: "Bearer " + sessionStorage.getItem("token"),
           "Content-Type": "application/json",
@@ -170,7 +170,7 @@ function Profile() {
             return false;
           }
         })
-        .then((data) => {})
+        .then((data) => { })
         .catch((error) => {
           console.log("error", error);
         });

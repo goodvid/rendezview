@@ -64,6 +64,7 @@ def link_google_account():
             "status": 401,
         }
 
+
 @app.route("/delinkGoogle", methods=["GET"])
 def signOutFromGoogle():
     response = handle_google_api.handle_deauthentication()
@@ -73,7 +74,8 @@ def signOutFromGoogle():
             'status': 200
         })
     else:
-        return {"message": "Error occurred while attempting to link accounts", 'status': 401}
+        return {"message": "Error occurred while attempting to delink account", 'status': 401}
+
 
 @app.route('/user/login', methods=['POST'])
 def create_token():
@@ -116,7 +118,8 @@ def changeusername():
     print(request.json)
 
     user = User.query.filter_by(email=current_user["email"]).first()
-    duplicate = User.query.filter_by(username=request.json["newUsername"]).first()
+    duplicate = User.query.filter_by(
+        username=request.json["newUsername"]).first()
     if not duplicate:
         user.username = request.json["newUsername"]
         db.session.commit()
@@ -155,20 +158,22 @@ def changeemail():
     duplicate = User.query.filter_by(email=request.json["newEmail"]).first()
     if not duplicate and user:
         username = user.username
-        access_token = create_access_token(identity={'email':request.json["newEmail"], 'name':username})
+        access_token = create_access_token(
+            identity={'email': request.json["newEmail"], 'name': username})
         user.email = request.json["newEmail"]
         print("check here", get_jwt_identity(), request.json["newEmail"])
         db.session.commit()
     else:
         return jsonify({"message": "Duplicate email not allowed."}), 401
 
-    return jsonify({"message": "Email changed successfully", "access_token":access_token}), 200
+    return jsonify({"message": "Email changed successfully", "access_token": access_token}), 200
+
 
 @app.route("/user/deleteaccount", methods=["GET"])
 @jwt_required()
 def deleteaccount():
     current_user = get_jwt_identity()
-    
+
     User.query.filter_by(email=current_user["email"]).delete()
     # db.session.delete(user)
     db.session.commit()
@@ -215,7 +220,8 @@ def register():
                     password=password)
     db.session.add(new_user)
     db.session.commit()
-    access_token = create_access_token(identity={"email": email, "name": email})
+    access_token = create_access_token(
+        identity={"email": email, "name": email})
     return jsonify({"message": "Account created!", "status": 200, "access_token": access_token})
     # return jsonify(access_token), 200
 
@@ -228,15 +234,15 @@ def get_events():
     event_values = []
 
     for event in events:
-        
+
         values = {'id': event.eventID,
-                    'name': event.name,
-                    'time': event.start_date,
-                    'location': event.location,
-                    'category': event.category,
-                    'latitude': event.latitude,
-                    'longitude': event.longitude,
-                    'desc': event.desc}
+                  'name': event.name,
+                  'time': event.start_date,
+                  'location': event.location,
+                  'category': event.category,
+                  'latitude': event.latitude,
+                  'longitude': event.longitude,
+                  'desc': event.desc}
         event_values.append(values)
 
     # add from saved events sob
@@ -252,9 +258,11 @@ def edit_event():
 
     event = Event.query.filter_by(eventID=data['eventID']['id']).first()
 
-    event.name = request.json["eventName"] if len(request.json["eventName"]) >= 1 else event.name
+    event.name = request.json["eventName"] if len(
+        request.json["eventName"]) >= 1 else event.name
     event.desc = (
-        request.json["eventDesc"] if len(request.json["eventDesc"]) >= 1 else event.desc
+        request.json["eventDesc"] if len(
+            request.json["eventDesc"]) >= 1 else event.desc
     )
     event.hostName = (
         request.json["hostName"]
@@ -267,16 +275,20 @@ def edit_event():
         else event.start_time
     )
     event.start_date = (
-        request.json["startDate"] if len(request.json["startDate"]) >= 1 else event.start_date
+        request.json["startDate"] if len(
+            request.json["startDate"]) >= 1 else event.start_date
     )
     event.end_time = (
-        request.json["endTime"] if len(request.json["endTime"]) >= 1 else event.end_time
+        request.json["endTime"] if len(
+            request.json["endTime"]) >= 1 else event.end_time
     )
     event.category = (
-        request.json["tags"] if len(request.json["tags"]) >= 1 else event.category
+        request.json["tags"] if len(
+            request.json["tags"]) >= 1 else event.category
     )
     event.type = (
-        request.json["eventType"] if len(request.json["eventType"]) >= 1 else event.type
+        request.json["eventType"] if len(
+            request.json["eventType"]) >= 1 else event.type
     )
     event.location = (
         request.json["location"]
@@ -287,6 +299,7 @@ def edit_event():
     db.session.commit()
 
     return jsonify({"message": "event set", "eventID": data["eventID"]["id"]}), 200
+
 
 @app.route('/user/getusername', methods=['GET'])
 @jwt_required()
@@ -315,12 +328,12 @@ def get_user_events():
     for event in events:
         print("check events", event.start_time)
         values = {'id': event.eventID,
-                    'name': event.name if event.name else "No name",
-                    'time': event.start_time if event.start_time else "No time",
-                    'date': event.start_date if event.start_date else "No date",
-                    'location': event.location if event.location else "No location",
-                    'rating': event.rating if event.rating is not None else None,
-                    'desc': event.desc if event.desc else "No description"}
+                  'name': event.name if event.name else "No name",
+                  'time': event.start_time if event.start_time else "No time",
+                  'date': event.start_date if event.start_date else "No date",
+                  'location': event.location if event.location else "No location",
+                  'rating': event.rating if event.rating is not None else None,
+                  'desc': event.desc if event.desc else "No description"}
         event_values.append(values)
 
     return {'status': '200', 'events': event_values}
@@ -348,6 +361,7 @@ def delete_event():
     db.session.commit()
 
     return {'status': '200'}
+
 
 @app.route("/profile/clearhistory", methods=["GET"])
 @jwt_required()
@@ -426,6 +440,7 @@ def create_event():
     db.session.commit()
     return jsonify({"message": "event set", "eventID": new_event.eventID}), 200
 
+
 @app.route("/events/api", methods=["POST", "GET"])
 def fetch_api_events():
     # Uncomment the next line to dynamically set the location based on query parameter
@@ -436,13 +451,18 @@ def fetch_api_events():
     category = request.args.get('category', default=None, type=str)
 
     yelp_api_instance = YelpAPI()
-    events = yelp_api_instance.get_events_based_on_location(location=loc, is_free=is_free, sort_on=sort_on, start_date=start_date, category=category)
-    
+    events = yelp_api_instance.get_events_based_on_location(
+        location=loc, is_free=is_free, sort_on=sort_on, start_date=start_date, category=category)
+
     # # Check the count of fetched events against existing events in the database
     fetched_events_count = len(events)
 
     try:
-        db.session.query(Event).filter(Event.yelpID.isnot(None)).delete(synchronize_session=False)
+        db.session.query(Event).filter(Event.yelpID.isnot(
+            None)).delete(synchronize_session=False)
+        db.session.query(Event).filter(Event.yelpID.isnot(
+            None)).delete(synchronize_session=False)
+        # db.session.query(Event).delete()
 
         eventIDTracking = []
         for event in events:
@@ -467,9 +487,12 @@ def fetch_api_events():
                 existingEvent.event_datetime = eventDateTime
                 existingEvent.category = category
             else:
-                newEvent = Event(name=name, desc=eventDesc, location=locationAddress, start_date=eventDateTime, category=category, yelpID=yelpID, hostName=businessID, latitude=latitude, longitude=longitude)
+                newEvent = Event(name=name, desc=eventDesc, location=locationAddress, start_date=eventDateTime,
+                                 category=category, yelpID=yelpID, hostName=businessID, latitude=latitude, longitude=longitude)
+                newEvent = Event(name=name, desc=eventDesc, location=locationAddress,
+                                 start_date=eventDateTime, category=category, yelpID=yelpID)
                 db.session.add(newEvent)
-                db.session.flush()  
+                db.session.flush()
                 eventIDTracking.append(newEvent.eventID)
 
         db.session.commit()
@@ -478,7 +501,6 @@ def fetch_api_events():
         return jsonify({"message": "An error occurred while processing events", "error": str(e)}), 500
 
     return jsonify({"message": "Events processed", "eventIDs": eventIDTracking, "count": fetched_events_count, "events": events}), 200
-
 
 
 @app.route("/events/business", methods=["GET"])
@@ -492,6 +514,7 @@ def fetch_business():
         return jsonify({"message": "Events processed", "business": ""}), 200
 
     return jsonify({"message": "Events processed", "business": business}), 200
+
 
 @app.route("/event/details", methods=["POST"])
 def get_details():
@@ -518,8 +541,8 @@ def get_user_id():
         userEmail = current_user.get('email')
         user = User.query.filter_by(email=userEmail).first()
         if user:
-            msg = user.id 
-    
+            msg = user.id
+
     return jsonify({"userID": msg}), 200
 
 
@@ -530,22 +553,26 @@ def rate_event():
     rating = request.json.get('rating')
     yelp_id = request.json.get('yelpID')
 
-    if (yelp_id) :
-        existing_rating = EventRating.query.filter_by(yelpID=yelp_id, userID=user_id).first()
+    if (yelp_id):
+        existing_rating = EventRating.query.filter_by(
+            yelpID=yelp_id, userID=user_id).first()
     else:
-        existing_rating = EventRating.query.filter_by(eventID=event_id, userID=user_id).first()
+        existing_rating = EventRating.query.filter_by(
+            eventID=event_id, userID=user_id).first()
 
     if existing_rating:
         existing_rating.rating = rating
         message = "Event rating updated successfully!"
     else:
-        new_rating = EventRating(eventID=event_id, yelpID=yelp_id, userID=user_id, rating=rating)
+        new_rating = EventRating(
+            eventID=event_id, yelpID=yelp_id, userID=user_id, rating=rating)
         db.session.add(new_rating)
         message = "Event rated successfully!"
 
     db.session.commit()
 
     return jsonify({"message": message}), 201
+
 
 @app.route('/get_rating', methods=['POST'])
 def get_rating():
@@ -554,10 +581,12 @@ def get_rating():
     user_id = request.json.get('userID')
 
     rating = 0
-    if (yelp_id) :
-        existing_entry = EventRating.query.filter_by(yelpID=yelp_id, userID=user_id).first()
+    if (yelp_id):
+        existing_entry = EventRating.query.filter_by(
+            yelpID=yelp_id, userID=user_id).first()
     else:
-        existing_entry = EventRating.query.filter_by(eventID=event_id, userID=user_id).first()
+        existing_entry = EventRating.query.filter_by(
+            eventID=event_id, userID=user_id).first()
 
     if existing_entry:
         message = "Successfully got rating"
@@ -575,14 +604,16 @@ def get_avg_rating():
     yelp_id = request.json.get('yelpID')
 
     # Get all ratings for event
-    if (yelp_id) :
+    if (yelp_id):
         ratingFrom = "yelpID"
         existingEntries = EventRating.query.filter_by(yelpID=yelp_id).all()
-        posEntries = EventRating.query.filter_by(yelpID=yelp_id, rating=1).all()
+        posEntries = EventRating.query.filter_by(
+            yelpID=yelp_id, rating=1).all()
     else:
         ratingFrom = "eventID"
         existingEntries = EventRating.query.filter_by(eventID=event_id).all()
-        posEntries = EventRating.query.filter_by(eventID=event_id, rating=1).all()
+        posEntries = EventRating.query.filter_by(
+            eventID=event_id, rating=1).all()
 
     # Calculate everage rating
     if existingEntries:
@@ -591,13 +622,13 @@ def get_avg_rating():
         avgRating = round((posRatings / numOfRatings) * 100, 2)
 
         message = "Successfully got rating"
-        
-        if (yelp_id) :
+
+        if (yelp_id):
             updatingEvent = Event.query.filter_by(yelpID=yelp_id).first()
-            
+
         else:
             updatingEvent = Event.query.filter_by(eventID=event_id).first()
-        
+
         updatingEvent.rating = avgRating
         db.session.commit()
     else:
@@ -607,6 +638,7 @@ def get_avg_rating():
         message = "Not yet rated"
 
     return jsonify({"message": message, "eventID": event_id, "ratingFrom": ratingFrom, "avgRating": avgRating, "numOfRatings": numOfRatings, "posRatings": posRatings}), 201
+
 
 @app.route('/user/get_host_rating', methods=['GET'])
 @jwt_required()
@@ -626,9 +658,9 @@ def get_host_rating():
     eventRatings = []
     for id in eventsHosted:
         eventRatings.extend(Event.query.filter(
-        Event.eventID == id,
-        Event.rating != None 
-    ).all())
+            Event.eventID == id,
+            Event.rating != None
+        ).all())
 
     # eventRatings = [{"eventID": rating.eventID, "rating": rating.rating} for rating in eventRatings]
     eventRatingsArr = [rating.rating for rating in eventRatings]
@@ -638,7 +670,42 @@ def get_host_rating():
     return {'status': '200', 'userID': userID, "eventsHosted": eventsHosted, "eventRatings": eventRatingsArr, "hostRating": hostRating}
 
 
+@app.route("/events/addToCalendar", methods=["POST"])
+def add_event_to_calendar():
+    # the event id that I sent will be different
+    data = request.json
+    event_id = data.get('eventID')  # Ensure this matches your JS payload
+    event = Event.query.filter_by(eventID=event_id).first()
+    if event:
+        response = handle_google_api.add_to_calendar(event=event)
+        if response["status"] == 200:
+            return jsonify({"status": 200, "message": "Success"}), 200
+        else:
+            return jsonify({"status": 400, "message": "Something went wrong with add to calendar"}), 400
+    else:
+        return jsonify({"status": 404, "message": "Event not found"}), 404
+
+
+@app.route("/events/addToCalendar", methods=["POST"])
+def remove_from_calendar():
+    # the event id I get back will be slightly different
+    data = request.json
+    # Ensure this matches your JS payload
+    event_id = data.get('eventID')
+    event = Event.query.filter_by(eventID=event_id).first()
+    if event:
+        response = handle_google_api.add_to_calendar(event=event)
+        if response["status"] == 200:
+            return jsonify({"status": 200, "message": "Success"}), 200
+        else:
+            return jsonify({"status": 400, "message": "Something went wrong with add to calendar"}), 400
+    else:
+        return jsonify({"status": 404, "message": "Event not found"}), 404
+
+    return
 # @app.route("/check_user", methods = ["POST"])
+
+
 @jwt_required
 def hello():
     user = get_jwt_identity()
@@ -646,4 +713,6 @@ def hello():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # adding the ::1 creates a loopback allowing
+    # mac users to fix cors error and connect using localhost
+    app.run(host='::1', debug=True)

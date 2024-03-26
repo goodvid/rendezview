@@ -47,7 +47,7 @@ function CreateEvent() {
   };
   const handleSubmit = (event) => {
     event.preventDefault();
-    fetch("http://127.0.0.1:5000/event/create", {
+    fetch("http://localhost:5000/event/create", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + sessionStorage.getItem("token"),
@@ -124,9 +124,8 @@ function CreateEvent() {
             name="eventType"
             value="Private Event"
             onClick={() => handleEventType("Private Event")}
-            class={`${
-              selected === "Private Event" ? "bg-[#A1CFFF4D]" : "bg-transparent"
-            } border-2 border-[#02407F] hover:bg-[#A1CFFF4D] text-[#02407F] font-bold py-4 px-6 rounded`}
+            class={`${selected === "Private Event" ? "bg-[#A1CFFF4D]" : "bg-transparent"
+              } border-2 border-[#02407F] hover:bg-[#A1CFFF4D] text-[#02407F] font-bold py-4 px-6 rounded`}
           >
             Private Event
           </button>
@@ -134,9 +133,8 @@ function CreateEvent() {
             name="eventType"
             value="Public Event"
             onClick={() => handleEventType("Public Event")}
-            class={`${
-              selected === "Public Event" ? "bg-[#A1CFFF4D]" : "bg-transparent"
-            } border-2 border-[#02407F] hover:bg-[#A1CFFF4D] text-[#02407F] font-bold py-4 px-6 rounded`}
+            class={`${selected === "Public Event" ? "bg-[#A1CFFF4D]" : "bg-transparent"
+              } border-2 border-[#02407F] hover:bg-[#A1CFFF4D] text-[#02407F] font-bold py-4 px-6 rounded`}
           >
             Public Event
           </button>

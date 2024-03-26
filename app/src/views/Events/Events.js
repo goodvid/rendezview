@@ -24,7 +24,7 @@ function EventList() {
   useEffect(() => {
     console.log(sessionStorage.getItem("token"));
     axios
-      .get("http://127.0.0.1:5000/user_events", {
+      .get("http://localhost:5000/user_events", {
         headers: {
           Authorization: "Bearer " + sessionStorage.getItem("token"),
           "Content-Type": "application/json",

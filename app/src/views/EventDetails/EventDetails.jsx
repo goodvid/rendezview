@@ -26,6 +26,7 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import PersonIcon from "@mui/icons-material/Person";
 import EventIcon from "@mui/icons-material/Event";
 import ShareIcon from "@mui/icons-material/Share";
+import DeleteIcon from '@mui/icons-material/Delete';
 import ThumbUpAltIcon from "@mui/icons-material/ThumbUpAlt";
 import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
 import ThumbDownAltIcon from "@mui/icons-material/ThumbDownAlt";
@@ -270,7 +271,7 @@ function EventDetails() {
     setLoading(true);
 
     // Send data to Flask server
-    fetch("http://127.0.0.1:5000/profile/join-event", {
+    fetch("http://localhost:5000/profile/join-event", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + sessionStorage.getItem("token"),
@@ -289,7 +290,7 @@ function EventDetails() {
           return false;
         }
       })
-      .then(() => {})
+      .then(() => { })
       .catch((error) => {
         console.log("error", error);
         setLoading(false);
@@ -362,10 +363,11 @@ function EventDetails() {
           >
             <Stack direction="row" alignItems="center" gap="0.5rem">
               <EventDetailsButton
-                startIcon={<EventIcon />}
-                // onClick={}
+                startIcon={isAddedToCalendar ? <DeleteIcon /> : <EventIcon />}
+                onClick={isAddedToCalendar ? removeFromCalendar : addToCalendar}
+                style={{ backgroundColor: isAddedToCalendar ? "#e57373" : "inital" }}
               >
-                Add to Calendar
+                {isAddedToCalendar ? "Remove from Calendar" : "Add to Calendar"}
               </EventDetailsButton>
             </Stack>
 
@@ -550,7 +552,7 @@ function EventDetails() {
 
   const deleteEvent = () => {
     axios
-      .post("http://127.0.0.1:5000/delete_event", {
+      .post("http://localhost:5000/delete_event", {
         event: eventObject,
       })
       .then((res) => {
