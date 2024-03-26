@@ -273,6 +273,19 @@ def get_events():
 
     return {'status': '200', 'events': event_values}
 
+@app.route("/events/get_recommended", methods=["GET"])
+@jwt_required
+def get_recommended():
+    current_user = get_jwt_identity()
+
+    user = User.query.filter_by(email=current_user['email']).first()
+    preferences = user.preferences
+
+    # Recommendation function to get recs based on preferences
+
+    recommendations = None
+
+    return {'status': '200', 'recommendations': recommendations}
 
 @app.route("/event/edit", methods=["POST"])
 def edit_event():

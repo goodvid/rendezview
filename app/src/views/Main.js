@@ -94,6 +94,22 @@ function Main() {
 
   useEffect(() => {
     // Get the recommended events once the backend function is made
+    if (sessionStorage.getItem("token")) {
+      axios
+      .get(`http://127.0.0.1:5000/events/get_recommended`, {
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        }
+      })
+      .then((response) => {
+        fetchAndDisplayEvents();
+      })
+      .catch((error) => {
+        console.error("Error fetching API events:", error);
+        setLoading(false);
+      });
+    }
   }, [])
 
   const fetchAPIEvents = () => {
