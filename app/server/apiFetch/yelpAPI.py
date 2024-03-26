@@ -55,9 +55,6 @@ class YelpAPI:
     def set_amount(self, amount):
         self.amount = min(amount, 50)
 
-    def businessID(self, businessID):
-        self.businessID = businessID
-
     def check_rate_limit(self, headers):
         # Check rate limit headers
         limit = headers.get('X-RateLimit-Limit')
@@ -72,23 +69,6 @@ class YelpAPI:
                 return f"Warning: You are close to the rate limit. You have {remaining} requests left out of {limit}."
             else:
                 return "Good"
-
-    def get_business_from_id(self, businessID):
-        # Set parameters only if its passed in 
-        self.set_base_search_path("businesses")
-
-        url_with_location = f"{self.default_search_path}/{businessID}"
-
-        response = requests.get(url_with_location, headers=self.HEADERS)
-
-        if response.status_code == 200:
-            print(self.check_rate_limit(response.headers))
-            business = response.json()
-            print(business)
-            return business
-        else:
-            return {"error": "An error occurred while processing events", "status": response.status_code}
-            # return jsonify({"message": "An error occurred while processing events"}), 500
 
     def get_events_based_on_location(self, location="", is_free="", sort_on="", start_date="", category=""):
         # Set parameters only if its passed in 
@@ -124,7 +104,11 @@ class YelpAPI:
             events = response.json()['events']
             return events
         else:
+            # print(response.status_code, response.text)
+            # print(self.default_search_path, self.amount, self.location,
+                #   self.sort_by, self.sort_on)
             return jsonify({"message": "An error occurred while processing events"}), 500
+            # print("Failed to fetch events")
 
     def get_events_based_on_category(self, category):
         # for test

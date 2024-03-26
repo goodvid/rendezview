@@ -18,8 +18,6 @@ import {
   TextIconStack,
   EditIconButton,
 } from "../../../components/StyledComponents/StyledComponents";
-import Friend from "../../../components/Friend/Friend";
-
 
 import { useNavigate } from "react-router-dom";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -31,10 +29,10 @@ import axios from "axios";
 
 function FriendsList() {
   const navigate = useNavigate();
+  const response = false;
 
   const [displayName, setDisplayName] = useState("");
   const [profilePic, setProfilePic] = useState("");
-  const [tags, setTags] = useState([]);
   const [friendsNum, setFriendsNum] = useState(0);
   const [groupsNum, setGroupsNum] = useState(0);
 
@@ -54,39 +52,18 @@ function FriendsList() {
       .catch((err) => {
         console.log(err);
       });
-
-      axios
-      .get("http://127.0.0.1:5000/user/getprofilepic", {
-        headers: {
-          Authorization: "Bearer " + sessionStorage.getItem("token"),
-          "Content-Type": "application/json",
-        },
-      })
-      .then((res) => {
-        console.log(res.data["status"]);
-        setProfilePic(res.data["profilePic"]);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-
-      axios
-      .get("http://127.0.0.1:5000/user/getpreferences", {
-        headers: {
-          Authorization: "Bearer " + sessionStorage.getItem("token"),
-          "Content-Type": "application/json",
-        },
-      })
-      .then((res) => {
-        console.log(res.data["status"]);
-        const preferences = res.data["preferences"];
-        setTags(preferences.split(","));
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-
   }, []);
+
+  // Dummy data; replace with actual database data
+  const [tags, setTags] = useState([
+    "Comedy",
+    "Food",
+    "Film",
+    "Travel",
+    "Rock",
+    "Yoga",
+    "DIY",
+  ]);
 
   const LeftInfoStack = () => {
     return (
@@ -144,6 +121,15 @@ function FriendsList() {
         {/* Display Name */}
         <TextIconStack>
           <h1>{displayName}</h1>
+          {/* 
+          <IconButton
+            sx={{ color: "white" }}
+            aria-label="edit display name"
+            size="large"
+          >
+            <EditIcon fontSize="inherit" />
+          </IconButton> 
+          */}
         </TextIconStack>
 
         {/* Location, Friends, Groups */}
@@ -183,13 +169,8 @@ function FriendsList() {
 
   const RightFriendsStack = () => {
     return (
-      <Stack 
-        className = "profile-components"
-        width="100%" overflow="hidden" alignItems="flex-start"
-      >
-        <h2>Friends</h2>
-        <Friend></Friend>
-        <Friend></Friend>
+      <Stack width="100vw" overflow="hidden">
+        <h1> test </h1>
       </Stack>
     );
   };
@@ -206,8 +187,7 @@ function FriendsList() {
     >
       <Navbar />
       <Stack
-        width="100%"
-        height="100%"
+        width="100vw"
         direction="row"
         gap="2rem"
         justifyContent="space-between"

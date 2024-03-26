@@ -5,9 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
-import InfoIcon from '@mui/icons-material/Info';
-import LocationCityIcon from '@mui/icons-material/LocationCity';
-import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 
 function CreateEvent() {
   const navigate = useNavigate();
@@ -95,18 +92,15 @@ function CreateEvent() {
     <div className="w-full h-full">
       <Navbar />
       <div className="m-[5%] flex flex-col gap-4">
-        <div className="text-5xl font-bold text-left mb-[3%]">New Event</div>
-        <div className="text-3xl text-left flex flex-row gap-3"> 
-          <div><InfoIcon sx={{fontSize: "35px", marginTop: "-5px", color: "#B7B7B7"}}/></div>
-          <div>Basic Info</div>
-        </div>
-        <div className="text-l  text-left "> Title</div>
+        <div className="text-5xl font-bold text-left">New Event</div>
+        <div className="text-2xl font-bold text-left mt-[5%]"> Basic Info</div>
+        <div className="text-l  text-left "> Event Title</div>
         <input
           name="eventName"
           onChange={handleChange}
           className="w-[80%] h-[45px] border-login-blue outline rounded-md align-left"
         ></input>
-        <div className="text-l  text-left "> Description</div>
+        <div className="text-l  text-left "> Event Description</div>
         <input
           name="eventDesc"
           onChange={handleChange}
@@ -150,11 +144,8 @@ function CreateEvent() {
 
         <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"></hr>
 
-        <div className="text-3xl text-left flex flex-row gap-3"> 
-          <div><LocationCityIcon sx={{fontSize: "35px", marginTop: "-5px", color: "#B7B7B7"}}/></div>
-          <div>Location</div>
-        </div>
-        <div className="text-l text-left ">Location Address</div>
+        <div className="text-2xl font-bold  text-left ">Location</div>
+        <div className="text-l text-left ">Location address</div>
         <input
           name="location"
           onChange={handleChange}
@@ -162,10 +153,7 @@ function CreateEvent() {
         ></input>
         <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"></hr>
 
-        <div className="text-3xl text-left flex flex-row gap-3"> 
-          <div><EditCalendarIcon sx={{fontSize: "35px", marginTop: "-5px", color: "#B7B7B7"}}/></div>
-          <div>Date and Time</div>
-        </div>
+        <div className="text-2xl font-bold  text-left ">Date and Time</div>
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1">
             <LocalizationProvider dateAdapter={AdapterDayjs}>
