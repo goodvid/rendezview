@@ -325,18 +325,31 @@ def getusername():
 
     user = User.query.filter_by(email=current_user["email"]).first()
     username = user.username
+    
+    friends = Status.query.filter_by(user=user.id).count()
+    
+    print(friends, "friends length")
 
-    return {'status': '200', 'username': username}
+    return {'status': '200', 'username': username, "friends": friends}
 
 @app.route('/user/get_user', methods=['POST'])
+@jwt_required()
 def get_user():
     data = request.json
-    user = User.query.filter_by(email=data['email']).first()
+    user = User.query.filter_by(id=data).first()
 
     if user == None:
-        return {'status': '400', 'username': "None"}
+        return {'status': '400', 'username': "None", "isFriend": False}
+    print(data, "check data")
+
+    current_user = get_jwt_identity()
+    curr = User.query.filter_by(email=current_user["email"]).first()
+    friend = Status.query.filter_by(user=curr.id, friend=user.id).first()
+    print(friend, "friend here")
+    if friend:
+        return {'status': '200', 'username': user.username, "isFriend": True, "relationship": friend.status}
     else:
-        return {'status': '200', 'username': user.username}
+        return {"status": "200", "username": user.username, "isFriend": False, "relationship": ""}
 
 @app.route('/user_events', methods=['GET'])
 @jwt_required()
@@ -447,11 +460,15 @@ def get_users():
 @jwt_required()
 def add_friend():
     data = request.get_json()
-    
+
     print(data, "check data")
+
+    friend = Status.query.filter_by()
     current_user = get_jwt_identity()
     user = User.query.filter_by(email=current_user["email"]).first()
-
+    friend = Status.query.filter_by(user = user.id,friend = data).first()
+    if friend:
+        return {"status": 200}
     friend_id = data
 
     new_friend = Status(user=user.id, friend=friend_id, status="follow")
@@ -463,17 +480,39 @@ def add_friend():
 @app.route("/delete_friend", methods=["POST"])
 @jwt_required()
 def delete_friend():
-    data = request.json()
+    data = request.json
     current_user = get_jwt_identity()
     user = User.query.filter_by(email=current_user["email"]).first()
 
-    friend = Status.query.filter_by(user=user, friend=data["id"]).first()
+    friend = Status.query.filter_by(user=user.id, friend=data).first()
     db.session.delete(friend)
     db.session.commit()
 
     return {"status": "200"}
-    
 
+@app.route('/get_friends', methods=["POST", "GET"])
+@jwt_required()
+def get_friends():
+    token = get_jwt_identity()
+    curr_user = User.query.filter_by(email=token["email"]).first()
+
+    query = Status.query.filter_by(user=curr_user.id)
+
+    names = []
+    for q in query:
+
+        status = Status.query.filter_by(user=curr_user.id, friend=q.friend).first()
+
+        f = User.query.filter_by(id=q.friend).first()
+        person = {
+                "name": f.username,
+                "isFriend": True,
+                "relationship": status.status,
+                "id": f.id,
+        }
+        names.append(person)
+
+    return {"status":200, "names": names}
 
 @app.route('/delete_event', methods=['POST'])
 def delete_event():
@@ -618,7 +657,6 @@ def fetch_api_events():
         return jsonify({"message": "An error occurred while processing events", "error": str(e)}), 500
 
     return jsonify({"message": "Events processed", "eventIDs": eventIDTracking, "count": fetched_events_count, "events": events}), 200
-
 
 
 @app.route("/events/business", methods=["GET"])
@@ -772,14 +810,18 @@ def get_host_rating():
 
     # eventRatings = [{"eventID": rating.eventID, "rating": rating.rating} for rating in eventRatings]
     eventRatingsArr = [rating.rating for rating in eventRatings]
+    
+    if len(eventRatingsArr) > 0:
 
-    hostRating = round(statistics.mean(eventRatingsArr), 2)
+        hostRating = round(statistics.mean(eventRatingsArr), 2)
+    else:
+        hostRating = 0
 
     return {'status': '200', 'userID': userID, "eventsHosted": eventsHosted, "eventRatings": eventRatingsArr, "hostRating": hostRating}
 
 
-# @app.route("/check_user", methods = ["POST"])
-@jwt_required
+@app.route("/check_user", methods = ["POST"])
+@jwt_required()
 def hello():
     user = get_jwt_identity()
     return jsonify(logged_in=user), 200
