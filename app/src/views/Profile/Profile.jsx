@@ -104,7 +104,7 @@ function Profile() {
         },
       })
       .then((res) => {
-        // console.log("hostRating object:", res.data);
+        console.log("hostRating object:", res.data);
         // console.log("hostRating:", res.data.hostRating);
         setHostRating(res.data.hostRating);
       });
@@ -248,7 +248,7 @@ function Profile() {
 
         <TextIconStack>
           <ThumbUpIcon />
-          <h3>{hostRating}%</h3>
+          {hostRating ? <h3>{hostRating}%</h3> : <h3>No Rating</h3>}
         </TextIconStack>
 
         {/* Location, Friends, Groups */}
@@ -304,25 +304,42 @@ function Profile() {
     return (
       <Stack className="profile-components">
         <h2>Upcoming Events</h2>
-        <Box sx={{ overflowX: "auto", width: "100%" }}>
-          <Stack
-            direction="row"
-            gap={2}
-            sx={{ minWidth: "max-content", marginBlock: "0.5rem" }}
-          >
-            {upcomingEvents.map((event, i) => {
-              return (
-                <ProfileEvent
-                  name={event.name}
-                  date={event.date}
-                  location={event.location}
-                  key={i}
-                  id={event.id}
-                  desc={event.desc}
-                />
-              );
-            })}
-          </Stack>
+        <Box
+          sx={{
+            overflowX: "auto",
+            width: "100%",
+          }}
+        >
+          {upcomingEvents.length != 0 ? (
+            <Stack
+              direction="row"
+              gap={2}
+              sx={{ minWidth: "max-content", marginBlock: "0.5rem" }}
+            >
+              {upcomingEvents.map((event, i) => {
+                return (
+                  <ProfileEvent
+                    name={event.name}
+                    date={event.date}
+                    location={event.location}
+                    key={i}
+                    id={event.id}
+                    desc={event.desc}
+                  />
+                );
+              })}
+            </Stack>
+          ) : (
+            <Stack
+              marginInline="2rem"
+              marginBlock="0px"
+              textAlign="left"
+              width="100%"
+              height="100%"
+            >
+              <h3>No upcoming events</h3>
+            </Stack>
+          )}
         </Box>
       </Stack>
     );
@@ -334,30 +351,42 @@ function Profile() {
         <h2>Past Events</h2>
         <Box sx={{ overflowX: "auto", width: "100%" }}>
           {/* <Stack direction="row" gap={2} sx={{ minWidth: "max-content" }}> */}
-          <Stack
-            direction="row"
-            gap={2}
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "stretch",
-              minWidth: "max-content",
-            }}
-          >
-            {pastEvents.map((event, i) => {
-              return (
-                <ProfileEvent
-                  name={event.name}
-                  date={event.date}
-                  location={event.location}
-                  key={i}
-                  id={event.id}
-                  desc={event.desc}
-                  rating={event.rating}
-                />
-              );
-            })}
-          </Stack>
+          {upcomingEvents.length != 0 ? (
+            <Stack
+              direction="row"
+              gap={2}
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "stretch",
+                minWidth: "max-content",
+              }}
+            >
+              {pastEvents.map((event, i) => {
+                return (
+                  <ProfileEvent
+                    name={event.name}
+                    date={event.date}
+                    location={event.location}
+                    key={i}
+                    id={event.id}
+                    desc={event.desc}
+                    rating={event.rating}
+                  />
+                );
+              })}
+            </Stack>
+          ) : (
+            <Stack
+              marginInline="2rem"
+              marginBlock="0px"
+              textAlign="left"
+              width="100%"
+              height="100%"
+            >
+              <h3>No past events</h3>
+            </Stack>
+          )}
         </Box>
       </Stack>
     );
@@ -455,6 +484,7 @@ function Profile() {
         bottom: "0px",
         right: "0px",
         left: "0px",
+        height: "100vh",
       }}
     >
       <Navbar />

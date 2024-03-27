@@ -41,7 +41,7 @@ import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 
 function Main() {
   const [events, setEvents] = useState([]);
-  const [location, setLocation] = useState("West Lafayette, Indiana, US");
+  const [location, setLocation] = useState("West Lafayette, Indiana, USA");
   const [startDate, setStartDate] = useState(null);
   const [unixStartDate, setUnixStartDate] = useState("");
   const [isFree, setIsFree] = useState("");
@@ -49,7 +49,7 @@ function Main() {
   const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
   const [locationInput, setLocationInput] = useState(
-    "West Lafayette, Indiana, US"
+    "West Lafayette, Indiana, USA"
   );
   const [userCoords, setUserCoords] = useState(null);
   const [locLoading, setLocLoading] = useState(false);
@@ -79,7 +79,7 @@ function Main() {
   const isFirstRender = useRef(true);
 
   useEffect(() => {
-    if (isFirstRender.current || location == "West Lafayette, Indiana, US") {
+    if (isFirstRender.current || location == "West Lafayette, Indiana, USA") {
       isFirstRender.current = false;
       return;
     }
@@ -87,10 +87,6 @@ function Main() {
     console.log("Location changed, fetching events...");
     fetchAPIEvents();
   }, [location, isFree, sortOn, unixStartDate, category]);
-
-  useEffect(() => {
-    console.log("location changed", location);
-  }, [location]);
 
   useEffect(() => {
     setUnixStartDate(dayjs(startDate).unix());
@@ -131,12 +127,13 @@ function Main() {
     axios
       .get(`http://127.0.0.1:5000/filtered_events?${params}`)
       .then((response) => {
-        console.log("events status: ", response.data["status"]);
-        console.log("All events:", response.data["all_events"]);
-        console.log("Fetched events:", response.data["fetched_events"]);
-        console.log("User events:", response.data["user_events"]);
+        // console.log("All events:", response.data["all_events"]);
+        // console.log("Fetched events:", response.data["fetched_events"]);
+        // console.log("User events:", response.data["user_events"]);
         console.log("filters:", response.data["filters"]);
-        setEvents(response.data["events"]);
+        console.log("filters:", response.data);
+        console.log("filters:", response.data["sorted"]);
+        setEvents(response.data["sorted"]);
         setLoading(false);
       })
       .catch((error) => {
@@ -308,11 +305,11 @@ function Main() {
                 ></l-pinwheel>
               </Stack>
             ) : (
-              events.reverse().map((event, i) => {
+              events.map((event, i) => {
                 return (
                   <Event
                     name={event.name}
-                    date={dayjs(event.time).toString()}
+                    date={dayjs(event.start_date).toString()}
                     location={event.location}
                     key={i}
                     id={event.id}

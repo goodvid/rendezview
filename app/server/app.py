@@ -300,10 +300,17 @@ def get_filtered_events():
 
         event_values.append(values)
         events = fetched_events + user_events
+        sortedEvents = fetched_events + user_events
+        
+        for event in sortedEvents:
+            event['start_datetime'] = parser.parse(event["start_date"]).replace(tzinfo=None)
 
-    return {'status': '200', 'filters': filters, 'events': events, 'all_events': event_values, 'fetched_events': fetched_events, 'user_events': user_events}
+        if sort_on == "time_start":
+            sortedEvents = sorted(sortedEvents, key=lambda x: x['start_datetime'], reverse=True)
 
-@app.route("/event/edit", methods=["POST"])
+    return {'status': '200', 'filters': filters, 'sorted': sortedEvents, 'events': events, 'all_events': event_values, 'fetched_events': fetched_events, 'user_events': user_events}
+
+@app.route("/edit", methods=["POST"])
 def edit_event():
     data = request.json
 
@@ -692,9 +699,36 @@ def get_host_rating():
     # eventRatings = [{"eventID": rating.eventID, "rating": rating.rating} for rating in eventRatings]
     eventRatingsArr = [rating.rating for rating in eventRatings]
 
-    hostRating = round(statistics.mean(eventRatingsArr), 2)
+    if eventRatingsArr:
+        hostRating = round(statistics.mean(eventRatingsArr), 2)
+    else:
+        hostRating = None 
+        eventRatingsArr = []
 
     return {'status': '200', 'userID': userID, "eventsHosted": eventsHosted, "eventRatings": eventRatingsArr, "hostRating": hostRating}
+
+@app.route("/check_owner", methods=["POST"])
+@jwt_required()
+def check_owner():
+    event_id = request.json.get('eventID')
+    # user_id = request.json.get('userID')
+
+    current_user = get_jwt_identity()
+
+    if current_user:
+        userEmail = current_user.get('email')
+        user = User.query.filter_by(email=userEmail).first()
+        if user:
+            user_id = user.id 
+
+    isOwner = False  
+    event = Event.query.filter_by(eventID=event_id).first()
+    if event and event.userID == user_id:
+        isOwner = True
+
+
+
+    return jsonify({"userID": user.id, "eventID": event_id, "isOwner": isOwner}), 200
 
 
 # @app.route("/check_user", methods = ["POST"])
