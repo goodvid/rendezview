@@ -18,7 +18,8 @@ import ChangePassword from "./views/Settings/ChangePassword/ChangePassword";
 import ResetPassword from "./views/ResetPassword/ResetPassword";
 import Test from "./views/Test/Test";
 import FriendProfile from "./views/Friend/FriendProfile";
-
+import Friends from "./views/Friend/AddFriends";
+import FriendsList from "./views/Friend/FriendList";
 function App() {
   return (
     <div className="App">
@@ -41,6 +42,8 @@ function App() {
           <Route path="/resetpassword" element={<ResetPassword />} />
           <Route path="/test" element={<Test />} />
           <Route path="/friend/:id" element={<FriendProfile />} />
+          <Route path="/addfriends" element={<Friends/>}></Route>
+          <Route path="/profile/friends" element={<FriendsList/>}></Route>
         </Routes>
       </BrowserRouter>
     </div>

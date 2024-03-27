@@ -9,13 +9,15 @@ events_table = db.Table('user_events',
     db.Column('event_id', db.Integer, db.ForeignKey('event.eventID'), primary_key=True)
 )
 
+
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key = True)
     email = db.Column(db.String(50), unique=True)
     username = db.Column(db.String(50), unique=True)
     password = db.Column(db.String(50))
     picture = db.Column(db.String(50))
-    friends = db.Column(db.String(1000))
+    #friends = db.Column(db.String(1000))
 
     blogs = db.relationship('Blog', backref='blog', lazy=True, cascade='all, delete')
     saved_events = db.relationship(
@@ -24,6 +26,7 @@ class User(UserMixin, db.Model):
         lazy="subquery",
         backref=db.backref("events", lazy=True),
     )
+    #friends = db.relationship("User", secondary=friends_table,lazy="subquery",backref=db.backref("added friends"))
     #private_events = db.relationship('PrivateEvent', backref='private_event', lazy=True)
     location = db.Column(db.String(50))
     preferences = db.Column(db.String(50))
@@ -82,7 +85,7 @@ class Event(db.Model):
             'userID': self.userID,
             'rating' : self.rating,
             'category': self.category,
-            'type': self.type
+            'type': self.type   
         }
 
 class Blog(db.Model):
@@ -108,8 +111,3 @@ class Status(db.Model):
     status = db.Column(db.String(5000))
 
 
-class Status(db.Model):
-    sid = db.Column(db.Integer, primary_key = True)
-    user = db.Column(db.String(5000), db.ForeignKey('user.email'))
-    friend = db.Column(db.String(5000), db.ForeignKey('user.email'))
-    status = db.Column(db.String(5000))

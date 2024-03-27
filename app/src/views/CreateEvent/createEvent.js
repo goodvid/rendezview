@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
+import { withAuth } from "../withAuth";
 
 function CreateEvent() {
   const navigate = useNavigate();
@@ -45,8 +46,8 @@ function CreateEvent() {
     });
     console.log(eventData, event.target);
   };
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  const handleSubmit = () => {
+    //event.preventDefault();
     fetch("http://127.0.0.1:5000/event/create", {
       method: "POST",
       headers: {
@@ -186,4 +187,4 @@ function CreateEvent() {
     </div>
   );
 }
-export default CreateEvent;
+export default withAuth(CreateEvent);
