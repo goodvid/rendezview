@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 function User({name, isFriend, relationship, id})  {
+  const navigate = useNavigate()
+  const eventLink = "/friend/" + id 
+  
 
   // const [label, setLabel] = useState("Add friend");
   // const handleSubmit = () => {
@@ -29,9 +33,17 @@ function User({name, isFriend, relationship, id})  {
             </div>
 
             {isFriend ? (
-              <div></div>
+              <button
+                onClick={() => navigate(eventLink)}
+                class="bg-yellow-500   hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
+              >
+                View Profile
+              </button>
             ) : (
-              <button/*go to page */ class="bg-yellow-500   hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">
+              <button
+                onClick={() => navigate(eventLink)}
+                class="bg-yellow-500   hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
+              >
                 Add friend
               </button>
             )}

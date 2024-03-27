@@ -182,7 +182,7 @@ def deleteaccount():
     return jsonify({"message": "Account deleted successfully"}), 200
 
 @app.route("/user/set_status", methods=["POST"])
-# @jwt_required()
+@jwt_required()
 def set_status():
     data = request.json
     other_email = data['email']
@@ -274,7 +274,7 @@ def get_events():
     return {'status': '200', 'events': event_values}
 
 @app.route("/events/get_recommended", methods=["GET"])
-@jwt_required
+@jwt_required()
 def get_recommended():
     current_user = get_jwt_identity()
 
@@ -344,6 +344,7 @@ def getusername():
     print(friends, "friends length")
 
     return {'status': '200', 'username': username, "friends": friends}
+
 
 @app.route('/user/get_user', methods=['POST'])
 @jwt_required()
