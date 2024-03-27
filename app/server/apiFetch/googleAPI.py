@@ -310,6 +310,8 @@ class GoogleAPI:
         msg = f"\nBase Path: \n{self.BASE_PATH}\nToken File Path: \n{self.TOKEN_FILE_PATH}\nCredentials File Path: \n{self.CREDENTIALS_FILE_PATH}\nCredential File Name: \n{self.CREDENTIAL_FILE_NAME}\nToken File Name: \n{self.TOKEN_FILE_NAME}\n"
         print(msg)
 
+        return
+
     def test(self):
         """
         Test function:

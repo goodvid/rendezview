@@ -63,7 +63,7 @@ function Profile() {
 
     console.log(sessionStorage.getItem("token"));
     axios
-      .get("http://127.0.0.1:5000/user_events", {
+      .get("http://localhost:5000/user_events", {
         headers: {
           Authorization: "Bearer " + sessionStorage.getItem("token"),
           "Content-Type": "application/json",
@@ -97,7 +97,7 @@ function Profile() {
 
   const getHostRating = () => {
     axios
-      .get("http://127.0.0.1:5000/user/get_host_rating", {
+      .get("http://localhost:5000/user/get_host_rating", {
         headers: {
           Authorization: "Bearer " + sessionStorage.getItem("token"),
           "Content-Type": "application/json",
@@ -155,7 +155,7 @@ function Profile() {
   const handleSubmit = () => {
     // eslint-disable-next-line no-restricted-globals
     if (confirm("are you sure you want to delete all data?")) {
-      fetch("http://127.0.0.1:5000/profile/clearhistory", {
+      fetch("http://localhost:5000/profile/clearhistory", {
         method: "GET",
         headers: {
           Authorization: "Bearer " + sessionStorage.getItem("token"),

@@ -178,7 +178,7 @@ function EventDetails() {
   const fetchEventObject = () => {
     // Fetch event object
     setLoading(true);
-    fetch("http://127.0.0.1:5000/event/details", {
+    fetch("http://localhost:5000/event/details", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -205,7 +205,7 @@ function EventDetails() {
     setLoading(true);
 
     console.log("user id");
-    fetch("http://127.0.0.1:5000/get_user_id", {
+    fetch("http://localhost:5000/get_user_id", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -232,7 +232,7 @@ function EventDetails() {
     console.log("updateRating");
 
     // Return the fetch promise
-    return fetch("http://127.0.0.1:5000/rate_event", {
+    return fetch("http://localhost:5000/rate_event", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -262,7 +262,7 @@ function EventDetails() {
 
   const getRating = () => {
     setLoading(true);
-    fetch("http://127.0.0.1:5000/get_rating", {
+    fetch("http://localhost:5000/get_rating", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -288,7 +288,7 @@ function EventDetails() {
 
   const getAvgRating = () => {
     console.log("getAvgRating");
-    fetch("http://127.0.0.1:5000/get_avg_rating", {
+    fetch("http://localhost:5000/get_avg_rating", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -345,7 +345,7 @@ function EventDetails() {
 
     const params = new URLSearchParams({ businessID: businessID });
     axios
-      .get(`http://127.0.0.1:5000/events/business?${params}`)
+      .get(`http://localhost:5000/events/business?${params}`)
       .then((response) => {
         console.log("Business fetched: ", response.data);
         // console.log("name:", response.data.business.name);
@@ -369,9 +369,9 @@ function EventDetails() {
   };
 
   const handleAddEmail = (event) => {
-    if (email) { // Check if email is not empty
+    if (email) {
       setEmailsList((prevEmails) => [...prevEmails, email]);
-      setEmail(''); // Reset the email input field after adding
+      setEmail('');
     }
   };
   const displayEmail = (event) => {
@@ -401,31 +401,8 @@ function EventDetails() {
       ? dummyRSVPList
       : dummyRSVPList.filter(item => item.status === newFilter);
 
-    setDisplayList(filteredList); // Update the displayed list based on the filter
+    setDisplayList(filteredList);
   };
-  // const [currentFilter, setCurrentFilter] = useState('all');
-  // const [displayList, setDisplayList] = useState(dummyRSVPList);
-
-  // const getRSVPList = (filter) => {
-  //   // Filter the list based on the filter parameter
-  //   switch (filter) {
-  //     case 'all':
-  //       setDisplayList(dummyRSVPList);
-  //       break;
-  //     case 'accepted':
-  //       setDisplayList(dummyRSVPList.filter(item => item.status === 'accepted'));
-  //       break;
-  //     case 'declined':
-  //       setDisplayList(dummyRSVPList.filter(item => item.status === 'declined'));
-  //       break;
-  //     case 'no response':
-  //       setDisplayList(dummyRSVPList.filter(item => item.status === 'no response'));
-  //       break;
-  //     default:
-  //       setDisplayList(dummyRSVPList);
-  //   }
-  //   setCurrentFilter(filter);
-  // };
 
   const handleOpenRSVPDialog = () => {
     setOpenRSVP(true);
@@ -584,7 +561,7 @@ function EventDetails() {
     setLoading(true);
 
     axios
-      .get("http://127.0.0.1:5000/events")
+      .get("http://localhost:5000/events")
       .then((response) => {
         console.log(
           "Similar events fetched:",
@@ -672,7 +649,7 @@ function EventDetails() {
                     <EventDetailsButton
                       startIcon={isAddedToCalendar ? <DeleteIcon /> : <EventIcon />}
                       onClick={isAddedToCalendar ? removeFromCalendar : addToCalendar}
-                      style={{ backgroundColor: isAddedToCalendar ? "#e57373" : "inital" }}
+                      style={{ backgroundColor: isAddedToCalendar ? "#e57373" : "" }}
                     >
                       {isAddedToCalendar ? "Remove from Calendar" : "Add to Calendar"}
                     </EventDetailsButton>
@@ -733,7 +710,7 @@ function EventDetails() {
               <Stack>
                 <img src={testImage} style={{ borderRadius: "1rem" }} />
               </Stack>
-              <Stack alignItems="flex-start" marginTop="1rem" direction="row">
+              <Stack alignItems="flex-start" gap="1rem" marginTop="1rem" direction="row">
                 <YellowButton
                   textAlign="left"
                   variant="contained"
@@ -741,6 +718,40 @@ function EventDetails() {
                 >
                   Join Event
                 </YellowButton>
+                <GrayButton
+                  textAlign="Center"
+                  variant="contained"
+                  onClick={handleOpenRSVPDialog}
+                >
+                  See RSVP List
+                </GrayButton>
+                <Dialog open={openRSVP} onClose={handleCloseRSVPDialog}>
+                  <DialogTitle>RSVP List</DialogTitle>
+                  <DialogContent>
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+                      {['all', 'accepted', 'declined', 'no response'].map((filter) => (
+                        <Button
+                          key={filter}
+                          // color={currentFilter === filter ? '' : 'green'}
+                          onClick={() => getRSVPList(filter)}
+                          style={{ margin: '0 10px' }}
+                        >
+                          {filter.charAt(0).toUpperCase() + filter.slice(1)}
+                        </Button>
+                      ))}
+                    </div>
+                    <List>
+                      {displayList.map((item, index) => (
+                        <ListItem key={index}>
+                          <ListItemText primary={item.name} secondary={`Status: ${item.status.charAt(0).toUpperCase() + item.status.slice(1)}`} />
+                        </ListItem>
+                      ))}
+                    </List>
+                  </DialogContent>
+                  <DialogActions>
+                    <GrayButton onClick={handleCloseRSVPDialog}>Close</GrayButton>
+                  </DialogActions>
+                </Dialog>
 
                 {sessionStorage.getItem("token") && checkIfPast() ? (
                   <Stack
@@ -758,40 +769,7 @@ function EventDetails() {
                     >
                       {/* <GrayButton variant="contained" color="primary" onClick={() => console.log('Clicked')}>Test Button</GrayButton> */}
 
-                      <GrayButton
-                        textAlign="Center"
-                        variant="contained"
-                        onClick={handleOpenRSVPDialog}
-                      >
-                        See RSVP List
-                      </GrayButton>
-                      <Dialog open={openRSVP} onClose={handleCloseRSVPDialog}>
-                        <DialogTitle>RSVP List</DialogTitle>
-                        <DialogContent>
-                          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-                            {['all', 'accepted', 'declined', 'no response'].map((filter) => (
-                              <Button
-                                key={filter}
-                                // color={currentFilter === filter ? '' : 'green'}
-                                onClick={() => getRSVPList(filter)}
-                                style={{ margin: '0 10px' }}
-                              >
-                                {filter.charAt(0).toUpperCase() + filter.slice(1)}
-                              </Button>
-                            ))}
-                          </div>
-                          <List>
-                            {displayList.map((item, index) => (
-                              <ListItem key={index}>
-                                <ListItemText primary={item.name} secondary={`Status: ${item.status.charAt(0).toUpperCase() + item.status.slice(1)}`} />
-                              </ListItem>
-                            ))}
-                          </List>
-                        </DialogContent>
-                        <DialogActions>
-                          <GrayButton onClick={handleCloseRSVPDialog}>Close</GrayButton>
-                        </DialogActions>
-                      </Dialog>
+
                       <IconButton
                         onClick={() => handleRating(1)}
                         aria-label="like"

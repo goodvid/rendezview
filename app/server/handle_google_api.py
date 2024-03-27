@@ -2,6 +2,20 @@ from apiFetch.googleAPI import GoogleAPI
 from models import db
 from models import User, Event
 import os
+from geopy.geocoders import Nominatim
+from timezonefinder import TimezoneFinder
+
+
+def find_time_zone(address):
+    # if problems arise, gotta replace user_age with something
+    # useful like email or use case of application
+    geolocator = Nominatim(user_agent="RendeView")
+    location = geolocator.geocode(address)
+
+    tf = TimezoneFinder()
+    timezone = tf.timezone_at(lat=location.latitude, lng=location.longitude)
+
+    return timezone
 
 
 def add_to_calendar(event):
@@ -21,6 +35,7 @@ def add_to_calendar(event):
         event_start_date = event.start_date
         event_end_date = event.start_date
         event_location = event.location
+        print("Event details!!!")
         print(event_name, event_description, event_start_time,
               event_end_time, event_start_date, event_end_date, event_location)
         return {"flag": True, "status": 200}
@@ -69,3 +84,7 @@ def handle_deauthentication():
     except Exception as e:
         print(e)
         return False
+
+
+if __name__ == '__main__':
+    find_time_zone("9632 NY-96, Trumansburg, NY 14886")

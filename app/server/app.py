@@ -684,7 +684,7 @@ def add_event_to_calendar():
         if response["status"] == 200:
             return jsonify({"status": 200, "message": "Success"}), 200
         else:
-            return jsonify({"status": 200, "message": "Something went wrong with add to calendar"}), 400
+            return jsonify({"status": 400, "message": "Something went wrong with add to calendar"}), 400
     else:
         return jsonify({"status": 404, "message": "Event not found"}), 404
 
