@@ -12,6 +12,7 @@ from flask_jwt_extended import create_access_token
 from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended import JWTManager
+from pprint import pprint
 
 from config import ApplicationConfig
 
@@ -674,11 +675,11 @@ def get_host_rating():
 def add_event_to_calendar():
     # the event id that I sent will be different
     data = request.json
-    print("-------Logs------")
-    print(data)
-    print("-------Logs------")
     event_id = data.get('eventID')  # Ensure this matches your JS payload
     event = Event.query.filter_by(eventID=event_id).first()
+    print("-------Logs------")
+    pprint(vars(event))
+    print("-------Logs------")
     if event:
         response = handle_google_api.add_to_calendar(event=event)
         if response["status"] == 200:
@@ -689,7 +690,7 @@ def add_event_to_calendar():
         return jsonify({"status": 404, "message": "Event not found"}), 404
 
 
-@app.route("/events/addToCalendar", methods=["POST"])
+@app.route("/events/removeFromCalendar", methods=["POST"])
 def remove_from_calendar():
     # the event id I get back will be slightly different
     data = request.json
@@ -697,7 +698,7 @@ def remove_from_calendar():
     event_id = data.get('eventID')
     event = Event.query.filter_by(eventID=event_id).first()
     if event:
-        response = handle_google_api.add_to_calendar(event=event)
+        response = handle_google_api.remove_from_calendar(event=event)
         if response["status"] == 200:
             return jsonify({"status": 200, "message": "Success"}), 200
         else:

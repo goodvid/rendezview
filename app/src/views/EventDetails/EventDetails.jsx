@@ -63,6 +63,7 @@ function EventDetails() {
   const [similarEvents, setSimilarEvents] = useState([]);
   const [rating, setRating] = useState(0);
   const [userID, setUserID] = useState("");
+  const [googleID, setGoogleID] = useState("");
   const [avgRating, setAvgRating] = useState(null);
   const [numOfRatings, setNumOfRatings] = useState(0);
   const [eventObject, setEventObject] = useState({
@@ -93,6 +94,7 @@ function EventDetails() {
     setTime(eventObject.startTime);
     setDescription(eventObject.desc);
     setLocation(eventObject.location);
+    setGoogleID(eventObject.googleID);
 
     if (eventObject.yelpID) {
       if (!eventObject.hostName) {
@@ -109,6 +111,14 @@ function EventDetails() {
     // Get similar events
     fetchSimilarEvents();
   }, [eventObject, id]);
+
+  useEffect(() => {
+    if (googleID) {
+      setIsAddedToCalendar(true);
+    } else {
+      setIsAddedToCalendar(false);
+    }
+  }, [googleID]);
 
   useEffect(() => {
     console.log("useEffect rating:", rating);
@@ -142,9 +152,27 @@ function EventDetails() {
   const removeFromCalendar = () => {
     // Implement the actual removal logic here, similar to addToCalendar
     // For demonstration, just setting the state back to false
-    alert("Successfully removed from Calendar!");
-    setIsAddedToCalendar(false);
-    // You would typically make a fetch call to your backend here
+    const eventData = { eventID: eventObject.eventID };
+    fetch("http://localhost:5000/events/removeFromCalendar", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(eventData),
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 200) {
+          alert("Successfully removed from Calendar!");
+          setIsAddedToCalendar(false);
+        } else {
+          alert("Error in removing from Calendar: " + data.message);
+          setIsAddedToCalendar(true);
+        }
+      })
+      .catch(error => {
+        console.error("Error:", error);
+      });
   };
 
   const addToCalendar = () => {

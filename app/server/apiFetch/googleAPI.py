@@ -13,6 +13,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from pprint import pprint
+from datetime import datetime, timedelta
 from flask import redirect
 
 
@@ -170,7 +171,8 @@ class GoogleAPI:
             event_id = event_result.get('id')  # Retrieve the event ID
             print(f"Event created: {event_result.get('htmlLink')}")
             print(f"Event ID: {event_id}")
-            return event_result, event_id  # This already includes the event ID
+            # This already includes the event ID
+            return (event_result, event_id)
         except HttpError as error:
             print(f"An error occurred: {error}")
             return None
@@ -229,6 +231,54 @@ class GoogleAPI:
             # All-day event
             event['start'] = {'date': start_date}
             # Note: For all-day events, the end date is exclusive.
+            event['end'] = {'date': end_date}
+
+        return event
+
+    def create_event_dict_v2(self, summary=None, start_date=None, end_date=None, start_time=None, end_time=None, time_zone='America/New_York'):
+        """
+        Constructs an event dictionary for Google Calendar API.
+
+        Args:
+            summary (str): The title or summary of the event.
+            start_date (str): The start date in 'YYYY-MM-DD' format.
+            end_date (str): The end date in 'YYYY-MM-DD' format. For all-day events, this should be the day after the event.
+            start_time (str, optional): The start time in 'HH:MM:SS' format. Optional for all-day events.
+            end_time (str, optional): The end time in 'HH:MM:SS' format. Optional for all-day events.
+            time_zone (str): The time zone of the event. Defaults to 'America/New_York'.
+
+        Returns:
+            dict: The event dictionary suitable for the Google Calendar API.
+        """
+        event = {'summary': summary or "No details were provided"}
+
+        # Parse the start date to a datetime object
+        start_datetime_obj = datetime.strptime(start_date, '%Y-%m-%d')
+
+        if start_time:
+            # If a start time is provided, parse the start date and time together
+            start_datetime = f"{start_date}T{start_time}"
+            start_datetime_obj = datetime.strptime(
+                start_datetime, '%Y-%m-%dT%H:%M:%S')
+
+            # If no end_date is provided, calculate it as 24 hours later
+            if not end_date or not end_time:
+                end_datetime_obj = start_datetime_obj + timedelta(days=1)
+                end_date = end_datetime_obj.strftime('%Y-%m-%d')
+                end_time = end_datetime_obj.strftime('%H:%M:%S')
+
+            event['start'] = {
+                'dateTime': start_datetime, 'timeZone': time_zone}
+            event['end'] = {'dateTime': f"{end_date}T{end_time}",
+                            'timeZone': time_zone}
+        else:
+            # For all-day events or events without a specific start time
+            if not end_date:
+                # Calculate end_date as the day after start_date
+                end_datetime_obj = start_datetime_obj + timedelta(days=1)
+                end_date = end_datetime_obj.strftime('%Y-%m-%d')
+
+            event['start'] = {'date': start_date}
             event['end'] = {'date': end_date}
 
         return event
