@@ -19,7 +19,7 @@ import {
   EditIconButton,
 } from "../../components/StyledComponents/StyledComponents";
 
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import SettingsIcon from "@mui/icons-material/Settings";
 import NearMeIcon from "@mui/icons-material/NearMe";
 import EditIcon from "@mui/icons-material/Edit";
@@ -32,9 +32,11 @@ import axios from "axios";
 
 function FriendProfile() {
   const { id } = useParams();
+  const [friendStatus, setFriendStatus] = useState(false)
   const navigate = useNavigate();
   const response = false;
 
+  //console.log(friendStatus)
   const [displayName, setDisplayName] = useState(id);
   const [profilePic, setProfilePic] = useState("");
   const [friendsNum, setFriendsNum] = useState(0);
@@ -77,32 +79,48 @@ function FriendProfile() {
     });
   }, []);
 
-  const [upcomingEvents, setUpcomingEvents] = useState([
-    {
-      id: 1,
-      name: "Event 1",
-      categories: ["category1", "category2", "category3"],
-      location: "location 1",
-      date: "xx/xx/20xx",
-      picture: concertPhoto,
-    },
-    {
-      id: 2,
-      name: "Event 2",
-      categories: ["category1", "category2", "category3"],
-      location: "location  2",
-      date: "xx/xx/20xx",
-      picture: null,
-    },
-    {
-      id: 3,
-      name: "Event 3",
-      categories: ["category1", "category2", "category3"],
-      location: "location  3",
-      date: "xx/xx/20xx",
-      picture: concertPhoto,
-    },
-  ]);
+  const handleAddFriend = () => {
+    console.log(friendStatus)
+    fetch("http://127.0.0.1:5000/add_friend", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + sessionStorage.getItem("token"),
+        "Content-Type": "application/json",
+
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(id),
+    }).then((res) => {
+      if (res.status == 200) {
+        //setLabel("Added!");
+      }
+    });
+  };
+  const handleDelete = () => {
+    console.log(friendStatus)
+    // eslint-disable-next-line no-restricted-globals
+    if (confirm("are you sure you want to delete this friend?")) {
+      console.log("here")
+      fetch("http://127.0.0.1:5000/delete_friend", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        }, body: JSON.stringify(id)
+      })
+        .then((response) => {
+          if (response.status === 200) {
+            return response.json();
+          } else {
+            alert("error");
+            return false;
+          }
+        })
+        .catch((error) => {
+          console.log("error", error);
+        });
+    }
+  };
 
   const openInput = () => {
     setShowForm(true);
@@ -131,32 +149,7 @@ function FriendProfile() {
     setShowForm(false);
   };
 
-  const [pastEvents, setPastEvents] = useState([
-    {
-      id: 1,
-      name: "Event 1",
-      location: "location 1",
-      date: "xx/xx/20xx",
-      stars: 5,
-      picture: null,
-    },
-    {
-      id: 2,
-      name: "Event 2",
-      location: "location  2",
-      date: "xx/xx/20xx",
-      stars: 3,
-      picture: "url",
-    },
-    {
-      id: 3,
-      name: "Event 3",
-      location: "location  3",
-      date: "xx/xx/20xx",
-      stars: 4,
-      picture: "url",
-    },
-  ]);
+
   const [blogs, setBlogs] = useState([
     {
       id: 1,
@@ -190,87 +183,6 @@ function FriendProfile() {
     return <>//TODO: navigate to blog post</>;
   };
 
-  const UpcomingEvents = () => {
-    return (
-      <Stack className="profile-components">
-        <h2>Upcoming Events</h2>
-        <Box sx={{ overflowX: "auto", width: "100%" }}>
-          <Stack direction="row" gap={2} sx={{ minWidth: "max-content" }}>
-            {upcomingEvents.map((event) => (
-              <UpcomingEventCard
-                key={event.id}
-                id={event.id}
-                name={event.name}
-                categories={event.categories}
-                location={event.location}
-                date={event.date}
-                picture={event.picture}
-              />
-            ))}
-          </Stack>
-        </Box>
-      </Stack>
-    );
-  };
-
-  const UpcomingEventCard = ({
-    id,
-    name,
-    categories,
-    location,
-    date,
-    picture,
-  }) => {
-    return (
-      <>
-        <YellowCard variant="outlined">
-          <Stack
-            padding="1rem"
-            direction="row"
-            style={{ width: "100%", maxWidth: "30rem" }}
-            height="13rem"
-          >
-            <Stack>
-              {picture ? (
-                <Avatar
-                  src={picture}
-                  variant="square"
-                  sx={{ width: "100%", height: "100%" }}
-                />
-              ) : (
-                <Avatar
-                  src={picture}
-                  sx={{ width: "100%", height: "100%" }}
-                  variant="square"
-                >
-                  <LocalActivityIcon sx={{ width: "100%", height: "100%" }} />
-                </Avatar>
-              )}
-            </Stack>
-            <Stack alignItems="flex-start" marginInline="1rem">
-              <h2>{name}</h2>
-              <Stack
-                direction="row"
-                gap="1rem"
-                justifyContent="space-start"
-                flexWrap="wrap"
-                width="100%"
-              >
-                {categories.map((category) => (
-                  <Chip key={category} label={category} />
-                ))}
-              </Stack>
-              <Stack direction="row" alignItems="center" gap="0.3rem">
-                <LocationOnIcon />
-                <p>{location}</p>
-              </Stack>
-              <p>{date}</p>
-            </Stack>
-          </Stack>
-        </YellowCard>
-      </>
-    );
-  };
 
   const Blogs = () => {
     return (
@@ -366,8 +278,7 @@ function FriendProfile() {
         left: "0px",
       }}
     >
-      {
-        exists ?
+      {exists ? (
         <div>
           <Navbar />
           <Stack
@@ -421,26 +332,33 @@ function FriendProfile() {
             <h3>
               {friendsNum} FRIENDS • {groupsNum} GROUPS
             </h3>
-            {
-              showForm ?
-              <div>
-                <input id="status" onChange={changeStatus} />
-                <Button variant="contained" onClick={handleSubmit}>
-                  Set
-                </Button>
-              </div>
-              :
-              <Button variant="contained" onClick={openInput}>
-                Set status
+            {friendStatus ? (
+              <>
+                {
+                  showForm ?
+                  <div>
+                    <input id="status" onChange={changeStatus} />
+                    <Button variant="contained" onClick={handleSubmit}>
+                      Set
+                    </Button>
+                  </div>
+                  :
+                  <Button variant="contained" onClick={openInput}>
+                    Set status
+                  </Button>
+                }
+                <Button variant="contained" onClick={handleDelete}> delete friend</Button>
+              </>
+            ) : (
+              <Button variant="contained" onClick={handleAddFriend}>
+                Add Friend
               </Button>
-            }
+            )}
           </Stack>
         </div>
-        :
-        <div>
-          User Does Not Exist
-        </div>
-      }
+      ) : (
+        <div>User Does Not Exist</div>
+      )}
     </div>
   );
 }

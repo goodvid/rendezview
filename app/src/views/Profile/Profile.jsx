@@ -1,7 +1,7 @@
 import "./Profile.css";
 import { React, useState, useEffect } from "react";
 import {
-  Card,
+  
   Avatar,
   Button,
   Box,
@@ -16,7 +16,7 @@ import {
   BlueCard,
   ReadMoreButton,
   TextIconStack,
-  EditIconButton,
+  
 } from "../../components/StyledComponents/StyledComponents";
 import dayjs from "dayjs";
 
@@ -56,6 +56,7 @@ function Profile() {
         console.log(res.data["status"]);
         console.log(res.data["username"]);
         setDisplayName(res.data["username"]);
+        setFriendsNum(res.data["friends"])
       })
       .catch((err) => {
         console.log(err);
@@ -257,7 +258,7 @@ function Profile() {
           <h3>Location</h3>
         </TextIconStack>
         <h3>
-          {friendsNum} FRIENDS • {groupsNum} GROUPS
+          <a href="/profile/friends">{friendsNum} FRIENDS</a> • {groupsNum} GROUPS
         </h3>
 
         {/* User Tags */}
@@ -471,4 +472,4 @@ function Profile() {
   );
 }
 
-export default withAuth(Profile);
+export default (Profile);
