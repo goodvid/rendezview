@@ -94,7 +94,6 @@ function EventDetails() {
     setTime(eventObject.startTime);
     setDescription(eventObject.desc);
     setLocation(eventObject.location);
-    setGoogleID(eventObject.googleID);
 
     if (eventObject.yelpID) {
       if (!eventObject.hostName) {
@@ -113,11 +112,33 @@ function EventDetails() {
   }, [eventObject, id]);
 
   useEffect(() => {
-    if (googleID) {
-      setIsAddedToCalendar(true);
-    } else {
-      setIsAddedToCalendar(false);
+    // Ensure eventObject is not empty and has an eventID
+    if (eventObject.eventID) {
+      console.log("HEREEEEE");
+      fetch("http://localhost:5000/getGoogleID", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ eventID: eventObject.eventID }), // Directly pass eventID here
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log(data);
+          if (data.googleID) {
+            setGoogleID(data.googleID); // This will also update isAddedToCalendar due to the useEffect dependency on googleID
+          } else {
+            // Handle the case where googleID is not found or returned
+            console.log("GoogleID not found for the event");
+            setGoogleID("");
+          }
+        })
+        .catch(error => console.error("Failed to fetch googleID:", error));
     }
+  }, [googleID]);
+
+  useEffect(() => {
+    setIsAddedToCalendar(!!googleID);
   }, [googleID]);
 
   useEffect(() => {
@@ -404,10 +425,39 @@ function EventDetails() {
   };
   const displayEmail = (event) => {
     event.preventDefault();
+    // Will submit my email list here
+    const eventData = { eventID: eventObject.eventID, emailsList: emailsList };
+
+    fetch("http://localhost:5000/events/shareAndAddEvent", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(eventData),
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 200) {
+          alert("Successfully Added to the Calendar");
+          setEmailsList([]); // This resets the emailsList to an empty array
+          setEmail('');
+          handleClose();
+          setIsAddedToCalendar(true);
+        } else {
+          alert("Error Adding to Calendar: " + data.message);
+          setEmailsList([]); // This resets the emailsList to an empty array
+          setEmail('');
+          handleClose();
+          setIsAddedToCalendar(false);
+        }
+      })
+      .catch(error => {
+        console.error("Error:", error);
+      });
+
+
     console.log('Emails to share with:', emailsList);
-    setEmailsList([]); // This resets the emailsList to an empty array
-    setEmail('');
-    handleClose();
+
   };
 
   const dummyRSVPList = [
@@ -421,19 +471,55 @@ function EventDetails() {
   const [openRSVP, setOpenRSVP] = useState(false);
   const [currentFilter, setCurrentFilter] = useState('all');
   const [displayList, setDisplayList] = useState(dummyRSVPList);
+  const [eventRSVPList, setEventRSVPList] = useState([]); // Initialize state for the RSVP list
+
 
   const getRSVPList = (newFilter) => {
     setCurrentFilter(newFilter); // Update the current filter state
 
     const filteredList = newFilter === 'all'
-      ? dummyRSVPList
-      : dummyRSVPList.filter(item => item.status === newFilter);
+      ? eventRSVPList
+      : eventRSVPList.filter(item => item.status.toLowerCase() === newFilter);
 
     setDisplayList(filteredList);
   };
 
   const handleOpenRSVPDialog = () => {
     setOpenRSVP(true);
+    // Will submit my email list here
+    const eventData = { eventID: eventObject.eventID };
+
+    fetch("http://localhost:5000/events/getRSVPStatus", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(eventData),
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 200) {
+          // Process and update eventRSVPList here
+          const processedRSVPList = [];
+          const rsvpStatus = data.data; // The structure you described
+
+          // Loop through each status category in rsvpStatus
+          Object.keys(rsvpStatus).forEach(status => {
+            // For each status, go through the list of names and add them to processedRSVPList
+            rsvpStatus[status].forEach(name => {
+              processedRSVPList.push({ name: name, status: status });
+            });
+          });
+          // Update the state with the new list
+          setEventRSVPList(processedRSVPList);
+        } else {
+          alert("Error getting RSVP list: " + data.message);
+          setOpenRSVP(false);
+        }
+      })
+      .catch(error => {
+        console.error("Error:", error);
+      });
     getRSVPList('all'); // Default to showing all
   };
 
@@ -757,7 +843,7 @@ function EventDetails() {
                   <DialogTitle>RSVP List</DialogTitle>
                   <DialogContent>
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-                      {['all', 'accepted', 'declined', 'no response'].map((filter) => (
+                      {['all', 'accepted', 'declined', 'needsaction', 'tentative'].map((filter) => (
                         <Button
                           key={filter}
                           // color={currentFilter === filter ? '' : 'green'}

@@ -706,8 +706,54 @@ def remove_from_calendar():
     else:
         return jsonify({"status": 404, "message": "Event not found"}), 404
 
-    return
-# @app.route("/check_user", methods = ["POST"])
+
+@app.route("/events/shareAndAddEvent", methods=["POST"])
+def share_calendar_event():
+    data = request.json
+    event_id = data.get('eventID')
+    # Provide a default empty list if not found
+    emails_list = data.get('emailsList', [])
+    event = Event.query.filter_by(eventID=event_id).first()
+    if event:
+        response = handle_google_api.add_event_with_people(
+            event=event, email_lst=emails_list)
+        if response["status"] == 200:
+            return jsonify({"status": 200, "message": "Success"}), 200
+        else:
+            return jsonify({"status": 400, "message": "Something went wrong with add to calendar"}), 400
+    else:
+        return jsonify({"status": 404, "message": "Event not found"}), 404
+
+
+@app.route("/events/getRSVPStatus", methods=["POST"])
+def get_rsvp_status():
+    data = request.json
+    event_id = data.get('eventID')
+    event = Event.query.filter_by(eventID=event_id).first()
+    if event:
+        response = handle_google_api.get_rsvp_list(event=event)
+        if response["status"] == 200:
+            # get the payload
+            rsvp_status = response["data"]
+            return jsonify({"status": 200, "message": "Success", "data": rsvp_status}), 200
+        else:
+            return jsonify({"status": 400, "message": "Something went wrong with add to calendar"}), 400
+    else:
+        return jsonify({"status": 404, "message": "Event not found"}), 404
+
+
+@app.route("/events/getGoogleID", methods=["POST"])
+def getGoogleID():
+    data = request.json
+    event_id = data.get('eventID')
+    event = Event.query.filter_by(eventID=event_id).first()
+    if event:
+        if event.googleID:
+            return jsonify({"status": 200, "message": "exists", "googleID": event.googleID})
+        else:
+            return jsonify({"status": 400, "message": "Doesn't exist"})
+    else:
+        return jsonify({"status": 400, "message": "event doesn't exist"})
 
 
 @jwt_required

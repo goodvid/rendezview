@@ -353,7 +353,7 @@ class GoogleAPI:
             return rsvp_status
         except HttpError as error:
             print(f"An error occurred: {error}")
-            return {}
+            return None
 
     def log_items(self):
 
