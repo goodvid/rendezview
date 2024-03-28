@@ -513,7 +513,7 @@ function EventDetails() {
           // Update the state with the new list
           setEventRSVPList(processedRSVPList);
         } else {
-          alert("Error getting RSVP list: " + data.message);
+          alert("Can't get RSVP list of an event not added to calendar: " + data.message);
           setOpenRSVP(false);
         }
       })

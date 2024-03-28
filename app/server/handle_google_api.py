@@ -7,6 +7,13 @@ from timezonefinder import TimezoneFinder
 from pprint import pprint
 
 
+'''
+Note: Need to figure out how I can have my code remember that an event was already added
+when I added to the database. I am trying to use useEffect and stuff but it isn't working
+so figure this out tomorrow. And also the reccommendation stuff. 
+'''
+
+
 def find_time_zone(address):
     # if problems arise, gotta replace user_age with something
     # useful like email or use case of application
