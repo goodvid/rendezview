@@ -1,6 +1,6 @@
 
 *.pyc
-app/server/venv/
-app/server/instance/
-app/server/venv/pyvenv.cfg
-app/server/venv/pyvenv.cfg
+./app/server/venv/
+./app/server/instance/
+./app/server/venv/pyvenv.cfg
+./app/server/venv/pyvenv.cfg
