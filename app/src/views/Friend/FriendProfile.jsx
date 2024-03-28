@@ -40,23 +40,41 @@ function FriendProfile() {
   const [friendsNum, setFriendsNum] = useState(0);
   const [groupsNum, setGroupsNum] = useState(0);
   const [exists, setExists] = useState(true)
-  const [status, setStatus] = useState("Friend")
+  const [status, setStatus] = useState("")
+  const [newStatus, setNewStatus] = useState("")
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
-    axios
-      .post("http://127.0.0.1:5000/user/get_user", {
-        "email": id
-      })
-      .then((res) => {
-        if (res.data['status'] == '400') {
-          setExists(false)
-        } else {
-          setDisplayName(res.data['username'])
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    axios.post("http://127.0.0.1:5000/user/get_user", {
+      "email": id
+    })
+    .then((res) => {
+      if (res.data['status'] == '400') {
+        setExists(false)
+      } else {
+        setDisplayName(res.data['username'])
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+
+    axios.post("http://127.0.0.1:5000/user/get_status", {
+      "email": id
+    }, {
+      headers: {
+        Authorization: "Bearer " + sessionStorage.getItem("token"),
+        "Content-Type": "application/json",
+      },
+    })
+    .then((res) => {
+      if (res.data['status'] == '200') {
+        setStatus(res.data['cur_status'])
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+    });
   }, []);
 
   const [upcomingEvents, setUpcomingEvents] = useState([
@@ -85,30 +103,34 @@ function FriendProfile() {
       picture: concertPhoto,
     },
   ]);
+
+  const openInput = () => {
+    setShowForm(true);
+  }
+
+  const changeStatus = (event) => {
+    setNewStatus(event.target.value);
+  }
+
   const handleSubmit = () => {
-    // eslint-disable-next-line no-restricted-globals
-    if (confirm("are you sure you want to delete all data?")) {
-      fetch("http://127.0.0.1:5000/profile/clearhistory", {
-        method: "GET",
-        headers: {
-          Authorization: "Bearer " + sessionStorage.getItem("token"),
-          "Content-Type": "application/json",
-        },
-      })
-        .then((response) => {
-          if (response.status === 200) {
-            return response.json();
-          } else {
-            alert("error");
-            return false;
-          }
-        })
-        .then((data) => {})
-        .catch((error) => {
-          console.log("error", error);
-        });
-    }
+    axios.post("http://127.0.0.1:5000/user/set_status", {
+      "email": id,
+      "status": newStatus,
+    }, {
+      headers: {
+        Authorization: "Bearer " + sessionStorage.getItem("token"),
+        "Content-Type": "application/json",
+      },
+    })
+    .then((res) => {
+      setStatus(res.data['new_status']);
+    })
+    .catch((err) => {
+      console.log(err)
+    })
+    setShowForm(false);
   };
+
   const [pastEvents, setPastEvents] = useState([
     {
       id: 1,
@@ -166,77 +188,6 @@ function FriendProfile() {
 
   const handleReadMore = (id) => {
     return <>//TODO: navigate to blog post</>;
-  };
-
-  const LeftInfoStack = () => {
-    return (
-      <Stack
-        width="full"
-        height="100vh"
-        style={{
-          backgroundColor: "#4D4D4D",
-          color: "white",
-          padding: "1rem",
-        }}
-        alignItems={"center"}
-        gap="1rem"
-      >
-        <Box
-          sx={{
-            width: "100%",
-            display: "flex",
-            justifyContent: "flex-end",
-          }}
-        >
-        </Box>
-
-        {/* Profile Picture */}
-        <Stack>
-          <Badge
-            overlap="circular"
-            anchorOrigin={{
-              vertical: "bottom",
-              horizontal: "right",
-            }}
-          >
-            <Avatar
-              sx={{ width: "15rem", height: "15rem" }}
-              alt={"avatar"}
-              src={profilePic}
-            />
-          </Badge>
-          <input type="file" style={{ display: "none" }} />
-        </Stack>
-
-        {/* Display Name */}
-        <TextIconStack>
-          <h1>{displayName} ({status})</h1>
-        </TextIconStack>
-
-        {/* Location, Friends, Groups */}
-        <TextIconStack>
-          <NearMeIcon style={{ color: "red" }} />
-          <h3>Location</h3>
-        </TextIconStack>
-        <h3>
-          {friendsNum} FRIENDS • {groupsNum} GROUPS
-        </h3>
-
-        <Button variant="contained" onClick={handleSubmit}>
-          Set status
-        </Button>
-      </Stack>
-    );
-  };
-
-  const RightEventStack = () => {
-    return (
-      <Stack width="100vw" overflow="hidden">
-        <UpcomingEvents />
-        <PastEvents />
-        <Blogs />
-      </Stack>
-    );
   };
 
   const UpcomingEvents = () => {
@@ -314,70 +265,6 @@ function FriendProfile() {
                 <p>{location}</p>
               </Stack>
               <p>{date}</p>
-            </Stack>
-          </Stack>
-        </YellowCard>
-      </>
-    );
-  };
-
-  const PastEvents = () => {
-    return (
-      <Stack className="profile-components">
-        <h2>Past Events</h2>
-        <Box sx={{ overflowX: "auto", width: "100%" }}>
-          <Stack direction="row" gap={2} sx={{ minWidth: "max-content" }}>
-            {pastEvents.map((event) => (
-              <PastEventCard
-                key={event.id}
-                id={event.id}
-                name={event.name}
-                stars={event.stars}
-                location={event.location}
-                date={event.date}
-                picture={event.picture}
-              />
-            ))}
-          </Stack>
-        </Box>
-      </Stack>
-    );
-  };
-
-  const PastEventCard = ({ id, name, stars, location, date, picture }) => {
-    return (
-      <>
-        <YellowCard variant="outlined">
-          <Stack
-            padding="1rem"
-            direction="row"
-            style={{ width: "100%", maxWidth: "30rem" }}
-          >
-            <Stack alignItems="flex-start" marginInline="1rem" width="100%">
-              <h2>{name}</h2>
-              <Stack direction="row" alignItems="center" gap="0.3rem">
-                <LocationOnIcon />
-                <p style={{ margin: "0px" }}>{location}</p>
-              </Stack>
-              <p>{date}</p>
-              <Rating value={stars} readOnly />
-            </Stack>
-            <Stack>
-              {picture ? (
-                <Avatar
-                  src={picture}
-                  variant="square"
-                  sx={{ width: "100%", height: "100%" }}
-                />
-              ) : (
-                <Avatar
-                  src={picture}
-                  sx={{ width: "100%", height: "100%" }}
-                  variant="square"
-                >
-                  <LocalActivityIcon sx={{ width: "100%", height: "100%" }} />
-                </Avatar>
-              )}
             </Stack>
           </Stack>
         </YellowCard>
@@ -483,7 +370,71 @@ function FriendProfile() {
         exists ?
         <div>
           <Navbar />
-          <LeftInfoStack />
+          <Stack
+            width="full"
+            height="100vh"
+            style={{
+              backgroundColor: "#4D4D4D",
+              color: "white",
+              padding: "1rem",
+            }}
+            alignItems={"center"}
+            gap="1rem"
+          >
+            <Box
+              sx={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "flex-end",
+              }}
+            >
+            </Box>
+
+            {/* Profile Picture */}
+            <Stack>
+              <Badge
+                overlap="circular"
+                anchorOrigin={{
+                  vertical: "bottom",
+                  horizontal: "right",
+                }}
+              >
+                <Avatar
+                  sx={{ width: "15rem", height: "15rem" }}
+                  alt={"avatar"}
+                  src={profilePic}
+                />
+              </Badge>
+              <input type="file" style={{ display: "none" }} />
+            </Stack>
+
+            {/* Display Name */}
+            <TextIconStack>
+              <h1>{displayName}{status == "" ? "" : " (" + status + ")"}</h1>
+            </TextIconStack>
+
+            {/* Location, Friends, Groups */}
+            <TextIconStack>
+              <NearMeIcon style={{ color: "red" }} />
+              <h3>Location</h3>
+            </TextIconStack>
+            <h3>
+              {friendsNum} FRIENDS • {groupsNum} GROUPS
+            </h3>
+            {
+              showForm ?
+              <div>
+                <input id="status" onChange={changeStatus} />
+                <Button variant="contained" onClick={handleSubmit}>
+                  Set
+                </Button>
+              </div>
+              :
+              <Button variant="contained" onClick={openInput}>
+                Set status
+              </Button>
+            }
+          </Stack>
         </div>
         :
         <div>
@@ -494,4 +445,4 @@ function FriendProfile() {
   );
 }
 
-export default withAuth(FriendProfile);
+export default FriendProfile;

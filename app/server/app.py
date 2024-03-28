@@ -181,8 +181,25 @@ def deleteaccount():
 
     return jsonify({"message": "Account deleted successfully"}), 200
 
+@app.route("/user/get_status", methods=["POST"])
+@jwt_required()
+def get_status():
+    data = request.json
+    other_email = data['email']
+
+    current_user = get_jwt_identity()
+
+    current_email = current_user['email']
+
+    status = Status.query.filter_by(user=current_email, friend=other_email).first()
+
+    if status:
+        return {'status': '200', 'cur_status': status.status}
+    else:
+        return {'status': '400'}
+
 @app.route("/user/set_status", methods=["POST"])
-# @jwt_required()
+@jwt_required()
 def set_status():
     data = request.json
     other_email = data['email']
@@ -192,19 +209,20 @@ def set_status():
 
     current_email = current_user['email']
 
-    status = Status.query.filter_by(user=current_email, friend=other_email)
+    status = Status.query.filter_by(user=current_email, friend=other_email).first()
 
-    if status:
+    if status != None:
         status.status = status_data
         db.session.commit()
     else:
         new_status = Status(user=current_email,
                     friend=other_email,
                     status=status_data)
+        print(new_status.status)
         db.session.add(new_status)
         db.session.commit()
 
-    return jsonify({"message": "Account deleted successfully"}), 200
+    return {'status': '200', 'new_status': status_data}
 
 @app.route("/user/resetpassword", methods=["POST"])
 def resetpassword():
@@ -273,19 +291,19 @@ def get_events():
 
     return {'status': '200', 'events': event_values}
 
-@app.route("/events/get_recommended", methods=["GET"])
-@jwt_required
-def get_recommended():
-    current_user = get_jwt_identity()
+# @app.route("/events/get_recommended", methods=["GET"])
+# @jwt_required
+# def get_recommended():
+#     current_user = get_jwt_identity()
 
-    user = User.query.filter_by(email=current_user['email']).first()
-    preferences = user.preferences
+#     user = User.query.filter_by(email=current_user['email']).first()
+#     preferences = user.preferences
 
-    # Recommendation function to get recs based on preferences
+#     # Recommendation function to get recs based on preferences
 
-    recommendations = None
+#     recommendations = None
 
-    return {'status': '200', 'recommendations': recommendations}
+#     return {'status': '200', 'recommendations': recommendations}
 
 @app.route("/event/edit", methods=["POST"])
 def edit_event():
