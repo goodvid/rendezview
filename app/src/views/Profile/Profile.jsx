@@ -1,7 +1,7 @@
 import "./Profile.css";
 import { React, useState, useEffect } from "react";
 import {
-  Card,
+  
   Avatar,
   Button,
   Box,
@@ -16,8 +16,9 @@ import {
   BlueCard,
   ReadMoreButton,
   TextIconStack,
-  EditIconButton,
+  
 } from "../../components/StyledComponents/StyledComponents";
+import dayjs from "dayjs";
 
 import { useNavigate } from "react-router-dom";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -25,9 +26,11 @@ import NearMeIcon from "@mui/icons-material/NearMe";
 import EditIcon from "@mui/icons-material/Edit";
 import LocalActivityIcon from "@mui/icons-material/LocalActivity";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import concertPhoto from "../../media/concert.jpg";
 import Navbar from "../../components/Navbar/Navbar";
 import { withAuth } from "../withAuth";
+import ProfileEvent from "../../components/Event/ProfileEvent";
 import axios from "axios";
 
 function Profile() {
@@ -38,6 +41,8 @@ function Profile() {
   const [profilePic, setProfilePic] = useState("");
   const [friendsNum, setFriendsNum] = useState(0);
   const [groupsNum, setGroupsNum] = useState(0);
+  const [userEvents, setUserEvents] = useState([]);
+  const [hostRating, setHostRating] = useState(null);
 
   useEffect(() => {
     axios
@@ -51,11 +56,60 @@ function Profile() {
         console.log(res.data["status"]);
         console.log(res.data["username"]);
         setDisplayName(res.data["username"]);
+        setFriendsNum(res.data["friends"])
       })
       .catch((err) => {
         console.log(err);
       });
+
+    console.log(sessionStorage.getItem("token"));
+    axios
+      .get("http://127.0.0.1:5000/user_events", {
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        console.log("userEvents:", res.data["events"]);
+        setUserEvents(res.data["events"]);
+      });
+
+    getHostRating();
   }, []);
+
+  useEffect(() => {
+    console.log(userEvents);
+    const upcoming = [];
+    const past = [];
+    userEvents.map((event) => {
+      const eventDate = dayjs(event.date);
+      const diff = dayjs().diff(eventDate);
+      if (diff < 0) {
+        upcoming.push(event);
+      } else {
+        past.push(event);
+      }
+    });
+    // console.log("pastEvents:", past);
+    setPastEvents(past);
+    setUpcomingEvents(upcoming);
+  }, [userEvents]);
+
+  const getHostRating = () => {
+    axios
+      .get("http://127.0.0.1:5000/user/get_host_rating", {
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        // console.log("hostRating object:", res.data);
+        // console.log("hostRating:", res.data.hostRating);
+        setHostRating(res.data.hostRating);
+      });
+  };
 
   // Dummy data; replace with actual database data
   const [tags, setTags] = useState([
@@ -67,82 +121,9 @@ function Profile() {
     "Yoga",
     "DIY",
   ]);
-  const [upcomingEvents, setUpcomingEvents] = useState([
-    {
-      id: 1,
-      name: "Event 1",
-      categories: ["category1", "category2", "category3"],
-      location: "location 1",
-      date: "xx/xx/20xx",
-      picture: concertPhoto,
-    },
-    {
-      id: 2,
-      name: "Event 2",
-      categories: ["category1", "category2", "category3"],
-      location: "location  2",
-      date: "xx/xx/20xx",
-      picture: null,
-    },
-    {
-      id: 3,
-      name: "Event 3",
-      categories: ["category1", "category2", "category3"],
-      location: "location  3",
-      date: "xx/xx/20xx",
-      picture: concertPhoto,
-    },
-  ]);
-  const handleSubmit = () => {
-    // eslint-disable-next-line no-restricted-globals
-    if (confirm("are you sure you want to delete all data?")) {
-      fetch("http://127.0.0.1:5000/profile/clearhistory", {
-        method: "GET",
-        headers: {
-          Authorization: "Bearer " + sessionStorage.getItem("token"),
-          "Content-Type": "application/json",
-        },
-      })
-        .then((response) => {
-          if (response.status === 200) {
-            return response.json();
-          } else {
-            alert("error");
-            return false;
-          }
-        })
-        .then((data) => {})
-        .catch((error) => {
-          console.log("error", error);
-        });
-    }
-  };
-  const [pastEvents, setPastEvents] = useState([
-    {
-      id: 1,
-      name: "Event 1",
-      location: "location 1",
-      date: "xx/xx/20xx",
-      stars: 5,
-      picture: null,
-    },
-    {
-      id: 2,
-      name: "Event 2",
-      location: "location  2",
-      date: "xx/xx/20xx",
-      stars: 3,
-      picture: "url",
-    },
-    {
-      id: 3,
-      name: "Event 3",
-      location: "location  3",
-      date: "xx/xx/20xx",
-      stars: 4,
-      picture: "url",
-    },
-  ]);
+
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [pastEvents, setPastEvents] = useState([]);
   const [blogs, setBlogs] = useState([
     {
       id: 1,
@@ -171,6 +152,31 @@ function Profile() {
       pictures: [concertPhoto],
     },
   ]);
+
+  const handleSubmit = () => {
+    // eslint-disable-next-line no-restricted-globals
+    if (confirm("are you sure you want to delete all data?")) {
+      fetch("http://127.0.0.1:5000/profile/clearhistory", {
+        method: "GET",
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => {
+          if (response.status === 200) {
+            return response.json();
+          } else {
+            alert("error");
+            return false;
+          }
+        })
+        .then((data) => {})
+        .catch((error) => {
+          console.log("error", error);
+        });
+    }
+  };
 
   const handleReadMore = (id) => {
     return <>//TODO: navigate to blog post</>;
@@ -241,13 +247,18 @@ function Profile() {
           </IconButton>
         </TextIconStack>
 
+        <TextIconStack>
+          <ThumbUpIcon />
+          <h3>{hostRating}%</h3>
+        </TextIconStack>
+
         {/* Location, Friends, Groups */}
         <TextIconStack>
           <NearMeIcon style={{ color: "red" }} />
           <h3>Location</h3>
         </TextIconStack>
         <h3>
-          {friendsNum} FRIENDS • {groupsNum} GROUPS
+          <a href="/profile/friends">{friendsNum} FRIENDS</a> • {groupsNum} GROUPS
         </h3>
 
         {/* User Tags */}
@@ -290,84 +301,31 @@ function Profile() {
   };
 
   const UpcomingEvents = () => {
+    console.log("events:", upcomingEvents);
     return (
       <Stack className="profile-components">
         <h2>Upcoming Events</h2>
         <Box sx={{ overflowX: "auto", width: "100%" }}>
-          <Stack direction="row" gap={2} sx={{ minWidth: "max-content" }}>
-            {upcomingEvents.map((event) => (
-              <UpcomingEventCard
-                key={event.id}
-                id={event.id}
-                name={event.name}
-                categories={event.categories}
-                location={event.location}
-                date={event.date}
-                picture={event.picture}
-              />
-            ))}
+          <Stack
+            direction="row"
+            gap={2}
+            sx={{ minWidth: "max-content", marginBlock: "0.5rem" }}
+          >
+            {upcomingEvents.map((event, i) => {
+              return (
+                <ProfileEvent
+                  name={event.name}
+                  date={event.date}
+                  location={event.location}
+                  key={i}
+                  id={event.id}
+                  desc={event.desc}
+                />
+              );
+            })}
           </Stack>
         </Box>
       </Stack>
-    );
-  };
-
-  const UpcomingEventCard = ({
-    id,
-    name,
-    categories,
-    location,
-    date,
-    picture,
-  }) => {
-    return (
-      <>
-        <YellowCard variant="outlined">
-          <Stack
-            padding="1rem"
-            direction="row"
-            style={{ width: "100%", maxWidth: "30rem" }}
-            height="13rem"
-          >
-            <Stack>
-              {picture ? (
-                <Avatar
-                  src={picture}
-                  variant="square"
-                  sx={{ width: "100%", height: "100%" }}
-                />
-              ) : (
-                <Avatar
-                  src={picture}
-                  sx={{ width: "100%", height: "100%" }}
-                  variant="square"
-                >
-                  <LocalActivityIcon sx={{ width: "100%", height: "100%" }} />
-                </Avatar>
-              )}
-            </Stack>
-            <Stack alignItems="flex-start" marginInline="1rem">
-              <h2>{name}</h2>
-              <Stack
-                direction="row"
-                gap="1rem"
-                justifyContent="space-start"
-                flexWrap="wrap"
-                width="100%"
-              >
-                {categories.map((category) => (
-                  <Chip key={category} label={category} />
-                ))}
-              </Stack>
-              <Stack direction="row" alignItems="center" gap="0.3rem">
-                <LocationOnIcon />
-                <p>{location}</p>
-              </Stack>
-              <p>{date}</p>
-            </Stack>
-          </Stack>
-        </YellowCard>
-      </>
     );
   };
 
@@ -376,62 +334,33 @@ function Profile() {
       <Stack className="profile-components">
         <h2>Past Events</h2>
         <Box sx={{ overflowX: "auto", width: "100%" }}>
-          <Stack direction="row" gap={2} sx={{ minWidth: "max-content" }}>
-            {pastEvents.map((event) => (
-              <PastEventCard
-                key={event.id}
-                id={event.id}
-                name={event.name}
-                stars={event.stars}
-                location={event.location}
-                date={event.date}
-                picture={event.picture}
-              />
-            ))}
+          {/* <Stack direction="row" gap={2} sx={{ minWidth: "max-content" }}> */}
+          <Stack
+            direction="row"
+            gap={2}
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "stretch",
+              minWidth: "max-content",
+            }}
+          >
+            {pastEvents.map((event, i) => {
+              return (
+                <ProfileEvent
+                  name={event.name}
+                  date={event.date}
+                  location={event.location}
+                  key={i}
+                  id={event.id}
+                  desc={event.desc}
+                  rating={event.rating}
+                />
+              );
+            })}
           </Stack>
         </Box>
       </Stack>
-    );
-  };
-
-  const PastEventCard = ({ id, name, stars, location, date, picture }) => {
-    return (
-      <>
-        <YellowCard variant="outlined">
-          <Stack
-            padding="1rem"
-            direction="row"
-            style={{ width: "100%", maxWidth: "30rem" }}
-          >
-            <Stack alignItems="flex-start" marginInline="1rem" width="100%">
-              <h2>{name}</h2>
-              <Stack direction="row" alignItems="center" gap="0.3rem">
-                <LocationOnIcon />
-                <p style={{ margin: "0px" }}>{location}</p>
-              </Stack>
-              <p>{date}</p>
-              <Rating value={stars} readOnly />
-            </Stack>
-            <Stack>
-              {picture ? (
-                <Avatar
-                  src={picture}
-                  variant="square"
-                  sx={{ width: "100%", height: "100%" }}
-                />
-              ) : (
-                <Avatar
-                  src={picture}
-                  sx={{ width: "100%", height: "100%" }}
-                  variant="square"
-                >
-                  <LocalActivityIcon sx={{ width: "100%", height: "100%" }} />
-                </Avatar>
-              )}
-            </Stack>
-          </Stack>
-        </YellowCard>
-      </>
     );
   };
 
@@ -543,4 +472,4 @@ function Profile() {
   );
 }
 
-export default withAuth(Profile);
+export default (Profile);

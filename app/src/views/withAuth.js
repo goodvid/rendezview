@@ -10,18 +10,19 @@ export function withAuth(Component) {
 
     // Redirect to login page if not authenticated
     
-    /* fetch("http://localhost:5000/check_user", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      }
-      
-    }).then((response) => {
-        if (response.status != 200){
-            navigate('/login');
-            return null;
-        }
-    })*/
+     fetch("http://localhost:5000/check_user", {
+       method: "GET",
+       headers: {
+         Authorization: "Bearer " + sessionStorage.getItem("token"),
+         "Content-Type": "application/json",
+       },
+     }).then((response) => {
+       console.log(response);
+       if (response.status != 200) {
+         navigate("/login");
+         return null;
+       }
+     });
 
     return <Component {...props} />;
   };
