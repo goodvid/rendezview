@@ -103,7 +103,8 @@ function Main() {
         }
       })
       .then((response) => {
-        fetchAndDisplayEvents();
+        setRecommendedEvents(response.data["recommendations"]);
+        setLoading(false);
       })
       .catch((error) => {
         console.error("Error fetching API events:", error);
@@ -341,7 +342,6 @@ function Main() {
             </div>
             :
             <div>
-              b
               {loading ? (
                 <Stack width="100%" height="100%" alignItems="center">
                   <l-pinwheel

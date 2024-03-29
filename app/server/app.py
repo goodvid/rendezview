@@ -341,19 +341,29 @@ def get_events():
 
     return {'status': '200', 'events': event_values}
 
-# @app.route("/events/get_recommended", methods=["GET"])
-# @jwt_required
-# def get_recommended():
-#     current_user = get_jwt_identity()
+@app.route("/events/get_recommended", methods=["GET"])
+@jwt_required
+def get_recommended():
 
-#     user = User.query.filter_by(email=current_user['email']).first()
-#     preferences = user.preferences
+    current_user = get_jwt_identity()
 
-#     # Recommendation function to get recs based on preferences
+    recommendations = rc_system.select_events_to_reccommend(user=current_user)
 
-#     recommendations = None
+    event_values = []
 
-#     return {'status': '200', 'recommendations': recommendations}
+    for event in recommendations:
+        values = {'id': event.eventID,
+                    'name': event.name,
+                    'time': event.start_date,
+                    'location': event.location,
+                    'category': event.category,
+                    'latitude': event.latitude,
+                    'longitude': event.longitude,
+                    'yelpID': event.yelpID,
+                    'desc': event.desc}
+        event_values.append(values)
+
+    return {'status': '200', 'recommendations': recommendations}
 
 
 @app.route('/filtered_events', methods=['GET'])
@@ -1196,19 +1206,6 @@ def getGoogleID():
             return jsonify({"status": 400, "message": "Doesn't exist"})
     else:
         return jsonify({"status": 400, "message": "event doesn't exist"})
-
-
-@app.route("/events/dummyCall", methods=["POST"])
-@jwt_required()
-def dummy_call():
-    current_user = get_jwt_identity()
-    user = User.query.filter_by(email=current_user['email']).first()
-    print("-------logs-------")
-    event_obj_lst = rc_system.select_events_to_reccommend(user=user)
-    print(event_obj_lst)
-    print("-------logs-------")
-
-    return jsonify({"status": 200, "events": event_obj_lst}), 200
 
 
 @jwt_required
