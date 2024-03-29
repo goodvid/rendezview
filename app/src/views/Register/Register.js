@@ -124,7 +124,7 @@ function Register() {
                     }}
                     badgeContent={
                       <label htmlFor="icon-button-file">
-                        <IconButton aria-label="upload picture" style={{background: 'white'}} component="span">
+                        <IconButton aria-label="upload picture" style={{ background: 'white' }} component="span">
                           <EditIcon />
                         </IconButton>
                       </label>
@@ -136,7 +136,7 @@ function Register() {
                       src={displayPic}
                     />
                   </Badge>
-                  <input accept="image/*" id="icon-button-file" type="file" style={{ display: 'none'}} onChange={handleProfilePicChange} />
+                  <input accept="image/*" id="icon-button-file" type="file" style={{ display: 'none' }} onChange={handleProfilePicChange} />
                 </Stack>
               </div>
             </div>

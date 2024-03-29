@@ -26,29 +26,29 @@ function EventList() {
     console.log(sessionStorage.getItem("token"));
     axios
       .get("http://127.0.0.1:5000/user_events", {
-          headers: {
-            Authorization: "Bearer " + sessionStorage.getItem("token"),
-            "Content-Type": "application/json",
-          },
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
       })
       .then((res) => {
         console.log(res.data["events"]);
         setEvents(res.data["events"]);
       });
 
-      axios.get("http://127.0.0.1:5000/joined_events", {
-        headers: {
-          Authorization: "Bearer " + sessionStorage.getItem("token"),
-          "Content-Type": "application/json",
-        },
-      }).then((res)=>{
-        console.log(res)
-        if (res.status == 200){
-          console.log(res.data["events"])
-          setJoinedEvents(res.data["events"]);
-          console.log(joinedEvents)
-        }
-      });
+    axios.get("http://127.0.0.1:5000/joined_events", {
+      headers: {
+        Authorization: "Bearer " + sessionStorage.getItem("token"),
+        "Content-Type": "application/json",
+      },
+    }).then((res) => {
+      console.log(res)
+      if (res.status == 200) {
+        console.log(res.data["events"])
+        setJoinedEvents(res.data["events"]);
+        console.log(joinedEvents)
+      }
+    });
   }, []);
 
   return (

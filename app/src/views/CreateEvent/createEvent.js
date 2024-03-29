@@ -98,7 +98,7 @@ function CreateEvent() {
       <div className="m-[5%] flex flex-col gap-4">
         <div className="text-4xl font-bold text-left mb-[3%]">New Event</div>
         <div className="flex flex-row gap-3">
-          <InfoIcon fontSize="large" style={{color: "#b2b4b3"}}/>
+          <InfoIcon fontSize="large" style={{ color: "#b2b4b3" }} />
           <div className="text-3xl text-left"> Basic Info</div>
         </div>
         <div className="flex flex-row gap-1">
@@ -137,9 +137,8 @@ function CreateEvent() {
             name="eventType"
             value="Private Event"
             onClick={() => handleEventType("Private Event")}
-            class={`${
-              selected === "Private Event" ? "bg-[#A1CFFF4D]" : "bg-transparent"
-            } border-2 border-[#02407F] hover:bg-[#A1CFFF4D] text-[#02407F] font-bold py-4 px-10 rounded-lg`}
+            class={`${selected === "Private Event" ? "bg-[#A1CFFF4D]" : "bg-transparent"
+              } border-2 border-[#02407F] hover:bg-[#A1CFFF4D] text-[#02407F] font-bold py-4 px-10 rounded-lg`}
           >
             Private Event
           </button>
@@ -147,9 +146,8 @@ function CreateEvent() {
             name="eventType"
             value="Public Event"
             onClick={() => handleEventType("Public Event")}
-            class={`${
-              selected === "Public Event" ? "bg-[#A1CFFF4D]" : "bg-transparent"
-            } border-2 border-[#02407F] hover:bg-[#A1CFFF4D] text-[#02407F] font-bold py-4 px-10 rounded-lg`}
+            class={`${selected === "Public Event" ? "bg-[#A1CFFF4D]" : "bg-transparent"
+              } border-2 border-[#02407F] hover:bg-[#A1CFFF4D] text-[#02407F] font-bold py-4 px-10 rounded-lg`}
           >
             Public Event
           </button>
@@ -158,7 +156,7 @@ function CreateEvent() {
         <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"></hr>
 
         <div className="flex flex-row gap-3">
-          <LocationCityIcon fontSize="large" style={{color: "#b2b4b3"}}/>
+          <LocationCityIcon fontSize="large" style={{ color: "#b2b4b3" }} />
           <div className="text-3xl text-left"> Location</div>
         </div>
         <div className="flex flex-row gap-1">
@@ -173,7 +171,7 @@ function CreateEvent() {
         <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"></hr>
 
         <div className="flex flex-row gap-3">
-          <CalendarTodayIcon fontSize="large" style={{color: "#b2b4b3"}}/>
+          <CalendarTodayIcon fontSize="large" style={{ color: "#b2b4b3" }} />
           <div className="text-3xl text-left"> Date and Time</div>
         </div>
         <div className="grid grid-cols-2 gap-4">

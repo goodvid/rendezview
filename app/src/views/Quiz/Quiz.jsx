@@ -50,7 +50,7 @@ function Quiz() {
   const handleNext = useCallback(() => {
     if (minSelected) {
       // TODO add send to backend
-      fetch("http://127.0.0.1:5000/profile/preferences", {
+      fetch("http://localhost:5000/profile/preferences", {
         method: "POST",
         headers: {
           Authorization: "Bearer " + sessionStorage.getItem("token"),

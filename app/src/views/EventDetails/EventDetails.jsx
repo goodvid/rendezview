@@ -21,11 +21,17 @@ import {
   DialogContentText,
   DialogActions,
   Link,
+  TextField,
+  List,
+  ListItem,
+  ListItemText
 } from "@mui/material";
+
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import PersonIcon from "@mui/icons-material/Person";
 import EventIcon from "@mui/icons-material/Event";
 import ShareIcon from "@mui/icons-material/Share";
+import DeleteIcon from '@mui/icons-material/Delete';
 import ThumbUpAltIcon from "@mui/icons-material/ThumbUpAlt";
 import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
 import ThumbDownAltIcon from "@mui/icons-material/ThumbDownAlt";
@@ -57,6 +63,7 @@ function EventDetails() {
   const [similarEvents, setSimilarEvents] = useState([]);
   const [rating, setRating] = useState(0);
   const [userID, setUserID] = useState("");
+  const [googleID, setGoogleID] = useState("");
   const [avgRating, setAvgRating] = useState(null);
   const [numOfRatings, setNumOfRatings] = useState(0);
   const [eventObject, setEventObject] = useState({
@@ -105,6 +112,37 @@ function EventDetails() {
   }, [eventObject, id]);
 
   useEffect(() => {
+    // Ensure eventObject is not empty and has an eventID
+    if (eventObject.eventID) {
+      console.log("HEREEEEE");
+      fetch("http://localhost:5000/events/getGoogleID", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ eventID: eventObject.eventID }), // Directly pass eventID here
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log("HEREEEEE");
+          console.log(data);
+          if (data.googleID) {
+            setGoogleID(data.googleID); // This will also update isAddedToCalendar due to the useEffect dependency on googleID
+          } else {
+            // Handle the case where googleID is not found or returned
+            console.log("GoogleID not found for the event");
+            setGoogleID("");
+          }
+        })
+        .catch(error => console.error("Failed to fetch googleID:", error));
+    }
+  }, [eventObject, googleID]);
+
+  useEffect(() => {
+    setIsAddedToCalendar(!!googleID);
+  }, [googleID]);
+
+  useEffect(() => {
     console.log("useEffect rating:", rating);
     if (userID && eventID && rating) {
       updateRating(eventID, userID, rating)
@@ -131,10 +169,66 @@ function EventDetails() {
     }
   }, [id, eventID]);
 
+  const [isAddedToCalendar, setIsAddedToCalendar] = useState(false);
+
+  const removeFromCalendar = () => {
+    // Implement the actual removal logic here, similar to addToCalendar
+    // For demonstration, just setting the state back to false
+    const eventData = { eventID: eventObject.eventID };
+    fetch("http://localhost:5000/events/removeFromCalendar", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(eventData),
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 200) {
+          alert("Successfully removed from Calendar!");
+          setIsAddedToCalendar(false);
+        } else {
+          alert("Error in removing from Calendar: " + data.message);
+          setIsAddedToCalendar(true);
+        }
+      })
+      .catch(error => {
+        console.error("Error:", error);
+      });
+  };
+
+  const addToCalendar = () => {
+    // Assuming your eventObject contains an eventID field with the correct value
+    const eventData = { eventID: eventObject.eventID };
+
+    fetch("http://localhost:5000/events/addToCalendar", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(eventData),
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 200) {
+          alert("Successfully Added to the Calendar");
+          setIsAddedToCalendar(true);
+        } else {
+          alert("Error Adding to Calendar: " + data.message);
+          setIsAddedToCalendar(false);
+        }
+      })
+      .catch(error => {
+        console.error("Error:", error);
+      });
+  };
+
+
+
   const fetchEventObject = () => {
     // Fetch event object
     setLoading(true);
-    fetch("http://127.0.0.1:5000/event/details", {
+    fetch("http://localhost:5000/event/details", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -161,7 +255,7 @@ function EventDetails() {
     setLoading(true);
 
     console.log("user id");
-    fetch("http://127.0.0.1:5000/get_user_id", {
+    fetch("http://localhost:5000/get_user_id", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -188,7 +282,7 @@ function EventDetails() {
     console.log("updateRating");
 
     // Return the fetch promise
-    return fetch("http://127.0.0.1:5000/rate_event", {
+    return fetch("http://localhost:5000/rate_event", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -218,7 +312,7 @@ function EventDetails() {
 
   const getRating = () => {
     setLoading(true);
-    fetch("http://127.0.0.1:5000/get_rating", {
+    fetch("http://localhost:5000/get_rating", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -244,7 +338,7 @@ function EventDetails() {
 
   const getAvgRating = () => {
     console.log("getAvgRating");
-    fetch("http://127.0.0.1:5000/get_avg_rating", {
+    fetch("http://localhost:5000/get_avg_rating", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -270,7 +364,7 @@ function EventDetails() {
     setLoading(true);
 
     // Send data to Flask server
-    fetch("http://127.0.0.1:5000/profile/join-event", {
+    fetch("http://localhost:5000/profile/join-event", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + sessionStorage.getItem("token"),
@@ -289,7 +383,7 @@ function EventDetails() {
           return false;
         }
       })
-      .then(() => {})
+      .then(() => { })
       .catch((error) => {
         console.log("error", error);
         setLoading(false);
@@ -301,7 +395,7 @@ function EventDetails() {
 
     const params = new URLSearchParams({ businessID: businessID });
     axios
-      .get(`http://127.0.0.1:5000/events/business?${params}`)
+      .get(`http://localhost:5000/events/business?${params}`)
       .then((response) => {
         console.log("Business fetched: ", response.data);
         // console.log("name:", response.data.business.name);
@@ -315,6 +409,143 @@ function EventDetails() {
   };
 
   const [open, setOpen] = React.useState(false);
+  const [email, setEmail] = useState(''); // define up here
+  const [emailsList, setEmailsList] = useState([]);
+
+  const changeEmail = (event) => {
+    if (event != null) {
+      setEmail(event.target.value);
+    }
+  };
+
+  const handleAddEmail = (event) => {
+    if (email) {
+      setEmailsList((prevEmails) => [...prevEmails, email]);
+      setEmail('');
+    }
+  };
+  const displayEmail = (event) => {
+    event.preventDefault();
+    // Will submit my email list here
+    const eventData = { eventID: eventObject.eventID, emailsList: emailsList };
+
+    fetch("http://localhost:5000/events/shareAndAddEvent", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(eventData),
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 200) {
+          alert("Successfully Added to the Calendar");
+          setEmailsList([]); // This resets the emailsList to an empty array
+          setEmail('');
+          handleClose();
+          setIsAddedToCalendar(true);
+        } else {
+          alert("Error Adding to Calendar: " + data.message);
+          setEmailsList([]); // This resets the emailsList to an empty array
+          setEmail('');
+          handleClose();
+          setIsAddedToCalendar(false);
+        }
+      })
+      .catch(error => {
+        console.error("Error:", error);
+      });
+
+
+    console.log('Emails to share with:', emailsList);
+
+  };
+
+  const dummyCall = (event) => {
+    // Figure out how to get userID
+    const user_id = { userID: userID }
+    fetch("http://localhost:5000/events/dummyCall", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + sessionStorage.getItem("token"),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(user_id),
+    })
+      .catch(error => {
+        console.error("Error:", error);
+      });
+
+  };
+
+
+
+  const dummyRSVPList = [
+    { name: 'John Doe', status: 'accepted' },
+    { name: 'Jane Smith', status: 'declined' },
+    { name: 'Alice Johnson', status: 'no response' },
+    { name: 'Bob Brown', status: 'accepted' },
+  ];
+
+
+  const [openRSVP, setOpenRSVP] = useState(false);
+  const [currentFilter, setCurrentFilter] = useState('all');
+  const [displayList, setDisplayList] = useState(dummyRSVPList);
+  const [eventRSVPList, setEventRSVPList] = useState([]); // Initialize state for the RSVP list
+
+
+  const getRSVPList = (newFilter) => {
+    setCurrentFilter(newFilter); // Update the current filter state
+
+    const filteredList = newFilter === 'all'
+      ? eventRSVPList
+      : eventRSVPList.filter(item => item.status.toLowerCase() === newFilter);
+
+    setDisplayList(filteredList);
+  };
+
+  const handleOpenRSVPDialog = () => {
+    setOpenRSVP(true);
+    // Will submit my email list here
+    const eventData = { eventID: eventObject.eventID };
+
+    fetch("http://localhost:5000/events/getRSVPStatus", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(eventData),
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 200) {
+          // Process and update eventRSVPList here
+          const processedRSVPList = [];
+          const rsvpStatus = data.data; // The structure you described
+
+          // Loop through each status category in rsvpStatus
+          Object.keys(rsvpStatus).forEach(status => {
+            // For each status, go through the list of names and add them to processedRSVPList
+            rsvpStatus[status].forEach(name => {
+              processedRSVPList.push({ name: name, status: status });
+            });
+          });
+          // Update the state with the new list
+          setEventRSVPList(processedRSVPList);
+        } else {
+          alert("Can't get RSVP list of an event not added to calendar: " + data.message);
+          setOpenRSVP(false);
+        }
+      })
+      .catch(error => {
+        console.error("Error:", error);
+      });
+    getRSVPList('all'); // Default to showing all
+  };
+
+  const handleCloseRSVPDialog = () => {
+    setOpenRSVP(false);
+  };
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -322,6 +553,8 @@ function EventDetails() {
 
   const handleClose = () => {
     setOpen(false);
+    setEmailsList([]); // This resets the emailsList to an empty array
+    setEmail('');
   };
 
   const handleRating = (vote) => {
@@ -363,7 +596,7 @@ function EventDetails() {
             <Stack direction="row" alignItems="center" gap="0.5rem">
               <EventDetailsButton
                 startIcon={<EventIcon />}
-                // onClick={}
+              // onClick={}
               >
                 Add to Calendar
               </EventDetailsButton>
@@ -412,14 +645,14 @@ function EventDetails() {
           <img src={testImage} style={{ borderRadius: "1rem" }} />
         </Stack>
         <Stack alignItems="flex-start" marginTop="1rem" direction="row">
-          {sessionStorage.getItem("token") ?<YellowButton
+          {sessionStorage.getItem("token") ? <YellowButton
             textAlign="left"
             variant="contained"
             onClick={handleSubmit}
           >
             Join Event
-          </YellowButton>: <></> }
-          
+          </YellowButton> : <></>}
+
 
           {sessionStorage.getItem("token") && checkIfPast() ? (
             <Stack
@@ -531,7 +764,6 @@ function EventDetails() {
       category && ( // Don't show organizer section if there is no organizer
         <Stack className="section">
           <h2>Category</h2>
-          {/* <h2>{category}</h2> */}
           <Stack direction="row" alignItems="center" gap="1rem">
             <Stack
               direction="row"
@@ -551,7 +783,7 @@ function EventDetails() {
 
   const deleteEvent = () => {
     axios
-      .post("http://127.0.0.1:5000/delete_event", {
+      .post("http://localhost:5000/delete_event", {
         event: eventObject,
       })
       .then((res) => {
@@ -606,7 +838,7 @@ function EventDetails() {
     setLoading(true);
 
     axios
-      .get("http://127.0.0.1:5000/events")
+      .get("http://localhost:5000/events")
       .then((response) => {
         console.log(
           "Similar events fetched:",
@@ -674,7 +906,188 @@ function EventDetails() {
       ) : (
         <Stack alignItems="center" marginInline="10%">
           <Stack margin="3rem" gap="1rem">
-            <EventInfoSection />
+            <div>
+              <Stack direction="row" marginBlock="1rem">
+                <Stack width="100%" justifyContent="flex-start" textAlign="left">
+                  <h1>{eventName}</h1>
+
+                  <h3 style={{ color: "#818181" }}>
+                    {date} {time}
+                  </h3>
+                </Stack>
+                <Stack
+                  width="100%"
+                  direction="row"
+                  justifyContent="flex-end"
+                  gap="1rem"
+                  color="#818181"
+                >
+                  <Stack direction="row" alignItems="center" gap="0.5rem">
+                    <EventDetailsButton
+                      startIcon={isAddedToCalendar ? <DeleteIcon /> : <EventIcon />}
+                      onClick={isAddedToCalendar ? removeFromCalendar : addToCalendar}
+                      style={{ backgroundColor: isAddedToCalendar ? "#e57373" : "" }}
+                    >
+                      {isAddedToCalendar ? "Remove from Calendar" : "Add to Calendar"}
+                    </EventDetailsButton>
+                  </Stack>
+
+                  <Stack direction="row" alignItems="center" gap="0.5rem">
+                    <EventDetailsButton
+                      startIcon={<ShareIcon />}
+                      onClick={handleClickOpen}
+                    >
+                      Share
+                    </EventDetailsButton>
+                    <Dialog open={open} onClose={handleClose} PaperProps={{
+                      component: "form",
+                      onSubmit: (event) => {
+                        event.preventDefault(); // Prevent the default form submission action
+                        displayEmail(event); // Now handle the logic to display emails or whatever your submit action is
+                      }
+                    }}>
+                      <DialogTitle>Share Link</DialogTitle>
+                      <DialogContent>
+                        <DialogContentText>
+                          Use this link to share:
+                          <Link href={`http://localhost:5000/eventdetails/${eventID}`}>
+                            http://localhost:5000/eventdetails/{eventID}
+                          </Link>
+                        </DialogContentText>
+                        <TextField
+                          label="Email Address"
+                          type="email"
+                          fullWidth
+                          variant="outlined"
+                          onChange={changeEmail}
+                          margin="normal"
+                        />
+                        <Button
+                          onClick={handleAddEmail}
+                          type="button" // Important to specify type="button" to prevent form submission
+                          color="primary"
+                          variant="contained"
+                        >
+                          Add Email
+                        </Button>
+                        <List>
+                          {emailsList.map((email, index) => (
+                            <ListItem key={index}>{email}</ListItem>
+                          ))}
+                        </List>
+                      </DialogContent>
+                      <DialogActions>
+                        <Button onClick={handleClose}>Close</Button>
+                        <Button type="submit" color="primary">Share</Button>
+                      </DialogActions>
+                    </Dialog>
+                  </Stack>
+                </Stack>
+              </Stack>
+              <Stack>
+                <img src={testImage} style={{ borderRadius: "1rem" }} />
+              </Stack>
+              <Stack alignItems="flex-start" gap="1rem" marginTop="1rem" direction="row">
+                <YellowButton
+                  textAlign="left"
+                  variant="contained"
+                  onClick={handleSubmit}
+                >
+                  Join Event
+                </YellowButton>
+                <GrayButton
+                  textAlign="Center"
+                  variant="contained"
+                  onClick={handleOpenRSVPDialog}
+                >
+                  See RSVP List
+                </GrayButton>
+                <GrayButton
+                  textAlign="Center"
+                  variant="contained"
+                  onClick={dummyCall}
+                >
+                  Dummy Call
+                </GrayButton>
+                <Dialog open={openRSVP} onClose={handleCloseRSVPDialog}>
+                  <DialogTitle>RSVP List</DialogTitle>
+                  <DialogContent>
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+                      {['all', 'accepted', 'declined', 'needsaction', 'tentative'].map((filter) => (
+                        <Button
+                          key={filter}
+                          // color={currentFilter === filter ? '' : 'green'}
+                          onClick={() => getRSVPList(filter)}
+                          style={{ margin: '0 10px' }}
+                        >
+                          {filter.charAt(0).toUpperCase() + filter.slice(1)}
+                        </Button>
+                      ))}
+                    </div>
+                    <List>
+                      {displayList.map((item, index) => (
+                        <ListItem key={index}>
+                          <ListItemText primary={item.name} secondary={`Status: ${item.status.charAt(0).toUpperCase() + item.status.slice(1)}`} />
+                        </ListItem>
+                      ))}
+                    </List>
+                  </DialogContent>
+                  <DialogActions>
+                    <GrayButton onClick={handleCloseRSVPDialog}>Close</GrayButton>
+                  </DialogActions>
+                </Dialog>
+
+                {sessionStorage.getItem("token") && checkIfPast() ? (
+                  <Stack
+                    direction="row"
+                    marginInline="2rem"
+                    alignItems="center"
+                    justifyItems="center"
+                    gap="1rem"
+                  >
+                    <Stack
+                      direction="row"
+                      // marginInline="2rem"
+                      alignItems="center"
+                      gap="0.5rem"
+                    >
+                      {/* <GrayButton variant="contained" color="primary" onClick={() => console.log('Clicked')}>Test Button</GrayButton> */}
+
+
+                      <IconButton
+                        onClick={() => handleRating(1)}
+                        aria-label="like"
+                        size="small"
+                      >
+                        {rating === 1 ? <ThumbUpAltIcon /> : <ThumbUpOffAltIcon />}
+                      </IconButton>
+
+                      <IconButton
+                        onClick={() => handleRating(-1)}
+                        aria-label="like"
+                        size="small"
+                      >
+                        {rating === -1 ? (
+                          <ThumbDownAltIcon />
+                        ) : (
+                          <ThumbDownOffAltIcon />
+                        )}
+                      </IconButton>
+                    </Stack>
+                    {numOfRatings > 0 ? (
+                      <p>
+                        {avgRating}% ({numOfRatings})
+                      </p>
+                    ) : (
+                      <p>(Event not rated)</p>
+                    )}
+                  </Stack>
+                ) : (
+                  <div />
+                )}
+              </Stack>
+            </div>
+
             <EventDetailsSection />
             <LocationSection />
             <OrganizerSection />

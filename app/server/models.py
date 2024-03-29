@@ -5,32 +5,35 @@ from werkzeug.security import generate_password_hash, check_password_hash
 db = SQLAlchemy()
 
 events_table = db.Table('user_events',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
-    db.Column('event_id', db.Integer, db.ForeignKey('event.eventID'), primary_key=True)
-)
-
+                        db.Column('user_id', db.Integer, db.ForeignKey(
+                            'user.id'), primary_key=True),
+                        db.Column('event_id', db.Integer, db.ForeignKey(
+                            'event.eventID'), primary_key=True)
+                        )
 
 
 class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key = True)
+    id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(50), unique=True)
     username = db.Column(db.String(50), unique=True)
     password = db.Column(db.String(50))
     picture = db.Column(db.String(100))
-    #friends = db.Column(db.String(1000))
+    # friends = db.Column(db.String(1000))
 
-    blogs = db.relationship('Blog', backref='blog', lazy=True, cascade='all, delete')
+    blogs = db.relationship('Blog', backref='blog',
+                            lazy=True, cascade='all, delete')
     saved_events = db.relationship(
         "Event",
         secondary=events_table,
         lazy="subquery",
         backref=db.backref("events", lazy=True),
     )
-    #friends = db.relationship("User", secondary=friends_table,lazy="subquery",backref=db.backref("added friends"))
-    #private_events = db.relationship('PrivateEvent', backref='private_event', lazy=True)
+    # friends = db.relationship("User", secondary=friends_table,lazy="subquery",backref=db.backref("added friends"))
+    # private_events = db.relationship('PrivateEvent', backref='private_event', lazy=True)
     location = db.Column(db.String(50))
     preferences = db.Column(db.String(50))
     calendar = db.Column(db.String(50))
+
     def set_password(self, passwrd):
         self.password = generate_password_hash(passwrd)
 
@@ -52,7 +55,7 @@ class User(UserMixin, db.Model):
 
 class Event(db.Model):
     userID = db.Column(db.Integer, db.ForeignKey("user.id"))
-    eventID = db.Column(db.Integer, primary_key = True)
+    eventID = db.Column(db.Integer, primary_key=True)
     yelpID = db.Column(db.String(500))
     googleID = db.Column(db.String(100))
 
@@ -70,6 +73,7 @@ class Event(db.Model):
     latitude = db.Column(db.Float)
 
     type = db.Column(db.String(50))
+
     def as_dict(self):
         return {
             'yelpID': self.yelpID,
@@ -81,31 +85,37 @@ class Event(db.Model):
             'endTime': self.end_time,
             'startDate': self.start_date,
             'event_datetime': self.event_datetime,
-            'hostName' : self.hostName,
+            'hostName': self.hostName,
             'userID': self.userID,
-            'rating' : self.rating,
+            'rating': self.rating,
             'category': self.category,
-            'type': self.type   
+            'type': self.type
         }
 
+
 class Blog(db.Model):
-    blogID = db.Column(db.Integer, primary_key = True)
+    blogID = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.String(5000))
     author = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     event = db.Column(db.Integer, db.ForeignKey('event.eventID'))
     time = db.Column(db.DateTime)
 
+
 class EventRating(db.Model):
     userID = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
-    eventID = db.Column(db.Integer, db.ForeignKey('event.eventID'), primary_key=True)
+    eventID = db.Column(db.Integer, db.ForeignKey(
+        'event.eventID'), primary_key=True)
     yelpID = db.Column(db.String(500), nullable=True, default="")
     rating = db.Column(db.Integer, nullable=False, default=0)
 
-    event = db.relationship('Event', backref=db.backref('ratings', lazy='dynamic'))
-    user = db.relationship('User', backref=db.backref('ratings', lazy='dynamic'))
+    event = db.relationship(
+        'Event', backref=db.backref('ratings', lazy='dynamic'))
+    user = db.relationship(
+        'User', backref=db.backref('ratings', lazy='dynamic'))
+
 
 class Status(db.Model):
-    sid = db.Column(db.Integer, primary_key = True)
+    sid = db.Column(db.Integer, primary_key=True)
     user = db.Column(db.String(5000), db.ForeignKey('user.email'))
     friend = db.Column(db.String(5000), db.ForeignKey('user.email'))
     status = db.Column(db.String(5000))

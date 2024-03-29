@@ -124,7 +124,7 @@ function Main() {
     if (unixStartDate) params.append("start_date", unixStartDate);
     if (category) params.append("category", category);
     axios
-      .get(`http://127.0.0.1:5000/events/api?${params}`)
+      .get(`http://localhost:5000/events/api?${params}`)
       .then((response) => {
         console.log("API events fetched and stored:", response.data);
         fetchAndDisplayEvents();
@@ -137,7 +137,7 @@ function Main() {
 
   const fetchAndDisplayEvents = () => {
     axios
-      .get("http://127.0.0.1:5000/events")
+      .get("http://localhost:5000/events")
       .then((response) => {
         // console.log("events status: ", response.data["status"]);
         console.log("Events fetched:", response.data["events"]);

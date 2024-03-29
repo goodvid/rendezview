@@ -23,10 +23,15 @@ function Login() {
 
   const handle_authentication = () => {
     axios
-      .get("http://127.0.0.1:5000/authenticate")
+      .get("http://localhost:5000/authenticate")
       .then((res) => {
         if (res.data.status === 200) {
           // Navigate to another route on success
+          if ("login_method" in res.data) {
+            sessionStorage.setItem("login_method", "google");
+          } else {
+            sessionStorage.setItem("login_method", "normal");
+          }
           sessionStorage.setItem("token", res.data.access_token);
           console.log("token", sessionStorage.getItem("token"));
           navigate("/"); // Adjust '/success-route' as needed
@@ -50,7 +55,7 @@ function Login() {
     event.preventDefault();
 
     // Send data to Flask server
-    fetch("http://127.0.0.1:5000/user/login", {
+    fetch("http://localhost:5000/user/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
