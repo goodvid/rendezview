@@ -77,7 +77,6 @@ function FriendProfile() {
       });
   }, []);
   const handleAddFriend = () => {
-    console.log(friendStatus)
     fetch("http://127.0.0.1:5000/add_friend", {
       method: "POST",
       headers: {
@@ -98,7 +97,6 @@ function FriendProfile() {
     });
   };
   const handleDelete = () => {
-    console.log(friendStatus)
     // eslint-disable-next-line no-restricted-globals
     if (confirm("are you sure you want to delete this friend?")) {
       console.log("here")

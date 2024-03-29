@@ -4,7 +4,9 @@ import { Alert, Box, Button, Chip, Stack, Snackbar } from "@mui/material";
 import Navbar from "../../components/Navbar/Navbar";
 import { useNavigate } from "react-router-dom";
 import "../../styles.css";
-//import { withAuth } from "../withAuth";
+
+import categories from "../../views/eventCategories.json";
+
 
 function Quiz() {
   let resp = false;
@@ -12,16 +14,6 @@ function Quiz() {
   const [selectedStr, setSelectedStr] = useState("");
   const [minSelected, setMinSelected] = useState(false);
   const [selected, setSelected] = useState([]);
-  const [tags, setTags] = useState([
-    //TODO: fix categories
-    "Comedy",
-    "Food",
-    "Film",
-    "Travel",
-    "Rock",
-    "Yoga",
-    "DIY",
-  ]);
   const [alertOpen, setAlertOpen] = useState(false);
 
   const handleSelect = useCallback(
@@ -90,13 +82,13 @@ function Quiz() {
           flexWrap="wrap"
           width="100%"
         >
-          {tags.map((name) => (
+          {categories.map((item, index) => (
             <div>
               <Chip
-                key={name}
-                label={name}
-                variant={new Set(selected).has(name) ? "filled" : "outlined"}
-                onClick={() => handleSelect(name)}
+                key = {index}
+                label = {item.name}
+                variant={new Set(selected).has(item.name) ? "filled" : "outlined"}
+                onClick={() => handleSelect(item.name)}
               />
             </div>
           ))}
@@ -158,4 +150,4 @@ function Quiz() {
   );
 }
 
-export default (Quiz);
+export default Quiz;
