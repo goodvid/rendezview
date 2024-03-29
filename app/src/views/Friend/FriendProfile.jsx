@@ -246,9 +246,7 @@ function FriendProfile() {
                         <h3>Requested</h3>
                       </>
                     )}
-                    <Button variant="contained" onClick={handleDelete}>
-                      delete friend
-                    </Button>
+                    
                   </>
                 )}
                 <Button variant="contained" onClick={handleDelete}>
