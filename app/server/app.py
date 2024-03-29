@@ -175,9 +175,8 @@ def changeemail():
 def deleteaccount():
     current_user = get_jwt_identity()
     
-    deleteprofilepic()
     User.query.filter_by(email=current_user["email"]).delete()
-    #db.session.delete(user)
+    # db.session.delete(user)
     db.session.commit()
 
     return jsonify({"message": "Account deleted successfully"}), 200
@@ -245,41 +244,26 @@ def resetpassword():
 
     return jsonify({"message": "Password reset successfully"}), 200
 
-def saveProfilePic(profile_picture, email):
-    picture = profile_picture.filename
-    picture_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, 'public\profile_pics', email + "-" + picture))
-    
-    profile_picture.save(picture_path)
-    picture_path = picture_path[slice(picture_path.find('\profile_pics'), None)].replace('\\', '/')
-    return picture_path
 
 @app.route('/user/register', methods=["POST"])
 def register():
-    form = jsonify({"email": request.form['email'], "password": request.form['password']})
-    email = form.json['email']
-    password = form.json['password']
+    data = request.json
+    email = data['email']
+    password = data['password']
 
     cur_users = User.query.filter_by(email=email).first()
 
     if (cur_users != None):
-       return {'status': '400', 'message': 'This email belongs to an existing account.'}
+        return {'status': '400', 'message': 'This email belongs to an existing account.'}
 
     if (len(password) < 7):
-       return {'status': '400', 'message': 'Please choose a password that is greater than 6.'}
-    
-    if (request.files):
-        picture = request.files['profilePicture']
-        profilePicPath = saveProfilePic(picture, email)
-    else:
-        profilePicPath = 'NULL'
-    
+        return {'status': '400', 'message': 'Please choose a password that is greater than 6.'}
     new_user = User(email=email,
                     username=email,
-                    password=password,
-                    picture=profilePicPath)
+                    password=password)
     db.session.add(new_user)
     db.session.commit()
-    access_token = create_access_token(identity={"email": email, "name": email}) 
+    access_token = create_access_token(identity={"email": email, "name": email})
     return jsonify({"message": "Account created!", "status": 200, "access_token": access_token})
     # return jsonify(access_token), 200
 
@@ -379,15 +363,6 @@ def getusername():
 
     return {'status': '200', 'username': username, "friends": friends}
 
-@app.route('/user/getpreferences', methods=['GET'])
-@jwt_required()
-def getpreferences():
-    current_user = get_jwt_identity()
-
-    user = User.query.filter_by(email=current_user["email"]).first()
-    preferences = user.preferences
-
-    return {'status': '200', 'preferences': preferences}
 
 @app.route('/user/get_user', methods=['POST'])
 @jwt_required()
@@ -407,54 +382,6 @@ def get_user():
         return {'status': '200', 'username': user.username, "isFriend": True, "relationship": friend.status}
     else:
         return {"status": "200", "username": user.username, "isFriend": False, "relationship": ""}
-
-@app.route('/user/getprofilepic', methods=['GET'])
-@jwt_required()
-def getprofilepic():
-    current_user = get_jwt_identity()
-
-    user = User.query.filter_by(email=current_user["email"]).first()
-    pic = user.picture
-    # print("PATH: " + os.path.abspath(os.path.join(os.getcwd(), os.pardir, 'public' + pic)))
-    # pic = pic[slice(pic.find('\profile_pics'), None)].replace('\\', '/')
-
-    return {'status': '200', 'profilePic': pic}
-
-@app.route('/user/changeprofilepic', methods=['POST'])
-@jwt_required()
-def changeprofilepic():
-    current_user = get_jwt_identity()
-
-    user = User.query.filter_by(email=current_user["email"]).first()
-    email = user.email
-
-    if (request.files):
-        picture = request.files['profilePicture']
-        deleteprofilepic()
-        profilePicPath = saveProfilePic(picture, email)
-    else:
-        profilePicPath = 'NULL'
-
-    user.picture = profilePicPath
-    db.session.commit()
-    
-    return {'status': '200', 'profilePic': profilePicPath}
-
-@app.route("/user/deleteprofilepic", methods=["GET"])
-@jwt_required()
-def deleteprofilepic():
-    current_user = get_jwt_identity()
-    
-    user = User.query.filter_by(email=current_user["email"]).first()
-    # remove profile picture
-    if (user.picture and "profile_pics" in user.picture):
-        abspath = os.path.abspath(os.path.join(os.getcwd(), os.pardir, 'public' + user.picture))
-        os.remove(abspath)
-    user.picture = ""
-    db.session.commit()
-
-    return jsonify({"message": "Profile picture deleted successfully"}), 200
-
 
 @app.route('/user_events', methods=['GET'])
 @jwt_required()

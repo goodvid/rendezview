@@ -2,6 +2,7 @@ import "./Profile.css";
 import { React, useState, useEffect } from "react";
 import {
   
+  
   Avatar,
   Button,
   Box,
@@ -17,7 +18,9 @@ import {
   ReadMoreButton,
   TextIconStack,
   
+  
 } from "../../components/StyledComponents/StyledComponents";
+import dayjs from "dayjs";
 import dayjs from "dayjs";
 
 import { useNavigate } from "react-router-dom";
@@ -27,9 +30,11 @@ import EditIcon from "@mui/icons-material/Edit";
 import LocalActivityIcon from "@mui/icons-material/LocalActivity";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import concertPhoto from "../../media/concert.jpg";
 import Navbar from "../../components/Navbar/Navbar";
 import { withAuth } from "../withAuth";
+import ProfileEvent from "../../components/Event/ProfileEvent";
 import ProfileEvent from "../../components/Event/ProfileEvent";
 import axios from "axios";
 
@@ -41,6 +46,8 @@ function Profile() {
   const [profilePic, setProfilePic] = useState("");
   const [friendsNum, setFriendsNum] = useState(0);
   const [groupsNum, setGroupsNum] = useState(0);
+  const [userEvents, setUserEvents] = useState([]);
+  const [hostRating, setHostRating] = useState(null);
   const [userEvents, setUserEvents] = useState([]);
   const [hostRating, setHostRating] = useState(null);
 
@@ -57,37 +64,7 @@ function Profile() {
         console.log(res.data["username"]);
         setDisplayName(res.data["username"]);
         setFriendsNum(res.data["friends"])
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-
-      axios
-      .get("http://127.0.0.1:5000/user/getprofilepic", {
-        headers: {
-          Authorization: "Bearer " + sessionStorage.getItem("token"),
-          "Content-Type": "application/json",
-        },
-      })
-      .then((res) => {
-        console.log(res.data["status"]);
-        setProfilePic(res.data["profilePic"]);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-
-      axios
-      .get("http://127.0.0.1:5000/user/getpreferences", {
-        headers: {
-          Authorization: "Bearer " + sessionStorage.getItem("token"),
-          "Content-Type": "application/json",
-        },
-      })
-      .then((res) => {
-        console.log(res.data["status"]);
-        const preferences = res.data["preferences"];
-        setTags(preferences.split(","));
+        setFriendsNum(res.data["friends"])
       })
       .catch((err) => {
         console.log(err);
@@ -107,8 +84,55 @@ function Profile() {
       });
 
     getHostRating();
-    
   }, []);
+
+  useEffect(() => {
+    console.log(userEvents);
+    const upcoming = [];
+    const past = [];
+    userEvents.map((event) => {
+      const eventDate = dayjs(event.date);
+      const diff = dayjs().diff(eventDate);
+      if (diff < 0) {
+        upcoming.push(event);
+      } else {
+        past.push(event);
+      }
+    });
+    // console.log("pastEvents:", past);
+    setPastEvents(past);
+    setUpcomingEvents(upcoming);
+  }, [userEvents]);
+
+  const getHostRating = () => {
+    axios
+      .get("http://127.0.0.1:5000/user/get_host_rating", {
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        // console.log("hostRating object:", res.data);
+        // console.log("hostRating:", res.data.hostRating);
+        setHostRating(res.data.hostRating);
+      });
+
+    console.log(sessionStorage.getItem("token"));
+    axios
+      .get("http://127.0.0.1:5000/user_events", {
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        console.log("userEvents:", res.data["events"]);
+        setUserEvents(res.data["events"]);
+      });
+
+    getHostRating();
+      };
 
   useEffect(() => {
     console.log(userEvents);
@@ -210,6 +234,31 @@ function Profile() {
     }
   };
 
+  const handleSubmit = () => {
+    // eslint-disable-next-line no-restricted-globals
+    if (confirm("are you sure you want to delete all data?")) {
+      fetch("http://127.0.0.1:5000/profile/clearhistory", {
+        method: "GET",
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => {
+          if (response.status === 200) {
+            return response.json();
+          } else {
+            alert("error");
+            return false;
+          }
+        })
+        .then((data) => {})
+        .catch((error) => {
+          console.log("error", error);
+        });
+    }
+  };
+
   const handleReadMore = (id) => {
     return <>//TODO: navigate to blog post</>;
   };
@@ -217,7 +266,7 @@ function Profile() {
   const LeftInfoStack = () => {
     return (
       <Stack
-        width="75vh"
+        width="50vh"
         style={{
           backgroundColor: "#4D4D4D",
           color: "white",
@@ -238,22 +287,38 @@ function Profile() {
             aria-label="edit display name"
             size="large"
           >
-            <SettingsIcon onClick={() => navigate("/settings")} fontSize="inherit" height="2rem" width="2rem" />
+            <SettingsIcon fontSize="inherit" height="2rem" width="2rem" />
           </IconButton>
         </Box>
 
         {/* Profile Picture */}
         <Stack>
-          <Avatar
+          <Badge
+            overlap="circular"
+            anchorOrigin={{
+              vertical: "bottom",
+              horizontal: "right",
+            }}
+            badgeContent={
+              <IconButton
+                style={{ color: "#4D4D4D", backgroundColor: "white" }}
+              >
+                <EditIcon />
+              </IconButton>
+            }
+          >
+            <Avatar
               sx={{ width: "15rem", height: "15rem" }}
+              alt={"avatar"}
               src={profilePic}
             />
+          </Badge>
+          <input type="file" style={{ display: "none" }} />
         </Stack>
 
         {/* Display Name */}
         <TextIconStack>
           <h1>{displayName}</h1>
-          {/* 
           <IconButton
             sx={{ color: "white" }}
             aria-label="edit display name"
@@ -274,6 +339,9 @@ function Profile() {
           <NearMeIcon style={{ color: "red" }} />
           <h3>Location</h3>
         </TextIconStack>
+        <h3>
+          <a href="/profile/friends">{friendsNum} FRIENDS</a> • {groupsNum} GROUPS
+        </h3>
         <h3>
           <a href="/profile/friends">{friendsNum} FRIENDS</a> • {groupsNum} GROUPS
         </h3>
@@ -318,6 +386,7 @@ function Profile() {
   };
 
   const UpcomingEvents = () => {
+    console.log("events:", upcomingEvents);
     console.log("events:", upcomingEvents);
     return (
       <Stack className="profile-components">
@@ -375,6 +444,31 @@ function Profile() {
                 />
               );
             })}
+        <Box sx={{ overflowX: "auto", width: "100%" }}>
+          {/* <Stack direction="row" gap={2} sx={{ minWidth: "max-content" }}> */}
+          <Stack
+            direction="row"
+            gap={2}
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "stretch",
+              minWidth: "max-content",
+            }}
+          >
+            {pastEvents.map((event, i) => {
+              return (
+                <ProfileEvent
+                  name={event.name}
+                  date={event.date}
+                  location={event.location}
+                  key={i}
+                  id={event.id}
+                  desc={event.desc}
+                  rating={event.rating}
+                />
+              );
+            })}
           </Stack>
         </Box>
       </Stack>
@@ -385,7 +479,7 @@ function Profile() {
     return (
       <Stack className="profile-components">
         <h2>Blogs</h2>
-        <Box sx={{ overflowX: "auto", '&::-webkit-scrollbar': {width: '0.4em'}, width: "100%" }}>
+        <Box sx={{ overflowX: "auto", width: "100%" }}>
           <Stack
             direction="row"
             gap={2}
@@ -477,7 +571,7 @@ function Profile() {
     >
       <Navbar />
       <Stack
-        width="100%"
+        width="100vw"
         direction="row"
         gap="2rem"
         justifyContent="space-between"
@@ -489,4 +583,5 @@ function Profile() {
   );
 }
 
+export default (Profile);
 export default (Profile);
