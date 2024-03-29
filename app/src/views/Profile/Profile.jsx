@@ -37,7 +37,7 @@ function Profile() {
   const navigate = useNavigate();
   const response = false;
 
-  const [displayName, setDisplayName] = useState("Display Name");
+  const [displayName, setDisplayName] = useState("Display");
   const [profilePic, setProfilePic] = useState("");
   const [friendsNum, setFriendsNum] = useState(0);
   const [groupsNum, setGroupsNum] = useState(0);
