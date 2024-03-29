@@ -235,7 +235,7 @@ function FriendProfile() {
                   </div>
                 ) : (
                   <>
-                    {status != "requested" ? (
+                    {status != "requested" && status != "follow" ? (
                       <>
                         <Button variant="contained" onClick={openInput}>
                           Set status
@@ -251,11 +251,17 @@ function FriendProfile() {
                     </Button>
                   </>
                 )}
+                <Button variant="contained" onClick={handleDelete}>
+                  {" "}
+                  delete friend
+                </Button>
               </>
             ) : (
-              <Button variant="contained" onClick={handleAddFriend}>
-                Add Friend
-              </Button>
+              <>
+                <Button variant="contained" onClick={handleAddFriend}>
+                  Add Friend
+                </Button>
+              </>
             )}
           </Stack>
         </div>

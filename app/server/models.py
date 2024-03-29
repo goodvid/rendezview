@@ -12,15 +12,13 @@ events_table = db.Table('user_events',
                         )
 
 
-
-
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(50), unique=True)
     username = db.Column(db.String(50), unique=True)
     password = db.Column(db.String(50))
     picture = db.Column(db.String(100))
-    #friends = db.Column(db.String(1000))
+    # friends = db.Column(db.String(1000))
 
     blogs = db.relationship('Blog', backref='blog',
                             lazy=True, cascade='all, delete')
@@ -91,7 +89,7 @@ class Event(db.Model):
             'userID': self.userID,
             'rating': self.rating,
             'category': self.category,
-            'type': self.type   
+            'type': self.type
         }
 
 

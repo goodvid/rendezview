@@ -50,7 +50,7 @@ function Friends() {
           </button>
         </div>
       </div>
-      <div>
+      <div style={{marginLeft: "5%"}}>
         {users.map((user, _) => {
           console.log(user);
           return (

@@ -41,16 +41,14 @@ import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 
 function Main() {
   const [events, setEvents] = useState([]);
-  const [location, setLocation] = useState("West Lafayette, Indiana, USA");
+  const [location, setLocation] = useState("");
   const [startDate, setStartDate] = useState(null);
   const [unixStartDate, setUnixStartDate] = useState("");
   const [isFree, setIsFree] = useState("");
   const [sortOn, setSortOn] = useState("time_start");
   const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
-  const [locationInput, setLocationInput] = useState(
-    "West Lafayette, Indiana, USA"
-  );
+  const [locationInput, setLocationInput] = useState("");
   const [userCoords, setUserCoords] = useState(null);
   const [locLoading, setLocLoading] = useState(false);
   const [eventType, setEventType] = useState("Featured");
@@ -73,21 +71,20 @@ function Main() {
     other: <MoreHorizIcon />,
   };
 
-  useEffect(() => {
-    fetchAndDisplayEvents();
-    getIPGeolocation();
-  }, []);
+  function useEffectSkipFirstRender(effect, deps) {
+    const isFirstRender = useRef(true);
 
-  const isFirstRender = useRef(true);
+    useEffect(() => {
+      if (isFirstRender.current) {
+        isFirstRender.current = false;
+        return;
+      }
+      effect();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, deps);
+  }
 
-  useEffect(() => {
-    // if (isFirstRender.current || location == "West Lafayette, Indiana, USA") {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-
-    console.log("Location changed, fetching events...");
+  useEffectSkipFirstRender(() => {
     fetchAPIEvents();
   }, [location, isFree, sortOn, unixStartDate, category]);
 
@@ -99,14 +96,15 @@ function Main() {
     // Get the recommended events once the backend function is made
     if (sessionStorage.getItem("token")) {
       axios
-        .get(`http://localhost:5000/events/get_recommended`, {
+        .get(`http://127.0.0.1:5000/events/get_recommended`, {
           headers: {
             Authorization: "Bearer " + sessionStorage.getItem("token"),
             "Content-Type": "application/json",
           },
         })
         .then((response) => {
-          fetchAndDisplayEvents();
+          setRecommendedEvents(response.data["recommendations"]);
+          setLoading(false);
         })
         .catch((error) => {
           console.error("Error fetching API events:", error);
@@ -170,6 +168,10 @@ function Main() {
     setLocationInput(place.formatted_address);
   }, []);
 
+  useEffect(() => {
+    getIPGeolocation();
+  }, []);
+
   const getIPGeolocation = () => {
     setLocLoading(true);
     fetch("https://ipinfo.io/json?token=f92cb4e0401c19")
@@ -178,11 +180,8 @@ function Main() {
         const { city, region, country } = data;
         const formattedAddress = `${city}, ${region}, ${country}`;
 
-        if (formattedAddress != location) {
-          console.log("new location:", formattedAddress);
-          // setLocation(formattedAddress);
-          setLocationInput(formattedAddress);
-        }
+        setLocation(formattedAddress);
+        setLocationInput(formattedAddress);
         setLocLoading(false);
       })
       .catch((error) => {
@@ -327,44 +326,59 @@ function Main() {
           <button onClick={setFeatured}>Featured</button> |
           <button onClick={setRecommended}>Recommended</button>
           <FilteringTab />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 ">
-            {loading ? (
-              <Stack width="100%" height="100%" alignItems="center">
-                <l-pinwheel
-                  size="100"
-                  stroke="3.5"
-                  speed="0.9"
-                  color="black"
-                ></l-pinwheel>
-              </Stack>
-            ) : eventType == "Featured" ? (
-              events.map((event, i) => {
-                return (
-                  <Event
-                    name={event.name}
-                    date={dayjs(event.start_date).toString()}
-                    location={event.location}
-                    key={i}
-                    id={event.id}
-                    desc={event.desc}
-                  />
-                );
-              })
-            ) : (
-              recommendedEvents.map((event, i) => {
-                return (
-                  <Event
-                    name={event.name}
-                    date={dayjs(event.start_date).toString()}
-                    location={event.location}
-                    key={i}
-                    id={event.id}
-                    desc={event.desc}
-                  />
-                );
-              })
-            )}
-          </div>
+          {eventType == "Featured" ? (
+            <div>
+              {loading ? (
+                <Stack width="100%" height="100%" alignItems="center">
+                  <l-pinwheel
+                    size="100"
+                    stroke="3.5"
+                    speed="0.9"
+                    color="black"
+                  ></l-pinwheel>
+                </Stack>
+              ) : (
+                events.reverse().map((event, i) => {
+                  return (
+                    <Event
+                      name={event.name}
+                      date={event.time}
+                      location={event.location}
+                      key={i}
+                      id={event.id}
+                      desc={event.desc}
+                    />
+                  );
+                })
+              )}
+            </div>
+          ) : (
+            <div>
+              {loading ? (
+                <Stack width="100%" height="100%" alignItems="center">
+                  <l-pinwheel
+                    size="100"
+                    stroke="3.5"
+                    speed="0.9"
+                    color="black"
+                  ></l-pinwheel>
+                </Stack>
+              ) : (
+                recommendedEvents.map((event, i) => {
+                  return (
+                    <Event
+                      name={event.name}
+                      date={event.time}
+                      location={event.location}
+                      key={i}
+                      id={event.id}
+                      desc={event.desc}
+                    />
+                  );
+                })
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

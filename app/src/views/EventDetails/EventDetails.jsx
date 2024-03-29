@@ -51,7 +51,6 @@ function EventDetails() {
   let id = useParams();
   let resp = false;
   const [eventName, setEventName] = useState("");
-  const [isOwner, setIsOwner] = useState(false);
   const [eventID, setEventId] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
@@ -84,6 +83,7 @@ function EventDetails() {
 
   useEffect(() => {
     fetchEventObject();
+    getUserID();
   }, [id]);
 
   useEffect(() => {
@@ -109,11 +109,6 @@ function EventDetails() {
 
     // Get similar events
     fetchSimilarEvents();
-
-    if (sessionStorage.getItem("token")) {
-      getUserID();
-      if (eventObject.eventID) checkOwner();
-    }
   }, [eventObject, id]);
 
   useEffect(() => {
@@ -169,6 +164,7 @@ function EventDetails() {
 
   useEffect(() => {
     if (eventID || userID) {
+      console.log("get average rating");
       getAvgRating();
     }
   }, [id, eventID]);
@@ -246,12 +242,10 @@ function EventDetails() {
           console.log(data);
           setEventObject(data.event_json);
           setLoading(false);
-          return data.event_json;
         }
       })
       .catch((error) => {
         console.log("error", error);
-        throw error;
       });
   };
 
@@ -266,13 +260,13 @@ function EventDetails() {
     })
       .then((response) => {
         if (resp.status != 200) {
-          // console.log("not logged in");
+          console.log("not logged in");
           return;
         }
         return response.json();
       })
       .then((data) => {
-        // console.log("userID:", data.userID);
+        console.log("userID:", data.userID);
         setUserID(data.userID);
       })
       .catch((error) => {
@@ -328,7 +322,7 @@ function EventDetails() {
       .then((response) => response.json())
       .then((data) => {
         // console.log("rating json:", data);
-        // console.log("get rating:", data.rating);
+        console.log("get rating:", data.rating);
         setRating(data.rating);
         setLoading(false);
       })
@@ -399,6 +393,7 @@ function EventDetails() {
       .get(`http://localhost:5000/events/business?${params}`)
       .then((response) => {
         console.log("Business fetched: ", response.data);
+        // console.log("name:", response.data.business.name);
         setOrganizer(response.data.business.name);
         setLoading(false);
       })
@@ -805,12 +800,26 @@ function EventDetails() {
         className="w-[100%] flex flex-row justify-center mt-8"
         id="EditDelete"
       >
-        <GrayButton textAlign="left" variant="contained" onClick={editEvent}>
-          Edit Event
-        </GrayButton>
-        <RedButton textAlign="left" variant="contained" onClick={deleteEvent}>
-          Delete Event
-        </RedButton>
+        {userID == eventObject.userID ? (
+          <>
+            <GrayButton
+              textAlign="left"
+              variant="contained"
+              onClick={editEvent}
+            >
+              Edit Event
+            </GrayButton>
+            <RedButton
+              textAlign="left"
+              variant="contained"
+              onClick={deleteEvent}
+            >
+              Delete Event
+            </RedButton>
+          </>
+        ) : (
+          <></>
+        )}
       </div>
     );
   };
@@ -1157,7 +1166,8 @@ function EventDetails() {
             <LocationSection />
             <OrganizerSection />
             <CategorySection />
-            {sessionStorage.getItem("token") && isOwner && <EditDelete />}
+            {isOwner() &&
+              (sessionStorage.getItem("token") ? <EditDelete /> : <div />)}
             <SimilarEventsSection />
           </Stack>
         </Stack>

@@ -47,6 +47,7 @@ migrate = Migrate(app, db)
 
 db.init_app(app)  # Initialize db with your Flask app
 
+
 @app.route('/')
 def index():
     return "Hello, World!"
@@ -201,6 +202,7 @@ def deleteaccount():
 
     return jsonify({"message": "Account deleted successfully"}), 200
 
+
 @app.route("/user/get_status", methods=["POST"])
 @jwt_required()
 def get_status():
@@ -211,12 +213,14 @@ def get_status():
 
     current_email = current_user['email']
 
-    status = Status.query.filter_by(user=current_email, friend=other_email).first()
+    status = Status.query.filter_by(
+        user=current_email, friend=other_email).first()
 
     if status:
         return {'status': '200', 'cur_status': status.status}
     else:
         return {'status': '400'}
+
 
 @app.route("/user/set_status", methods=["POST"])
 @jwt_required()
@@ -226,25 +230,27 @@ def set_status():
     status_data = data['status']
 
     current_user = get_jwt_identity()
-    
+
     u = User.query.filter_by(email=current_user['email']).first()
 
     current_email = u.id
 
-    status = Status.query.filter_by(user=current_email, friend=other_email).first()
+    status = Status.query.filter_by(
+        user=current_email, friend=other_email).first()
 
     if status != None:
         status.status = status_data
         db.session.commit()
     else:
         new_status = Status(user=current_email,
-                    friend=other_email,
-                    status=status_data)
+                            friend=other_email,
+                            status=status_data)
         print(new_status.status)
         db.session.add(new_status)
         db.session.commit()
 
     return {'status': '200', 'new_status': status_data}
+
 
 @app.route("/user/resetpassword", methods=["POST"])
 def resetpassword():
@@ -266,34 +272,39 @@ def resetpassword():
 
     return jsonify({"message": "Password reset successfully"}), 200
 
+
 def saveProfilePic(profile_picture, email):
     picture = profile_picture.filename
-    picture_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, 'public\profile_pics', email + "-" + picture))
-    
+    picture_path = os.path.abspath(os.path.join(os.path.dirname(
+        __file__), os.pardir, 'public\profile_pics', email + "-" + picture))
+
     profile_picture.save(picture_path)
-    picture_path = picture_path[slice(picture_path.find('\profile_pics'), None)].replace('\\', '/')
+    picture_path = picture_path[slice(picture_path.find(
+        '\profile_pics'), None)].replace('\\', '/')
     return picture_path
+
 
 @app.route('/user/register', methods=["POST"])
 def register():
-    form = jsonify({"email": request.form['email'], "password": request.form['password']})
+    form = jsonify(
+        {"email": request.form['email'], "password": request.form['password']})
     email = form.json['email']
     password = form.json['password']
 
     cur_users = User.query.filter_by(email=email).first()
 
     if (cur_users != None):
-       return {'status': '400', 'message': 'This email belongs to an existing account.'}
+        return {'status': '400', 'message': 'This email belongs to an existing account.'}
 
     if (len(password) < 7):
-       return {'status': '400', 'message': 'Please choose a password that is greater than 6.'}
-    
+        return {'status': '400', 'message': 'Please choose a password that is greater than 6.'}
+
     if (request.files):
         picture = request.files['profilePicture']
         profilePicPath = saveProfilePic(picture, email)
     else:
         profilePicPath = 'NULL'
-    
+
     new_user = User(email=email,
                     username=email,
                     password=password,
@@ -330,23 +341,35 @@ def get_events():
 
     return {'status': '200', 'events': event_values}
 
-# @app.route("/events/get_recommended", methods=["GET"])
-# @jwt_required
-# def get_recommended():
-#     current_user = get_jwt_identity()
+@app.route("/events/get_recommended", methods=["GET"])
+@jwt_required
+def get_recommended():
 
-#     user = User.query.filter_by(email=current_user['email']).first()
-#     preferences = user.preferences
+    current_user = get_jwt_identity()
 
-#     # Recommendation function to get recs based on preferences
+    recommendations = rc_system.select_events_to_reccommend(user=current_user)
 
-#     recommendations = None
+    event_values = []
 
-#     return {'status': '200', 'recommendations': recommendations}
+    for event in recommendations:
+        values = {'id': event.eventID,
+                    'name': event.name,
+                    'time': event.start_date,
+                    'location': event.location,
+                    'category': event.category,
+                    'latitude': event.latitude,
+                    'longitude': event.longitude,
+                    'yelpID': event.yelpID,
+                    'desc': event.desc}
+        event_values.append(values)
+
+    return {'status': '200', 'recommendations': recommendations}
+
 
 @app.route('/filtered_events', methods=['GET'])
 def get_filtered_events():
-    loc = request.args.get('location', default="West Lafayette, IN, USA", type=str)
+    loc = request.args.get(
+        'location', default="West Lafayette, IN, USA", type=str)
     sort_on = request.args.get('sort_on', default=None, type=str)
     start_date = request.args.get('start_date', default=None, type=str)
     is_free = request.args.get('is_free', default=None, type=str)
@@ -373,7 +396,7 @@ def get_filtered_events():
 
         if event.yelpID is None:  # Filter user_events
             passes_filters = True
-   
+
             if loc is not None and values["location"] != loc:
                 passes_filters = False
 
@@ -381,7 +404,8 @@ def get_filtered_events():
                 passes_filters = False
 
             if start_date is not None:
-                values_start_date = datetime.strptime(values["start_date"], '%Y-%m-%d').date()
+                values_start_date = datetime.strptime(
+                    values["start_date"], '%Y-%m-%d').date()
 
                 # Assuming start_date is a string in "2010-09-24 20:00:00-04:00" (datetime) format
                 start_date_datetime = parser.parse(start_date)
@@ -392,21 +416,24 @@ def get_filtered_events():
 
             if passes_filters:
                 user_events.append(values)
-                
+
         else:
             fetched_events.append(values)
 
         event_values.append(values)
         events = fetched_events + user_events
         sortedEvents = fetched_events + user_events
-        
+
         for event in sortedEvents:
-            event['start_datetime'] = parser.parse(event["start_date"]).replace(tzinfo=None)
+            event['start_datetime'] = parser.parse(
+                event["start_date"]).replace(tzinfo=None)
 
         if sort_on == "time_start":
-            sortedEvents = sorted(sortedEvents, key=lambda x: x['start_datetime'], reverse=True)
+            sortedEvents = sorted(
+                sortedEvents, key=lambda x: x['start_datetime'], reverse=True)
 
     return {'status': '200', 'filters': filters, 'sorted': sortedEvents, 'events': events, 'all_events': event_values, 'fetched_events': fetched_events, 'user_events': user_events}
+
 
 @app.route("/edit", methods=["POST"])
 def edit_event():
@@ -466,12 +493,13 @@ def getusername():
 
     user = User.query.filter_by(email=current_user["email"]).first()
     username = user.username
-    
+
     friends = Status.query.filter_by(user=user.id).count()
-    
+
     print(friends, "friends length")
 
     return {'status': '200', 'username': username, "friends": friends}
+
 
 @app.route('/user/getpreferences', methods=['GET'])
 @jwt_required()
@@ -482,6 +510,7 @@ def getpreferences():
     preferences = user.preferences
 
     return {'status': '200', 'preferences': preferences}
+
 
 @app.route('/user/getprofilepic', methods=['GET'])
 @jwt_required()
@@ -494,6 +523,7 @@ def getprofilepic():
     # pic = pic[slice(pic.find('\profile_pics'), None)].replace('\\', '/')
 
     return {'status': '200', 'profilePic': pic}
+
 
 @app.route('/user/changeprofilepic', methods=['POST'])
 @jwt_required()
@@ -512,23 +542,26 @@ def changeprofilepic():
 
     user.picture = profilePicPath
     db.session.commit()
-    
+
     return {'status': '200', 'profilePic': profilePicPath}
+
 
 @app.route("/user/deleteprofilepic", methods=["GET"])
 @jwt_required()
 def deleteprofilepic():
     current_user = get_jwt_identity()
-    
+
     user = User.query.filter_by(email=current_user["email"]).first()
     # remove profile picture
     if (user.picture and "profile_pics" in user.picture):
-        abspath = os.path.abspath(os.path.join(os.getcwd(), os.pardir, 'public' + user.picture))
+        abspath = os.path.abspath(os.path.join(
+            os.getcwd(), os.pardir, 'public' + user.picture))
         os.remove(abspath)
     user.picture = ""
     db.session.commit()
 
     return jsonify({"message": "Profile picture deleted successfully"}), 200
+
 
 @app.route('/user/get_user', methods=['POST'])
 @jwt_required()
@@ -545,15 +578,16 @@ def get_user():
     friend = Status.query.filter_by(user=curr.id, friend=user.id).first()
     print(friend, "friend here")
     if friend:
-        isFriend = friend.status != "requested"
+
         return {
             "status": "200",
             "username": user.username,
-            "isFriend":True,
+            "isFriend": True,
             "relationship": friend.status,
         }
     else:
         return {"status": "200", "username": user.username, "isFriend": False, "relationship": ""}
+
 
 @app.route('/user_events', methods=['GET'])
 @jwt_required()
@@ -635,17 +669,19 @@ def get_users():
     current_user = get_jwt_identity()
     user = User.query.filter_by(email=current_user["email"]).first()
 
-    #query = db.session.query(User.username).all()
-    query = db.session.query(User).filter(User.username.like("%" + name + "%")).all()
+    # query = db.session.query(User.username).all()
+    query = db.session.query(User).filter(
+        User.username.like("%" + name + "%")).all()
 
     names = []
     for q in query:
         if q.id == user.id:
             continue
-        status = Status.query.filter_by(user=user.id,friend=q.id).first()
+        status = Status.query.filter_by(user=user.id, friend=q.id).first()
 
         if (status):
-            person = {"name": q.username, "isFriend": True, "relationship": status.status, "id": q.id}
+            person = {"name": q.username, "isFriend": True,
+                      "relationship": status.status, "id": q.id}
             names.append(person)
         else:
             person = {
@@ -669,7 +705,7 @@ def add_friend():
 
     current_user = get_jwt_identity()
     user = User.query.filter_by(email=current_user["email"]).first()
-    friend = Status.query.filter_by(user = user.id,friend = data).first()
+    friend = Status.query.filter_by(user=user.id, friend=data).first()
     if friend:
         return {"status": 200}
     friend_id = data
@@ -685,7 +721,7 @@ def add_friend():
     new_friend = Status(user=user.id, friend=friend_id, status=status)
     db.session.add(new_friend)
     db.session.commit()
-    return {"status": "200", "status":status}
+    return {"status": "200", "status": status}
 
 
 @app.route("/delete_friend", methods=["POST"])
@@ -699,6 +735,8 @@ def delete_friend():
     friend = Status.query.filter_by(user=user.id, friend=data).first()
 
     if friend:
+
+    if friend:
         db.session.delete(friend)
 
     friend = Status.query.filter_by(user=data, friend=user.id).first()
@@ -709,6 +747,7 @@ def delete_friend():
     db.session.commit()
 
     return {"status": "200"}
+
 
 @app.route('/get_friends', methods=["POST", "GET"])
 @jwt_required()
@@ -723,14 +762,13 @@ def get_friends():
         )
     ).all()
 
-    print("hello",query)
+    print("hello", query)
 
     names = []
     requests = []
     for q in query:
         print("user ", type(q.user), q.friend, q.status, type(curr_user.id))
 
-        
         if str(q.user) == str(curr_user.id):
             print("hello")
             f = User.query.filter_by(id=q.friend).first()
@@ -742,7 +780,7 @@ def get_friends():
             }
             names.append(person)
         else:
-            if q.status == "requested": #meaning both arent friends
+            if q.status == "requested":  # meaning both arent friends
                 f = User.query.filter_by(id=q.user).first()
                 person = {
                     "name": f.username,
@@ -759,7 +797,8 @@ def get_friends():
     print(requests, "names", names)
     if len(names) == 0 and len(requests) == 0:
         return {"status": 404}
-    return {"status":200, "names": names, "requests":requests}
+    return {"status": 200, "names": names, "requests": requests}
+
 
 @app.route('/delete_event', methods=['POST'])
 def delete_event():
@@ -847,7 +886,7 @@ def create_event():
     )
     print(new_event.desc, "description", eventDesc)
     db.session.add(new_event)
-    #user.saved_events.append(new_event)
+    # user.saved_events.append(new_event)
 
     db.session.commit()
     return jsonify({"message": "event set", "eventID": new_event.eventID}), 200
@@ -866,7 +905,7 @@ def fetch_api_events():
     events = yelp_api_instance.get_events_based_on_location(
         location=loc, is_free=is_free, sort_on=sort_on, start_date=start_date, category=category)
 
-    # # Check the count of fetched events against existing events in the database
+    # Check the count of fetched events against existing events in the database
     fetched_events_count = len(events)
 
     try:
@@ -1075,11 +1114,11 @@ def get_host_rating():
 
     # eventRatings = [{"eventID": rating.eventID, "rating": rating.rating} for rating in eventRatings]
     eventRatingsArr = [rating.rating for rating in eventRatings]
-    
+
     if len(eventRatingsArr) > 0:
         hostRating = round(statistics.mean(eventRatingsArr), 2)
     else:
-        hostRating = None 
+        hostRating = None
         eventRatingsArr = []
 
     return {'status': '200', 'userID': userID, "eventsHosted": eventsHosted, "eventRatings": eventRatingsArr, "hostRating": hostRating}
@@ -1167,19 +1206,6 @@ def getGoogleID():
             return jsonify({"status": 400, "message": "Doesn't exist"})
     else:
         return jsonify({"status": 400, "message": "event doesn't exist"})
-
-
-@app.route("/events/dummyCall", methods=["POST"])
-@jwt_required()
-def dummy_call():
-    current_user = get_jwt_identity()
-    user = User.query.filter_by(email=current_user['email']).first()
-    print("-------logs-------")
-    event_obj_lst = rc_system.select_events_to_reccommend(user=user)
-    print(event_obj_lst)
-    print("-------logs-------")
-
-    return jsonify({"status": 200, "events": event_obj_lst}), 200
 
 
 @app.route("/check_owner", methods=["POST"])
