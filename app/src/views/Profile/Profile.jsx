@@ -1,7 +1,6 @@
 import "./Profile.css";
 import { React, useState, useEffect } from "react";
 import {
-  
   Avatar,
   Button,
   Box,
@@ -17,7 +16,6 @@ import {
   ReadMoreButton,
   TextIconStack,
   EditIconButton,
-  
 } from "../../components/StyledComponents/StyledComponents";
 import dayjs from "dayjs";
 
@@ -57,14 +55,14 @@ function Profile() {
         console.log(res.data["status"]);
         console.log(res.data["username"]);
         setDisplayName(res.data["username"]);
-        setFriendsNum(res.data["friends"])
+        setFriendsNum(res.data["friends"]);
       })
       .catch((err) => {
         console.log(err);
       });
 
-      axios
-      .get("http://127.0.0.1:5000/user/getprofilepic", {
+    axios
+      .get("http://localhost:5000/user/getprofilepic", {
         headers: {
           Authorization: "Bearer " + sessionStorage.getItem("token"),
           "Content-Type": "application/json",
@@ -78,8 +76,8 @@ function Profile() {
         console.log(err);
       });
 
-      axios
-      .get("http://127.0.0.1:5000/user/getpreferences", {
+    axios
+      .get("http://localhost:5000/user/getpreferences", {
         headers: {
           Authorization: "Bearer " + sessionStorage.getItem("token"),
           "Content-Type": "application/json",
@@ -194,7 +192,7 @@ function Profile() {
             return false;
           }
         })
-        .then((data) => { })
+        .then((data) => {})
         .catch((error) => {
           console.log("error", error);
         });
@@ -230,16 +228,18 @@ function Profile() {
             aria-label="edit display name"
             size="large"
           >
-            <SettingsIcon onClick={() => navigate("/settings")} fontSize="inherit" height="2rem" width="2rem" />
+            <SettingsIcon
+              onClick={() => navigate("/settings")}
+              fontSize="inherit"
+              height="2rem"
+              width="2rem"
+            />
           </IconButton>
         </Box>
 
         {/* Profile Picture */}
         <Stack>
-          <Avatar
-              sx={{ width: "15rem", height: "15rem" }}
-              src={profilePic}
-            />
+          <Avatar sx={{ width: "15rem", height: "15rem" }} src={profilePic} />
         </Stack>
 
         {/* Display Name */}
@@ -296,10 +296,9 @@ function Profile() {
         <Button variant="contained" onClick={() => navigate("/newevent")}>
           Create event
         </Button>
-        <Button
-          variant="contained"
-          onClick={() => navigate("/addfriends")}
-        >Add friend</Button>
+        <Button variant="contained" onClick={() => navigate("/addfriends")}>
+          Add friend
+        </Button>
       </Stack>
     );
   };
@@ -319,7 +318,13 @@ function Profile() {
     return (
       <Stack className="profile-components">
         <h2>Upcoming Events</h2>
-        <Box sx={{ overflowX: "auto", '&::-webkit-scrollbar': {width: '0.4em'}, width: "100%" }}>
+        <Box
+          sx={{
+            overflowX: "auto",
+            "&::-webkit-scrollbar": { width: "0.4em" },
+            width: "100%",
+          }}
+        >
           <Stack
             direction="row"
             gap={2}
@@ -347,7 +352,13 @@ function Profile() {
     return (
       <Stack className="profile-components">
         <h2>Past Events</h2>
-        <Box sx={{ overflowX: "auto", '&::-webkit-scrollbar': {width: '0.4em'}, width: "100%" }}>
+        <Box
+          sx={{
+            overflowX: "auto",
+            "&::-webkit-scrollbar": { width: "0.4em" },
+            width: "100%",
+          }}
+        >
           {/* <Stack direction="row" gap={2} sx={{ minWidth: "max-content" }}> */}
           <Stack
             direction="row"
@@ -382,7 +393,13 @@ function Profile() {
     return (
       <Stack className="profile-components">
         <h2>Blogs</h2>
-        <Box sx={{ overflowX: "auto", '&::-webkit-scrollbar': {width: '0.4em'}, width: "100%" }}>
+        <Box
+          sx={{
+            overflowX: "auto",
+            "&::-webkit-scrollbar": { width: "0.4em" },
+            width: "100%",
+          }}
+        >
           <Stack
             direction="row"
             gap={2}
@@ -486,4 +503,4 @@ function Profile() {
   );
 }
 
-export default (Profile);
+export default Profile;

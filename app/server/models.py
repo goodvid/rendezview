@@ -28,8 +28,8 @@ class User(UserMixin, db.Model):
         lazy="subquery",
         backref=db.backref("events", lazy=True),
     )
-    # friends = db.relationship("User", secondary=friends_table,lazy="subquery",backref=db.backref("added friends"))
-    # private_events = db.relationship('PrivateEvent', backref='private_event', lazy=True)
+    #friends = db.relationship("User", secondary=friends_table,lazy="subquery",backref=db.backref("added friends"))
+    #private_events = db.relationship('PrivateEvent', backref='private_event', lazy=True)
     location = db.Column(db.String(50))
     preferences = db.Column(db.String(50))
     calendar = db.Column(db.String(50))
@@ -108,11 +108,8 @@ class EventRating(db.Model):
     yelpID = db.Column(db.String(500), nullable=True, default="")
     rating = db.Column(db.Integer, nullable=False, default=0)
 
-    event = db.relationship(
-        'Event', backref=db.backref('ratings', lazy='dynamic'))
-    user = db.relationship(
-        'User', backref=db.backref('ratings', lazy='dynamic'))
-
+    event = db.relationship('Event', backref=db.backref('ratings', lazy='dynamic'))
+    user = db.relationship('User', backref=db.backref('ratings', lazy='dynamic'))
 
 class Status(db.Model):
     sid = db.Column(db.Integer, primary_key=True)

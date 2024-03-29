@@ -28,7 +28,7 @@ function Register() {
       setDisplayPic(URL.createObjectURL(event.target.files[0]));
       setProfilePic(event.target.files[0]);
     }
-  }
+  };
 
   const updateEmail = (event) => {
     if (event != null) {
@@ -49,14 +49,15 @@ function Register() {
     formData.append("email", email);
     formData.append("password", password);
     if (profilePic) {
-      formData.append('profilePicture', profilePic);
+      formData.append("profilePicture", profilePic);
     }
 
-    axios.post("http://127.0.0.1:5000/user/register", formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    })
+    axios
+      .post("http://127.0.0.1:5000/user/register", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
       .then((res) => {
         console.log(res);
         const status = res.data["status"];
@@ -110,11 +111,11 @@ function Register() {
                 className="w-[360px] h-[45px] border-login-blue outline rounded-md pl-2"
               />
             </div>
-            <div className='justify-center items-center w-[200px]'>
+            <div className="justify-center items-center w-[200px]">
               <div className="w-[360px] text-gray-500 text-left mt-[40px]">
                 <span>Choose Profile Picture</span>
               </div>
-              <div className='relative justify-center items-center mt-4 w-[150px]'>
+              <div className="relative justify-center items-center mt-4 w-[150px]">
                 <Stack>
                   <Badge
                     overlap="circular"
@@ -124,7 +125,11 @@ function Register() {
                     }}
                     badgeContent={
                       <label htmlFor="icon-button-file">
-                        <IconButton aria-label="upload picture" style={{ background: 'white' }} component="span">
+                        <IconButton
+                          aria-label="upload picture"
+                          style={{ background: "white" }}
+                          component="span"
+                        >
                           <EditIcon />
                         </IconButton>
                       </label>
@@ -136,7 +141,13 @@ function Register() {
                       src={displayPic}
                     />
                   </Badge>
-                  <input accept="image/*" id="icon-button-file" type="file" style={{ display: 'none' }} onChange={handleProfilePicChange} />
+                  <input
+                    accept="image/*"
+                    id="icon-button-file"
+                    type="file"
+                    style={{ display: "none" }}
+                    onChange={handleProfilePicChange}
+                  />
                 </Stack>
               </div>
             </div>

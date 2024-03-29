@@ -8,13 +8,6 @@ from dateutil import parser
 from sqlalchemy.exc import SQLAlchemyError
 from flask_migrate import Migrate
 import handle_google_api
-from flask_jwt_extended import (create_access_token,
-                                get_jwt_identity,
-                                jwt_required,
-                                JWTManager,
-                                get_jwt
-                                )
-from sqlalchemy import or_
 import rc_system
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import get_jwt_identity
@@ -22,6 +15,13 @@ from flask_jwt_extended import jwt_required
 from flask_jwt_extended import JWTManager
 from pprint import pprint
 
+from flask_jwt_extended import (create_access_token,
+                                get_jwt_identity,
+                                jwt_required,
+                                JWTManager,
+                                get_jwt
+)
+from sqlalchemy import or_
 from config import ApplicationConfig
 from datetime import datetime
 from dateutil import parser
@@ -36,7 +36,7 @@ from blocklist import BLOCKLIST
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
-# CORS(app, resources={r"/api/*": {"origins": "http:///127.0.0.1:3000"}})
+# CORS(app, resources={r"/api/*": {"origins": "http:///localhost:3000"}})
 
 app.secret_key = "super secret essay"
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -194,7 +194,7 @@ def changeemail():
 @jwt_required()
 def deleteaccount():
     current_user = get_jwt_identity()
-
+    
     deleteprofilepic()
     User.query.filter_by(email=current_user["email"]).delete()
     # db.session.delete(user)
@@ -311,8 +311,7 @@ def register():
                     picture=profilePicPath)
     db.session.add(new_user)
     db.session.commit()
-    access_token = create_access_token(
-        identity={"email": email, "name": email})
+    access_token = create_access_token(identity={"email": email, "name": email}) 
     return jsonify({"message": "Account created!", "status": 200, "access_token": access_token})
     # return jsonify(access_token), 200
 
@@ -327,14 +326,15 @@ def get_events():
     for event in events:
 
         values = {'id': event.eventID,
-                  'name': event.name,
-                  'time': event.start_date,
-                  'location': event.location,
-                  'category': event.category,
-                  'latitude': event.latitude,
-                  'longitude': event.longitude,
-                  'yelpID': event.yelpID,
-                  'desc': event.desc}
+                    'name': event.name,
+                    'time': event.start_date,
+                    'location': event.location,
+                    'category': event.category,
+                    'latitude': event.latitude,
+                    'longitude': event.longitude,
+                    'yelpID': event.yelpID,
+                    'hostName': event.hostName,
+                    'desc': event.desc}
         event_values.append(values)
 
     # add from saved events sob
@@ -342,7 +342,7 @@ def get_events():
     return {'status': '200', 'events': event_values}
 
 @app.route("/events/get_recommended", methods=["GET"])
-@jwt_required
+@jwt_required()
 def get_recommended():
 
     current_user = get_jwt_identity()
@@ -384,14 +384,15 @@ def get_filtered_events():
     filters = [loc, sort_on, start_date, is_free, category]
     for event in events:
         values = {'id': event.eventID,
-                  'name': event.name,
-                  'start_date': event.start_date,
-                  'location': event.location,
-                  'category': event.category,
-                  'latitude': event.latitude,
-                  'longitude': event.longitude,
-                  'yelpID': event.yelpID,
-                  'desc': event.desc}
+                    'name': event.name,
+                    'start_date': event.start_date,
+                    'location': event.location,
+                    'category': event.category,
+                    'latitude': event.latitude,
+                    'longitude': event.longitude,
+                    'yelpID': event.yelpID,
+                    'hostName': event.hostName,
+                    'desc': event.desc}
 
         if event.yelpID is None:  # Filter user_events
             passes_filters = True
@@ -698,7 +699,6 @@ def get_users():
 @app.route("/add_friend", methods=["GET", "POST"])
 @jwt_required()
 def add_friend():
-    print("check here", request.get_json())
     data = User.query.filter_by(id=request.get_json()).first().id
 
     print(data, "check data")
@@ -731,16 +731,17 @@ def delete_friend():
     current_user = get_jwt_identity()
     user = User.query.filter_by(email=current_user["email"]).first()
 
+    
     friend = Status.query.filter_by(user=user.id, friend=data).first()
 
     if friend:
-
         db.session.delete(friend)
 
     friend = Status.query.filter_by(user=data, friend=user.id).first()
 
     if friend:
-        friend.status = "follow"
+        friend.status = "requested"
+
     db.session.commit()
 
     return {"status": "200"}
@@ -938,8 +939,6 @@ def fetch_api_events():
             else:
                 newEvent = Event(name=name, desc=eventDesc, location=locationAddress, start_date=eventDateTime,
                                  category=category, yelpID=yelpID, hostName=businessID, latitude=latitude, longitude=longitude)
-                newEvent = Event(name=name, desc=eventDesc, location=locationAddress,
-                                 start_date=eventDateTime, category=category, yelpID=yelpID)
                 db.session.add(newEvent)
                 db.session.flush()
                 eventIDTracking.append(newEvent.eventID)
@@ -1122,7 +1121,6 @@ def get_host_rating():
 
     return {'status': '200', 'userID': userID, "eventsHosted": eventsHosted, "eventRatings": eventRatingsArr, "hostRating": hostRating}
 
-
 @app.route("/events/addToCalendar", methods=["POST"])
 def add_event_to_calendar():
     # the event id that I sent will be different
@@ -1208,7 +1206,31 @@ def getGoogleID():
         return jsonify({"status": 400, "message": "event doesn't exist"})
 
 
-@jwt_required
+@app.route("/check_owner", methods=["POST"])
+@jwt_required()
+def check_owner():
+    event_id = request.json.get('eventID')
+    # user_id = request.json.get('userID')
+    current_user = get_jwt_identity()
+
+    if current_user:
+        userEmail = current_user.get('email')
+        user = User.query.filter_by(email=userEmail).first()
+        if user:
+            user_id = user.id 
+
+    isOwner = False  
+    event = Event.query.filter_by(eventID=event_id).first()
+    if event and event.userID == user_id:
+        isOwner = True
+
+
+
+    return jsonify({"userID": user.id, "eventID": event_id, "isOwner": isOwner}), 200
+
+
+@app.route("/check_user", methods = ["POST", "GET"])
+@jwt_required()
 def hello():
     user = get_jwt_identity()
     return jsonify(logged_in=user), 200

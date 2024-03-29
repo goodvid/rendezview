@@ -26,12 +26,11 @@ function ChangeProfilePicture() {
       setDisplayPic(URL.createObjectURL(event.target.files[0]));
       setProfPic(event.target.files[0]);
     }
-  }
-
+  };
 
   useEffect(() => {
     axios
-      .get("http://127.0.0.1:5000/user/getusername", {
+      .get("http://localhost:5000/user/getusername", {
         headers: {
           Authorization: "Bearer " + sessionStorage.getItem("token"),
           "Content-Type": "application/json",
@@ -45,9 +44,8 @@ function ChangeProfilePicture() {
         console.log(err);
       });
 
-    
-      axios
-      .get("http://127.0.0.1:5000/user/getprofilepic", {
+    axios
+      .get("http://localhost:5000/user/getprofilepic", {
         headers: {
           Authorization: "Bearer " + sessionStorage.getItem("token"),
           "Content-Type": "application/json",
@@ -60,7 +58,6 @@ function ChangeProfilePicture() {
       .catch((err) => {
         console.log(err);
       });
-
   }, []);
 
   const settingsClick = () => {
@@ -74,38 +71,38 @@ function ChangeProfilePicture() {
 
     let formData = new FormData();
     if (profPic) {
-      formData.append('profilePicture', profPic);
+      formData.append("profilePicture", profPic);
     } else {
       return;
     }
 
     // Send to Flask server
-    fetch("http://127.0.0.1:5000/user/changeprofilepic", {
+    fetch("http://localhost:5000/user/changeprofilepic", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + sessionStorage.getItem("token"),
       },
       body: formData,
     })
-    .then((response) => {
-      if (response.status === 200) {
-        resp = response;
-        return response.json();
-      } else {
-        alert("Unauthorized.");
-        return false;
-      }
-    })
-    .then((data) => {
-      if (resp.status === 200) {
-        console.log(sessionStorage.getItem("token"));
-        window.location.reload();
-      }
-    })
-    .catch((error) => {
-      console.log("error", error);
-    });
-};
+      .then((response) => {
+        if (response.status === 200) {
+          resp = response;
+          return response.json();
+        } else {
+          alert("Unauthorized.");
+          return false;
+        }
+      })
+      .then((data) => {
+        if (resp.status === 200) {
+          console.log(sessionStorage.getItem("token"));
+          window.location.reload();
+        }
+      })
+      .catch((error) => {
+        console.log("error", error);
+      });
+  };
 
   return (
     <div>
@@ -161,49 +158,58 @@ function ChangeProfilePicture() {
 
           <Stack alignItems={"center"}>
             <h1 style={{ textAlign: "left" }}>Change Profile Picture</h1>
-              <div className='mt-4 w-[300px]'>
-                <Stack>
-                  <Badge
-                    overlap="circular"
-                    anchorOrigin={{
-                      vertical: "bottom",
-                      horizontal: "right",
-                    }}
-                    badgeContent={
-                      <label htmlFor="icon-button-file">
-                        <IconButton aria-label="upload picture" style={{background: 'white'}} component="span">
-                          <EditIcon />
-                        </IconButton>
-                      </label>
-                    }
-                  >
-                    <Avatar
-                      sx={{ width: "250px", height: "250px" }}
-                      alt={"avatar"}
-                      src={displayPic}
-                    />
-                  </Badge>
-                  <input accept="image/*" id="icon-button-file" type="file" style={{ display: 'none'}} onChange={handleProfPicChange} />
-                </Stack>
-              </div>
+            <div className="mt-4 w-[300px]">
+              <Stack>
+                <Badge
+                  overlap="circular"
+                  anchorOrigin={{
+                    vertical: "bottom",
+                    horizontal: "right",
+                  }}
+                  badgeContent={
+                    <label htmlFor="icon-button-file">
+                      <IconButton
+                        aria-label="upload picture"
+                        style={{ background: "white" }}
+                        component="span"
+                      >
+                        <EditIcon />
+                      </IconButton>
+                    </label>
+                  }
+                >
+                  <Avatar
+                    sx={{ width: "250px", height: "250px" }}
+                    alt={"avatar"}
+                    src={displayPic}
+                  />
+                </Badge>
+                <input
+                  accept="image/*"
+                  id="icon-button-file"
+                  type="file"
+                  style={{ display: "none" }}
+                  onChange={handleProfPicChange}
+                />
+              </Stack>
+            </div>
 
-              <Button
-                className="SaveButton"
-                onClick={saveClick}
-                variant="contained"
-                disableElevation
-                sx={{
-                  textTransform: "none",
-                  width: "200px",
-                  height: "50px",
-                  backgroundColor: "#02407F",
-                  mt: 8
-                }}
-              >
-                Save Changes
-              </Button>
-            </Stack>
-
+            <Button
+              className="SaveButton"
+              onClick={saveClick}
+              variant="contained"
+              disableElevation
+              sx={{
+                textTransform: "none",
+                width: "200px",
+                height: "50px",
+                backgroundColor: "#02407F",
+                mt: 8,
+              }}
+            >
+              Save Changes
+            </Button>
+          </Stack>
         </Stack>
       </Stack>
     </div>
