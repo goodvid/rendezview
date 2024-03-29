@@ -107,6 +107,7 @@ function Profile() {
       });
 
     getHostRating();
+    
   }, []);
 
   useEffect(() => {
