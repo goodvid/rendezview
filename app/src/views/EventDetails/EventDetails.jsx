@@ -66,6 +66,7 @@ function EventDetails() {
   const [googleID, setGoogleID] = useState("");
   const [avgRating, setAvgRating] = useState(null);
   const [numOfRatings, setNumOfRatings] = useState(0);
+  const [isOwner, setIsOwner] = useState(0);
   const [eventObject, setEventObject] = useState({
     eventID: "",
     desc: "",

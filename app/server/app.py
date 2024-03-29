@@ -342,7 +342,7 @@ def get_events():
     return {'status': '200', 'events': event_values}
 
 @app.route("/events/get_recommended", methods=["GET"])
-@jwt_required
+@jwt_required()
 def get_recommended():
 
     current_user = get_jwt_identity()
@@ -733,8 +733,6 @@ def delete_friend():
 
     
     friend = Status.query.filter_by(user=user.id, friend=data).first()
-
-    if friend:
 
     if friend:
         db.session.delete(friend)
