@@ -4,7 +4,7 @@ import { Alert, Box, Button, Chip, Stack, Snackbar } from "@mui/material";
 import Navbar from "../../components/Navbar/Navbar";
 import { useNavigate } from "react-router-dom";
 import "../../styles.css";
-import { withAuth } from "../withAuth";
+
 import categories from "../../views/eventCategories.json";
 
 

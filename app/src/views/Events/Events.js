@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import MainNavbar from "../../components/MainNavbar/MainNavbar";
 import Event from "../../components/Event/Event";
-import { withAuth } from "../withAuth";
+//import { withAuth } from "../withAuth";
 
 // function Anon() {
 
@@ -53,7 +53,7 @@ function EventList() {
 
   return (
     <div className="w-full h-full p-10">
-      <div className="text-left text-3xl font-bold my-5">Events</div>
+      <div className="text-left text-3xl font-bold my-5">My Events</div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {events.map((event, i) => {
           return (
@@ -68,10 +68,8 @@ function EventList() {
           );
         })}
       </div>
-      <div className="text-left text-3xl font-bold ml-[150px] mt-[50px]">
-        Saved Events
-      </div>
-      <div className=" grid grid-cols-2 gap-4 place-content-center ml-[10%] mt-[5%]">
+      <div className="text-left text-3xl font-bold my-5">Saved Events</div>
+      <div className=" grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {joinedEvents.map((event, i) => {
           return (
             <Event
@@ -106,4 +104,4 @@ function Events() {
   );
 }
 
-export default withAuth(Events);
+export default (Events);

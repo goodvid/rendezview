@@ -1,7 +1,7 @@
 import React from "react";
 import { useState } from "react";
 import Navbar from "../../components/Navbar/Navbar";
-import { withAuth } from "../withAuth";
+//import { withAuth } from "../withAuth";
 import { useNavigate } from "react-router-dom";
 
 function Username() {
@@ -108,4 +108,4 @@ function Username() {
   );
 }
 
-export default withAuth(Username);
+export default (Username);

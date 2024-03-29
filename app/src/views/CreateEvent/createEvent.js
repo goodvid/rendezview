@@ -8,7 +8,7 @@ import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import InfoIcon from '@mui/icons-material/Info';
 import LocationCityIcon from '@mui/icons-material/LocationCity';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import { withAuth } from "../withAuth";
+//import { withAuth } from "../withAuth";
 
 function CreateEvent() {
   const navigate = useNavigate();
@@ -208,4 +208,4 @@ function CreateEvent() {
     </div>
   );
 }
-export default withAuth(CreateEvent);
+export default (CreateEvent);

@@ -14,7 +14,7 @@ from flask_jwt_extended import (create_access_token,
                                 JWTManager,
                                 get_jwt
 )
-
+from sqlalchemy import or_
 from config import ApplicationConfig
 
 from apiFetch.yelpAPI import YelpAPI
@@ -207,8 +207,10 @@ def set_status():
     status_data = data['status']
 
     current_user = get_jwt_identity()
+    
+    u = User.query.filter_by(email=current_user['email']).first()
 
-    current_email = current_user['email']
+    current_email = u.id
 
     status = Status.query.filter_by(user=current_email, friend=other_email).first()
 
@@ -448,11 +450,16 @@ def get_user():
 
     current_user = get_jwt_identity()
     curr = User.query.filter_by(email=current_user["email"]).first()
-    curr_to_other = Status.query.filter_by(user=curr.id, friend=user.id).first()
-    other_to_curr = Status.query.filter_by(user=user.id, friend=curr.id).first()
-
-    if curr_to_other and other_to_curr:
-        return {'status': '200', 'username': user.username, "isFriend": True, "relationship": curr_to_other.status}
+    friend = Status.query.filter_by(user=curr.id, friend=user.id).first()
+    print(friend, "friend here")
+    if friend:
+        isFriend = friend.status != "requested"
+        return {
+            "status": "200",
+            "username": user.username,
+            "isFriend":True,
+            "relationship": friend.status,
+        }
     else:
         return {"status": "200", "username": user.username, "isFriend": False, "relationship": ""}
 
@@ -575,10 +582,18 @@ def add_friend():
         return {"status": 200}
     friend_id = data
 
-    new_friend = Status(user=user.id, friend=friend_id, status="follow")
+    status = "requested"
+
+    requested = Status.query.filter_by(user=data, friend=user.id).first()
+
+    if requested:
+        status = "friend"
+        requested.status = "friend"
+
+    new_friend = Status(user=user.id, friend=friend_id, status=status)
     db.session.add(new_friend)
     db.session.commit()
-    return {"status": "200"}
+    return {"status": "200", "status":status}
 
 
 @app.route("/delete_friend", methods=["POST"])
@@ -589,7 +604,10 @@ def delete_friend():
     user = User.query.filter_by(email=current_user["email"]).first()
 
     friend = Status.query.filter_by(user=user.id, friend=data).first()
+
     db.session.delete(friend)
+    friend = Status.query.filter_by(user=data, friend=user.id).first()
+    friend.status = "requested"
     db.session.commit()
 
     return {"status": "200"}
@@ -600,23 +618,50 @@ def get_friends():
     token = get_jwt_identity()
     curr_user = User.query.filter_by(email=token["email"]).first()
 
-    query = Status.query.filter_by(user=curr_user.id)
+    query = Status.query.filter(
+        or_(
+            Status.user == curr_user.id,
+            Status.friend == curr_user.id
+        )
+    ).all()
+
+    print("hello",query)
 
     names = []
+    requests = []
     for q in query:
+        print("user ", type(q.user), q.friend, q.status, type(curr_user.id))
 
-        status = Status.query.filter_by(user=curr_user.id, friend=q.friend).first()
-
-        f = User.query.filter_by(id=q.friend).first()
-        person = {
+        
+        if str(q.user) == str(curr_user.id):
+            print("hello")
+            f = User.query.filter_by(id=q.friend).first()
+            person = {
                 "name": f.username,
                 "isFriend": True,
-                "relationship": status.status,
+                "relationship": q.status,
                 "id": f.id,
-        }
-        names.append(person)
+            }
+            names.append(person)
+        else:
+            if q.status == "requested": #meaning both arent friends
+                f = User.query.filter_by(id=q.user).first()
+                person = {
+                    "name": f.username,
+                    "isFriend": True,
+                    "relationship": q.status,
+                    "id": f.id,
+                }
+                requests.append(person)
 
-    return {"status":200, "names": names}
+        # status = Status.query.filter_by(user=curr_user.id, friend=q.friend).first()
+
+        # print(q.user, q.friend)
+
+    print(requests, "names", names)
+    if len(names) == 0 and len(requests) == 0:
+        return {"status": 404}
+    return {"status":200, "names": names, "requests":requests}
 
 @app.route('/delete_event', methods=['POST'])
 def delete_event():
@@ -924,7 +969,7 @@ def get_host_rating():
     return {'status': '200', 'userID': userID, "eventsHosted": eventsHosted, "eventRatings": eventRatingsArr, "hostRating": hostRating}
 
 
-@app.route("/check_user", methods = ["POST"])
+@app.route("/check_user", methods = ["POST", "GET"])
 @jwt_required()
 def hello():
     user = get_jwt_identity()
