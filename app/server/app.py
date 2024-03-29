@@ -14,7 +14,7 @@ from flask_jwt_extended import (create_access_token,
                                 JWTManager,
                                 get_jwt
 )
-
+from sqlalchemy import or_
 from config import ApplicationConfig
 
 from apiFetch.yelpAPI import YelpAPI
@@ -510,23 +510,46 @@ def get_friends():
     token = get_jwt_identity()
     curr_user = User.query.filter_by(email=token["email"]).first()
 
-    query = Status.query.filter_by(user=curr_user.id)
+    query = Status.query.filter(
+        or_(
+            Status.user == curr_user.id,
+            Status.friend == curr_user.id
+        )
+    ).all()
+
+    print("hello",query)
 
     names = []
+    requests = []
     for q in query:
+        print("user ", type(q.user), q.friend, q.status, type(curr_user.id))
 
-        status = Status.query.filter_by(user=curr_user.id, friend=q.friend).first()
-
-        f = User.query.filter_by(id=q.friend).first()
-        person = {
+        if str(q.user) == str(curr_user.id):
+            print("hello")
+            f = User.query.filter_by(id=q.friend).first()
+            person = {
                 "name": f.username,
                 "isFriend": True,
-                "relationship": status.status,
+                "relationship": q.status,
                 "id": f.id,
-        }
-        names.append(person)
+            }
+            names.append(person)
+        else:
+            # f = User.query.filter_by(id=q.user).first()
+            person = {
+                "name": curr_user.username,
+                "isFriend": True,
+                "relationship": q.status,
+                "id": curr_user.id,
+            }
+            requests.append(person)
 
-    return {"status":200, "names": names}
+        # status = Status.query.filter_by(user=curr_user.id, friend=q.friend).first()
+
+        # print(q.user, q.friend)
+
+    print(requests, "names")
+    return {"status":200, "names": names, "requests":requests}
 
 @app.route('/delete_event', methods=['POST'])
 def delete_event():
@@ -834,7 +857,7 @@ def get_host_rating():
     return {'status': '200', 'userID': userID, "eventsHosted": eventsHosted, "eventRatings": eventRatingsArr, "hostRating": hostRating}
 
 
-@app.route("/check_user", methods = ["POST"])
+@app.route("/check_user", methods = ["POST", "GET"])
 @jwt_required()
 def hello():
     user = get_jwt_identity()

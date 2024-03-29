@@ -125,6 +125,7 @@ function FriendProfile() {
   };
 
   const handleSetStatus = () => {
+    
 
   }
   
@@ -174,7 +175,7 @@ function FriendProfile() {
         {/* Display Name */}
         <TextIconStack>
           <h1>
-            {displayName} {friendStatus ? <div>{status}</div> : <div></div>}
+            {displayName} {friendStatus ? <div>Status: {status}</div> : <div></div>}
           </h1>
         </TextIconStack>
 
@@ -184,7 +185,7 @@ function FriendProfile() {
           <h3>Location</h3>
         </TextIconStack>
         <h3>
-          {friendsNum} FRIENDS • {groupsNum} GROUPS
+          {/* {friendsNum} FRIENDS • {groupsNum} GROUPS */}
         </h3>
 
         {friendStatus ? (
