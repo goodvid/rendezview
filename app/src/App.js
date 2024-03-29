@@ -20,6 +20,8 @@ import Test from "./views/Test/Test";
 import FriendProfile from "./views/Friend/FriendProfile";
 import Friends from "./views/Friend/AddFriends";
 import FriendsList from "./views/Friend/FriendList";
+import ChangeProfilePicture from "./views/Settings/ChangeProfilePic/ChangeProfilePic";
+
 function App() {
   return (
     <div className="App">
@@ -39,6 +41,7 @@ function App() {
           <Route path="/changeusername" element={<ChangeUsername />} />
           <Route path="/changeemail" element={<ChangeEmail />} />
           <Route path="/changepassword" element={<ChangePassword />} />
+          <Route path="/changeprofilepic" element={<ChangeProfilePicture />} />
           <Route path="/resetpassword" element={<ResetPassword />} />
           <Route path="/test" element={<Test />} />
           <Route path="/friend/:id" element={<FriendProfile />} />
