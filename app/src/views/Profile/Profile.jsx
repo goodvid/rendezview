@@ -1,7 +1,6 @@
 import "./Profile.css";
 import { React, useState, useEffect } from "react";
 import {
-  
   Avatar,
   Button,
   Box,
@@ -17,7 +16,6 @@ import {
   ReadMoreButton,
   TextIconStack,
   EditIconButton,
-  
 } from "../../components/StyledComponents/StyledComponents";
 import dayjs from "dayjs";
 
@@ -57,13 +55,13 @@ function Profile() {
         console.log(res.data["status"]);
         console.log(res.data["username"]);
         setDisplayName(res.data["username"]);
-        setFriendsNum(res.data["friends"])
+        setFriendsNum(res.data["friends"]);
       })
       .catch((err) => {
         console.log(err);
       });
 
-      axios
+    axios
       .get("http://127.0.0.1:5000/user/getprofilepic", {
         headers: {
           Authorization: "Bearer " + sessionStorage.getItem("token"),
@@ -78,7 +76,7 @@ function Profile() {
         console.log(err);
       });
 
-      axios
+    axios
       .get("http://127.0.0.1:5000/user/getpreferences", {
         headers: {
           Authorization: "Bearer " + sessionStorage.getItem("token"),
@@ -137,7 +135,7 @@ function Profile() {
         },
       })
       .then((res) => {
-        // console.log("hostRating object:", res.data);
+        console.log("hostRating object:", res.data);
         // console.log("hostRating:", res.data.hostRating);
         setHostRating(res.data.hostRating);
       });
@@ -230,16 +228,18 @@ function Profile() {
             aria-label="edit display name"
             size="large"
           >
-            <SettingsIcon onClick={() => navigate("/settings")} fontSize="inherit" height="2rem" width="2rem" />
+            <SettingsIcon
+              onClick={() => navigate("/settings")}
+              fontSize="inherit"
+              height="2rem"
+              width="2rem"
+            />
           </IconButton>
         </Box>
 
         {/* Profile Picture */}
         <Stack>
-          <Avatar
-              sx={{ width: "15rem", height: "15rem" }}
-              src={profilePic}
-            />
+          <Avatar sx={{ width: "15rem", height: "15rem" }} src={profilePic} />
         </Stack>
 
         {/* Display Name */}
@@ -258,7 +258,7 @@ function Profile() {
 
         <TextIconStack>
           <ThumbUpIcon />
-          <h3>{hostRating}%</h3>
+          {hostRating ? <h3>{hostRating}%</h3> : <h3>No Rating</h3>}
         </TextIconStack>
 
         {/* Location, Friends, Groups */}
@@ -296,10 +296,9 @@ function Profile() {
         <Button variant="contained" onClick={() => navigate("/newevent")}>
           Create event
         </Button>
-        <Button
-          variant="contained"
-          onClick={() => navigate("/addfriends")}
-        >Add friend</Button>
+        <Button variant="contained" onClick={() => navigate("/addfriends")}>
+          Add friend
+        </Button>
       </Stack>
     );
   };
@@ -315,17 +314,59 @@ function Profile() {
   };
 
   const UpcomingEvents = () => {
-    console.log("events:", upcomingEvents);
+    console.log("upcoming events:", upcomingEvents);
     return (
       <Stack className="profile-components">
         <h2>Upcoming Events</h2>
-        <Box sx={{ overflowX: "auto", '&::-webkit-scrollbar': {width: '0.4em'}, width: "100%" }}>
+        {/* <Box
+          sx={{
+            overflowX: "auto",
+            width: "100%",
+          }}
+        >
+          {upcomingEvents.length != 0 ? (
+            <Stack
+              direction="row"
+              gap={2}
+              sx={{ minWidth: "max-content", marginBlock: "0.5rem" }}
+            >
+              {upcomingEvents.map((event, i) => {
+                return (
+                  <ProfileEvent
+                    name={event.name}
+                    date={event.date}
+                    location={event.location}
+                    key={i}
+                    id={event.id}
+                    desc={event.desc}
+                  />
+                );
+              })}
+            </Stack>
+          ) : (
+            <Stack
+              marginInline="2rem"
+              marginBlock="0px"
+              textAlign="left"
+              width="100%"
+              height="100%"
+            >
+              <h3>No upcoming events</h3>
+            </Stack>
+          )} */}
+        <Box
+          sx={{
+            overflowX: "auto",
+            "&::-webkit-scrollbar": { width: "0.4em" },
+            width: "100%",
+          }}
+        >
           <Stack
             direction="row"
             gap={2}
             sx={{ minWidth: "max-content", marginBlock: "0.5rem" }}
           >
-            {upcomingEvents.map((event, i) => {
+            {/* {upcomingEvents.map((event, i) => {
               return (
                 <ProfileEvent
                   name={event.name}
@@ -336,7 +377,37 @@ function Profile() {
                   desc={event.desc}
                 />
               );
-            })}
+            })} */}
+            {upcomingEvents.length != 0 ? (
+              <Stack
+                direction="row"
+                gap={2}
+                sx={{ minWidth: "max-content", marginBlock: "0.5rem" }}
+              >
+                {upcomingEvents.map((event, i) => {
+                  return (
+                    <ProfileEvent
+                      name={event.name}
+                      date={event.date}
+                      location={event.location}
+                      key={i}
+                      id={event.id}
+                      desc={event.desc}
+                    />
+                  );
+                })}
+              </Stack>
+            ) : (
+              <Stack
+                marginInline="2rem"
+                marginBlock="0px"
+                textAlign="left"
+                width="100%"
+                height="100%"
+              >
+                <h3>No upcoming events</h3>
+              </Stack>
+            )}
           </Stack>
         </Box>
       </Stack>
@@ -344,35 +415,54 @@ function Profile() {
   };
 
   const PastEvents = () => {
+    console.log("PastEvents:", pastEvents);
     return (
       <Stack className="profile-components">
         <h2>Past Events</h2>
-        <Box sx={{ overflowX: "auto", '&::-webkit-scrollbar': {width: '0.4em'}, width: "100%" }}>
+        <Box
+          sx={{
+            overflowX: "auto",
+            "&::-webkit-scrollbar": { width: "0.4em" },
+            width: "100%",
+          }}
+        >
           {/* <Stack direction="row" gap={2} sx={{ minWidth: "max-content" }}> */}
-          <Stack
-            direction="row"
-            gap={2}
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "stretch",
-              minWidth: "max-content",
-            }}
-          >
-            {pastEvents.map((event, i) => {
-              return (
-                <ProfileEvent
-                  name={event.name}
-                  date={event.date}
-                  location={event.location}
-                  key={i}
-                  id={event.id}
-                  desc={event.desc}
-                  rating={event.rating}
-                />
-              );
-            })}
-          </Stack>
+          {pastEvents.length != 0 ? (
+            <Stack
+              direction="row"
+              gap={2}
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "stretch",
+                minWidth: "max-content",
+              }}
+            >
+              {pastEvents.map((event, i) => {
+                return (
+                  <ProfileEvent
+                    name={event.name}
+                    date={event.date}
+                    location={event.location}
+                    key={i}
+                    id={event.id}
+                    desc={event.desc}
+                    rating={event.rating}
+                  />
+                );
+              })}
+            </Stack>
+          ) : (
+            <Stack
+              marginInline="2rem"
+              marginBlock="0px"
+              textAlign="left"
+              width="100%"
+              height="100%"
+            >
+              <h3>No past events</h3>
+            </Stack>
+          )}
         </Box>
       </Stack>
     );
@@ -382,7 +472,13 @@ function Profile() {
     return (
       <Stack className="profile-components">
         <h2>Blogs</h2>
-        <Box sx={{ overflowX: "auto", '&::-webkit-scrollbar': {width: '0.4em'}, width: "100%" }}>
+        <Box
+          sx={{
+            overflowX: "auto",
+            "&::-webkit-scrollbar": { width: "0.4em" },
+            width: "100%",
+          }}
+        >
           <Stack
             direction="row"
             gap={2}
@@ -470,6 +566,7 @@ function Profile() {
         bottom: "0px",
         right: "0px",
         left: "0px",
+        height: "100vh",
       }}
     >
       <Navbar />
@@ -486,4 +583,4 @@ function Profile() {
   );
 }
 
-export default (Profile);
+export default Profile;
