@@ -770,9 +770,11 @@ def dummy_call():
     print("-------logs-------")
     event_obj_lst = rc_system.select_events_to_reccommend(user=user)
     print(event_obj_lst)
+    print(type(event_obj_lst))
+    #  "events": event_obj_lst
     print("-------logs-------")
 
-    return jsonify({"status": 200, "events": event_obj_lst}), 200
+    return jsonify({"status": 200}), 200
 
 
 @jwt_required
