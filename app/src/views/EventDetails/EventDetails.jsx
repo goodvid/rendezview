@@ -613,6 +613,10 @@ function EventDetails() {
       });
   };
 
+  useEffect(() => {
+    console.log("isOwner:", isOwner);
+  }, [isOwner]);
+
   const fetchSimilarEvents = () => {
     console.log("fetching...");
     setLoading(true);

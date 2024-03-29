@@ -1,7 +1,6 @@
 import "./Profile.css";
 import { React, useState, useEffect } from "react";
 import {
-  
   Avatar,
   Button,
   Box,
@@ -16,7 +15,6 @@ import {
   BlueCard,
   ReadMoreButton,
   TextIconStack,
-  
 } from "../../components/StyledComponents/StyledComponents";
 import dayjs from "dayjs";
 
@@ -56,7 +54,7 @@ function Profile() {
         console.log(res.data["status"]);
         console.log(res.data["username"]);
         setDisplayName(res.data["username"]);
-        setFriendsNum(res.data["friends"])
+        setFriendsNum(res.data["friends"]);
       })
       .catch((err) => {
         console.log(err);
@@ -258,7 +256,8 @@ function Profile() {
           <h3>Location</h3>
         </TextIconStack>
         <h3>
-          <a href="/profile/friends">{friendsNum} FRIENDS</a> • {groupsNum} GROUPS
+          <a href="/profile/friends">{friendsNum} FRIENDS</a> • {groupsNum}{" "}
+          GROUPS
         </h3>
 
         {/* User Tags */}
@@ -301,7 +300,7 @@ function Profile() {
   };
 
   const UpcomingEvents = () => {
-    console.log("events:", upcomingEvents);
+    console.log("upcoming events:", upcomingEvents);
     return (
       <Stack className="profile-components">
         <h2>Upcoming Events</h2>
@@ -347,12 +346,13 @@ function Profile() {
   };
 
   const PastEvents = () => {
+    console.log("PastEvents:", pastEvents);
     return (
       <Stack className="profile-components">
         <h2>Past Events</h2>
         <Box sx={{ overflowX: "auto", width: "100%" }}>
           {/* <Stack direction="row" gap={2} sx={{ minWidth: "max-content" }}> */}
-          {upcomingEvents.length != 0 ? (
+          {pastEvents.length != 0 ? (
             <Stack
               direction="row"
               gap={2}
@@ -502,4 +502,4 @@ function Profile() {
   );
 }
 
-export default (Profile);
+export default Profile;

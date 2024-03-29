@@ -81,7 +81,8 @@ function Main() {
   const isFirstRender = useRef(true);
 
   useEffect(() => {
-    if (isFirstRender.current || location == "West Lafayette, Indiana, USA") {
+    // if (isFirstRender.current || location == "West Lafayette, Indiana, USA") {
+    if (isFirstRender.current) {
       isFirstRender.current = false;
       return;
     }
@@ -326,7 +327,7 @@ function Main() {
           <button onClick={setFeatured}>Featured</button> |
           <button onClick={setRecommended}>Recommended</button>
           <FilteringTab />
-          {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 ">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 ">
             {loading ? (
               <Stack width="100%" height="100%" alignItems="center">
                 <l-pinwheel
@@ -336,7 +337,7 @@ function Main() {
                   color="black"
                 ></l-pinwheel>
               </Stack>
-            ) : (
+            ) : eventType == "Featured" ? (
               events.map((event, i) => {
                 return (
                   <Event
@@ -349,62 +350,21 @@ function Main() {
                   />
                 );
               })
+            ) : (
+              recommendedEvents.map((event, i) => {
+                return (
+                  <Event
+                    name={event.name}
+                    date={dayjs(event.start_date).toString()}
+                    location={event.location}
+                    key={i}
+                    id={event.id}
+                    desc={event.desc}
+                  />
+                );
+              })
             )}
-          </div> */}
-          {eventType == "Featured" ? (
-            <div>
-              {loading ? (
-                <Stack width="100%" height="100%" alignItems="center">
-                  <l-pinwheel
-                    size="100"
-                    stroke="3.5"
-                    speed="0.9"
-                    color="black"
-                  ></l-pinwheel>
-                </Stack>
-              ) : (
-                events.map((event, i) => {
-                  return (
-                    <Event
-                      name={event.name}
-                      date={dayjs(event.start_date).toString()}
-                      location={event.location}
-                      key={i}
-                      id={event.id}
-                      desc={event.desc}
-                    />
-                  );
-                })
-              )}
-            </div>
-          ) : (
-            <div>
-              b
-              {loading ? (
-                <Stack width="100%" height="100%" alignItems="center">
-                  <l-pinwheel
-                    size="100"
-                    stroke="3.5"
-                    speed="0.9"
-                    color="black"
-                  ></l-pinwheel>
-                </Stack>
-              ) : (
-                recommendedEvents.map((event, i) => {
-                  return (
-                    <Event
-                      name={event.name}
-                      date={dayjs(event.start_date).toString()}
-                      location={event.location}
-                      key={i}
-                      id={event.id}
-                      desc={event.desc}
-                    />
-                  );
-                })
-              )}
-            </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

@@ -704,7 +704,7 @@ def fetch_api_events():
 
         eventIDTracking = []
         for event in events:
-            print(event.json)
+            # print(event.json)
             yelpID = event['id']
             eventDesc = event['description']
             name = event['name']
@@ -923,7 +923,7 @@ def check_owner():
     return jsonify({"userID": user.id, "eventID": event_id, "isOwner": isOwner}), 200
 
 
-@app.route("/check_user", methods = ["POST"])
+@app.route("/check_user", methods = ["POST", "GET"])
 @jwt_required()
 def hello():
     user = get_jwt_identity()
