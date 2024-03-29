@@ -2,6 +2,7 @@ import "./Profile.css";
 import { React, useState, useEffect } from "react";
 import {
   
+  
   Avatar,
   Button,
   Box,
@@ -17,7 +18,9 @@ import {
   ReadMoreButton,
   TextIconStack,
   
+  
 } from "../../components/StyledComponents/StyledComponents";
+import dayjs from "dayjs";
 import dayjs from "dayjs";
 
 import { useNavigate } from "react-router-dom";
@@ -27,9 +30,11 @@ import EditIcon from "@mui/icons-material/Edit";
 import LocalActivityIcon from "@mui/icons-material/LocalActivity";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import concertPhoto from "../../media/concert.jpg";
 import Navbar from "../../components/Navbar/Navbar";
 import { withAuth } from "../withAuth";
+import ProfileEvent from "../../components/Event/ProfileEvent";
 import ProfileEvent from "../../components/Event/ProfileEvent";
 import axios from "axios";
 
@@ -37,10 +42,12 @@ function Profile() {
   const navigate = useNavigate();
   const response = false;
 
-  const [displayName, setDisplayName] = useState("Display Name");
+  const [displayName, setDisplayName] = useState("Display NameDisplay Name");
   const [profilePic, setProfilePic] = useState("");
   const [friendsNum, setFriendsNum] = useState(0);
   const [groupsNum, setGroupsNum] = useState(0);
+  const [userEvents, setUserEvents] = useState([]);
+  const [hostRating, setHostRating] = useState(null);
   const [userEvents, setUserEvents] = useState([]);
   const [hostRating, setHostRating] = useState(null);
 
@@ -56,6 +63,7 @@ function Profile() {
         console.log(res.data["status"]);
         console.log(res.data["username"]);
         setDisplayName(res.data["username"]);
+        setFriendsNum(res.data["friends"])
         setFriendsNum(res.data["friends"])
       })
       .catch((err) => {
@@ -77,6 +85,54 @@ function Profile() {
 
     getHostRating();
   }, []);
+
+  useEffect(() => {
+    console.log(userEvents);
+    const upcoming = [];
+    const past = [];
+    userEvents.map((event) => {
+      const eventDate = dayjs(event.date);
+      const diff = dayjs().diff(eventDate);
+      if (diff < 0) {
+        upcoming.push(event);
+      } else {
+        past.push(event);
+      }
+    });
+    // console.log("pastEvents:", past);
+    setPastEvents(past);
+    setUpcomingEvents(upcoming);
+  }, [userEvents]);
+
+  const getHostRating = () => {
+    axios
+      .get("http://127.0.0.1:5000/user/get_host_rating", {
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        // console.log("hostRating object:", res.data);
+        // console.log("hostRating:", res.data.hostRating);
+        setHostRating(res.data.hostRating);
+      });
+
+    console.log(sessionStorage.getItem("token"));
+    axios
+      .get("http://127.0.0.1:5000/user_events", {
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        console.log("userEvents:", res.data["events"]);
+        setUserEvents(res.data["events"]);
+      });
+
+    getHostRating();
+      };
 
   useEffect(() => {
     console.log(userEvents);
@@ -178,6 +234,31 @@ function Profile() {
     }
   };
 
+  const handleSubmit = () => {
+    // eslint-disable-next-line no-restricted-globals
+    if (confirm("are you sure you want to delete all data?")) {
+      fetch("http://127.0.0.1:5000/profile/clearhistory", {
+        method: "GET",
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => {
+          if (response.status === 200) {
+            return response.json();
+          } else {
+            alert("error");
+            return false;
+          }
+        })
+        .then((data) => {})
+        .catch((error) => {
+          console.log("error", error);
+        });
+    }
+  };
+
   const handleReadMore = (id) => {
     return <>//TODO: navigate to blog post</>;
   };
@@ -244,7 +325,8 @@ function Profile() {
             size="large"
           >
             <EditIcon fontSize="inherit" />
-          </IconButton>
+          </IconButton> 
+          */}
         </TextIconStack>
 
         <TextIconStack>
@@ -257,6 +339,9 @@ function Profile() {
           <NearMeIcon style={{ color: "red" }} />
           <h3>Location</h3>
         </TextIconStack>
+        <h3>
+          <a href="/profile/friends">{friendsNum} FRIENDS</a> • {groupsNum} GROUPS
+        </h3>
         <h3>
           <a href="/profile/friends">{friendsNum} FRIENDS</a> • {groupsNum} GROUPS
         </h3>
@@ -302,6 +387,7 @@ function Profile() {
 
   const UpcomingEvents = () => {
     console.log("events:", upcomingEvents);
+    console.log("events:", upcomingEvents);
     return (
       <Stack className="profile-components">
         <h2>Upcoming Events</h2>
@@ -333,6 +419,31 @@ function Profile() {
     return (
       <Stack className="profile-components">
         <h2>Past Events</h2>
+        <Box sx={{ overflowX: "auto", width: "100%" }}>
+          {/* <Stack direction="row" gap={2} sx={{ minWidth: "max-content" }}> */}
+          <Stack
+            direction="row"
+            gap={2}
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "stretch",
+              minWidth: "max-content",
+            }}
+          >
+            {pastEvents.map((event, i) => {
+              return (
+                <ProfileEvent
+                  name={event.name}
+                  date={event.date}
+                  location={event.location}
+                  key={i}
+                  id={event.id}
+                  desc={event.desc}
+                  rating={event.rating}
+                />
+              );
+            })}
         <Box sx={{ overflowX: "auto", width: "100%" }}>
           {/* <Stack direction="row" gap={2} sx={{ minWidth: "max-content" }}> */}
           <Stack
@@ -472,4 +583,5 @@ function Profile() {
   );
 }
 
+export default (Profile);
 export default (Profile);

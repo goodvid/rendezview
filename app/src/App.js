@@ -20,6 +20,8 @@ import Test from "./views/Test/Test";
 import FriendProfile from "./views/Friend/FriendProfile";
 import Friends from "./views/Friend/AddFriends";
 import FriendsList from "./views/Friend/FriendList";
+import ChangeProfilePicture from "./views/Settings/ChangeProfilePic/ChangeProfilePic";
+
 function App() {
   return (
     <div className="App">
@@ -44,6 +46,7 @@ function App() {
           <Route path="/friend/:id" element={<FriendProfile />} />
           <Route path="/addfriends" element={<Friends/>}></Route>
           <Route path="/profile/friends" element={<FriendsList/>}></Route>
+          <Route path="/changeprofilepic" element={<ChangeProfilePicture />} />
         </Routes>
       </BrowserRouter>
     </div>
