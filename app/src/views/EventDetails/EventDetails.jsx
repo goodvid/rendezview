@@ -24,14 +24,14 @@ import {
   TextField,
   List,
   ListItem,
-  ListItemText
+  ListItemText,
 } from "@mui/material";
 
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import PersonIcon from "@mui/icons-material/Person";
 import EventIcon from "@mui/icons-material/Event";
 import ShareIcon from "@mui/icons-material/Share";
-import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteIcon from "@mui/icons-material/Delete";
 import ThumbUpAltIcon from "@mui/icons-material/ThumbUpAlt";
 import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
 import ThumbDownAltIcon from "@mui/icons-material/ThumbDownAlt";
@@ -51,6 +51,7 @@ function EventDetails() {
   let id = useParams();
   let resp = false;
   const [eventName, setEventName] = useState("");
+  const [isOwner, setIsOwner] = useState(false);
   const [eventID, setEventId] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
@@ -83,7 +84,6 @@ function EventDetails() {
 
   useEffect(() => {
     fetchEventObject();
-    getUserID();
   }, [id]);
 
   useEffect(() => {
@@ -109,6 +109,11 @@ function EventDetails() {
 
     // Get similar events
     fetchSimilarEvents();
+
+    if (sessionStorage.getItem("token")) {
+      getUserID();
+      if (eventObject.eventID) checkOwner();
+    }
   }, [eventObject, id]);
 
   useEffect(() => {
@@ -122,8 +127,8 @@ function EventDetails() {
         },
         body: JSON.stringify({ eventID: eventObject.eventID }), // Directly pass eventID here
       })
-        .then(response => response.json())
-        .then(data => {
+        .then((response) => response.json())
+        .then((data) => {
           console.log("HEREEEEE");
           console.log(data);
           if (data.googleID) {
@@ -134,7 +139,7 @@ function EventDetails() {
             setGoogleID("");
           }
         })
-        .catch(error => console.error("Failed to fetch googleID:", error));
+        .catch((error) => console.error("Failed to fetch googleID:", error));
     }
   }, [eventObject, googleID]);
 
@@ -164,7 +169,6 @@ function EventDetails() {
 
   useEffect(() => {
     if (eventID || userID) {
-      console.log("get average rating");
       getAvgRating();
     }
   }, [id, eventID]);
@@ -182,8 +186,8 @@ function EventDetails() {
       },
       body: JSON.stringify(eventData),
     })
-      .then(response => response.json())
-      .then(data => {
+      .then((response) => response.json())
+      .then((data) => {
         if (data.status === 200) {
           alert("Successfully removed from Calendar!");
           setIsAddedToCalendar(false);
@@ -192,7 +196,7 @@ function EventDetails() {
           setIsAddedToCalendar(true);
         }
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Error:", error);
       });
   };
@@ -208,8 +212,8 @@ function EventDetails() {
       },
       body: JSON.stringify(eventData),
     })
-      .then(response => response.json())
-      .then(data => {
+      .then((response) => response.json())
+      .then((data) => {
         if (data.status === 200) {
           alert("Successfully Added to the Calendar");
           setIsAddedToCalendar(true);
@@ -218,17 +222,15 @@ function EventDetails() {
           setIsAddedToCalendar(false);
         }
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Error:", error);
       });
   };
 
-
-
   const fetchEventObject = () => {
     // Fetch event object
     setLoading(true);
-    fetch("http://localhost:5000/event/details", {
+    fetch("http://127.0.0.1:5000/event/details", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -244,18 +246,18 @@ function EventDetails() {
           console.log(data);
           setEventObject(data.event_json);
           setLoading(false);
+          return data.event_json;
         }
       })
       .catch((error) => {
         console.log("error", error);
+        throw error;
       });
   };
 
   const getUserID = () => {
     setLoading(true);
-
-    console.log("user id");
-    fetch("http://localhost:5000/get_user_id", {
+    fetch("http://127.0.0.1:5000/get_user_id", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -264,13 +266,13 @@ function EventDetails() {
     })
       .then((response) => {
         if (resp.status != 200) {
-          console.log("not logged in");
+          // console.log("not logged in");
           return;
         }
         return response.json();
       })
       .then((data) => {
-        console.log("userID:", data.userID);
+        // console.log("userID:", data.userID);
         setUserID(data.userID);
       })
       .catch((error) => {
@@ -326,7 +328,7 @@ function EventDetails() {
       .then((response) => response.json())
       .then((data) => {
         // console.log("rating json:", data);
-        console.log("get rating:", data.rating);
+        // console.log("get rating:", data.rating);
         setRating(data.rating);
         setLoading(false);
       })
@@ -337,8 +339,7 @@ function EventDetails() {
   };
 
   const getAvgRating = () => {
-    console.log("getAvgRating");
-    fetch("http://localhost:5000/get_avg_rating", {
+    fetch("http://127.0.0.1:5000/get_avg_rating", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -383,7 +384,7 @@ function EventDetails() {
           return false;
         }
       })
-      .then(() => { })
+      .then(() => {})
       .catch((error) => {
         console.log("error", error);
         setLoading(false);
@@ -398,7 +399,6 @@ function EventDetails() {
       .get(`http://localhost:5000/events/business?${params}`)
       .then((response) => {
         console.log("Business fetched: ", response.data);
-        // console.log("name:", response.data.business.name);
         setOrganizer(response.data.business.name);
         setLoading(false);
       })
@@ -409,7 +409,7 @@ function EventDetails() {
   };
 
   const [open, setOpen] = React.useState(false);
-  const [email, setEmail] = useState(''); // define up here
+  const [email, setEmail] = useState(""); // define up here
   const [emailsList, setEmailsList] = useState([]);
 
   const changeEmail = (event) => {
@@ -421,7 +421,7 @@ function EventDetails() {
   const handleAddEmail = (event) => {
     if (email) {
       setEmailsList((prevEmails) => [...prevEmails, email]);
-      setEmail('');
+      setEmail("");
     }
   };
   const displayEmail = (event) => {
@@ -436,34 +436,32 @@ function EventDetails() {
       },
       body: JSON.stringify(eventData),
     })
-      .then(response => response.json())
-      .then(data => {
+      .then((response) => response.json())
+      .then((data) => {
         if (data.status === 200) {
           alert("Successfully Added to the Calendar");
           setEmailsList([]); // This resets the emailsList to an empty array
-          setEmail('');
+          setEmail("");
           handleClose();
           setIsAddedToCalendar(true);
         } else {
           alert("Error Adding to Calendar: " + data.message);
           setEmailsList([]); // This resets the emailsList to an empty array
-          setEmail('');
+          setEmail("");
           handleClose();
           setIsAddedToCalendar(false);
         }
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Error:", error);
       });
 
-
-    console.log('Emails to share with:', emailsList);
-
+    console.log("Emails to share with:", emailsList);
   };
 
   const dummyCall = (event) => {
     // Figure out how to get userID
-    const user_id = { userID: userID }
+    const user_id = { userID: userID };
     fetch("http://localhost:5000/events/dummyCall", {
       method: "POST",
       headers: {
@@ -471,35 +469,32 @@ function EventDetails() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(user_id),
-    })
-      .catch(error => {
-        console.error("Error:", error);
-      });
-
+    }).catch((error) => {
+      console.error("Error:", error);
+    });
   };
 
-
-
   const dummyRSVPList = [
-    { name: 'John Doe', status: 'accepted' },
-    { name: 'Jane Smith', status: 'declined' },
-    { name: 'Alice Johnson', status: 'no response' },
-    { name: 'Bob Brown', status: 'accepted' },
+    { name: "John Doe", status: "accepted" },
+    { name: "Jane Smith", status: "declined" },
+    { name: "Alice Johnson", status: "no response" },
+    { name: "Bob Brown", status: "accepted" },
   ];
 
-
   const [openRSVP, setOpenRSVP] = useState(false);
-  const [currentFilter, setCurrentFilter] = useState('all');
+  const [currentFilter, setCurrentFilter] = useState("all");
   const [displayList, setDisplayList] = useState(dummyRSVPList);
   const [eventRSVPList, setEventRSVPList] = useState([]); // Initialize state for the RSVP list
-
 
   const getRSVPList = (newFilter) => {
     setCurrentFilter(newFilter); // Update the current filter state
 
-    const filteredList = newFilter === 'all'
-      ? eventRSVPList
-      : eventRSVPList.filter(item => item.status.toLowerCase() === newFilter);
+    const filteredList =
+      newFilter === "all"
+        ? eventRSVPList
+        : eventRSVPList.filter(
+            (item) => item.status.toLowerCase() === newFilter
+          );
 
     setDisplayList(filteredList);
   };
@@ -516,31 +511,34 @@ function EventDetails() {
       },
       body: JSON.stringify(eventData),
     })
-      .then(response => response.json())
-      .then(data => {
+      .then((response) => response.json())
+      .then((data) => {
         if (data.status === 200) {
           // Process and update eventRSVPList here
           const processedRSVPList = [];
           const rsvpStatus = data.data; // The structure you described
 
           // Loop through each status category in rsvpStatus
-          Object.keys(rsvpStatus).forEach(status => {
+          Object.keys(rsvpStatus).forEach((status) => {
             // For each status, go through the list of names and add them to processedRSVPList
-            rsvpStatus[status].forEach(name => {
+            rsvpStatus[status].forEach((name) => {
               processedRSVPList.push({ name: name, status: status });
             });
           });
           // Update the state with the new list
           setEventRSVPList(processedRSVPList);
         } else {
-          alert("Can't get RSVP list of an event not added to calendar: " + data.message);
+          alert(
+            "Can't get RSVP list of an event not added to calendar: " +
+              data.message
+          );
           setOpenRSVP(false);
         }
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Error:", error);
       });
-    getRSVPList('all'); // Default to showing all
+    getRSVPList("all"); // Default to showing all
   };
 
   const handleCloseRSVPDialog = () => {
@@ -554,7 +552,7 @@ function EventDetails() {
   const handleClose = () => {
     setOpen(false);
     setEmailsList([]); // This resets the emailsList to an empty array
-    setEmail('');
+    setEmail("");
   };
 
   const handleRating = (vote) => {
@@ -573,6 +571,138 @@ function EventDetails() {
     } else {
       return true;
     }
+  };
+
+  const EventInfoSection = () => {
+    return (
+      <div>
+        <Stack direction="row" marginBlock="1rem">
+          <Stack width="100%" justifyContent="flex-start" textAlign="left">
+            <h1>{eventName}</h1>
+
+            <h3 style={{ color: "#818181" }}>
+              {date} {time}
+            </h3>
+          </Stack>
+          <Stack
+            width="100%"
+            direction="row"
+            justifyContent="flex-end"
+            gap="1rem"
+            color="#818181"
+          >
+            <Stack direction="row" alignItems="center" gap="0.5rem">
+              <EventDetailsButton
+                startIcon={<EventIcon />}
+                // onClick={}
+              >
+                Add to Calendar
+              </EventDetailsButton>
+            </Stack>
+
+            <Stack direction="row" alignItems="center" gap="0.5rem">
+              <EventDetailsButton
+                startIcon={<ShareIcon />}
+                onClick={handleClickOpen}
+              >
+                Share
+              </EventDetailsButton>
+              <Dialog
+                open={open}
+                onClose={handleClose}
+                PaperProps={{
+                  component: "form",
+                  onSubmit: (event) => {
+                    event.preventDefault();
+                    const formData = new FormData(event.currentTarget);
+                    const formJson = Object.fromEntries(formData.entries());
+                    const email = formJson.email;
+                    console.log(email);
+                    handleClose();
+                  },
+                }}
+              >
+                <DialogTitle>Share Link</DialogTitle>
+                <DialogContent>
+                  <DialogContentText>
+                    <Link
+                      href={`http://localhost:3000/eventdetails/${eventID}`}
+                    >
+                      http://localhost:3000/eventdetails/{eventID}
+                    </Link>
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={handleClose}>Close</Button>
+                </DialogActions>
+              </Dialog>
+            </Stack>
+          </Stack>
+        </Stack>
+        <Stack>
+          <img src={testImage} style={{ borderRadius: "1rem" }} />
+        </Stack>
+        <Stack alignItems="flex-start" marginTop="1rem" direction="row">
+          {sessionStorage.getItem("token") ? (
+            <YellowButton
+              textAlign="left"
+              variant="contained"
+              onClick={handleSubmit}
+            >
+              Join Event
+            </YellowButton>
+          ) : (
+            <></>
+          )}
+
+          {sessionStorage.getItem("token") && checkIfPast() ? (
+            <Stack
+              direction="row"
+              marginInline="2rem"
+              alignItems="center"
+              justifyItems="center"
+              gap="1rem"
+            >
+              <Stack
+                direction="row"
+                // marginInline="2rem"
+                alignItems="center"
+                gap="0.5rem"
+              >
+                <IconButton
+                  onClick={() => handleRating(1)}
+                  aria-label="like"
+                  size="small"
+                >
+                  {rating === 1 ? <ThumbUpAltIcon /> : <ThumbUpOffAltIcon />}
+                </IconButton>
+
+                <IconButton
+                  onClick={() => handleRating(-1)}
+                  aria-label="like"
+                  size="small"
+                >
+                  {rating === -1 ? (
+                    <ThumbDownAltIcon />
+                  ) : (
+                    <ThumbDownOffAltIcon />
+                  )}
+                </IconButton>
+              </Stack>
+              {numOfRatings > 0 ? (
+                <p>
+                  {avgRating}% ({numOfRatings})
+                </p>
+              ) : (
+                <p>(Event not rated)</p>
+              )}
+            </Stack>
+          ) : (
+            <div />
+          )}
+        </Stack>
+      </div>
+    );
   };
 
   const EventDetailsSection = () => {
@@ -685,10 +815,40 @@ function EventDetails() {
     );
   };
 
-  const isOwner = () => {
-    // TODO: check if the current logged in user is the same as the userID of the event
-    return true;
+  const checkOwner = () => {
+    console.log("eventID:", eventObject.eventID);
+
+    if (eventObject.yelpID) {
+      setIsOwner(false);
+      return false;
+    }
+
+    fetch("http://127.0.0.1:5000/check_owner", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + sessionStorage.getItem("token"),
+      },
+      body: JSON.stringify({
+        eventID: eventObject.eventID,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("owner json:", data);
+        console.log("owner:", data.isOwner);
+        setIsOwner(data.isOwner);
+        // setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        // setLoading(false);
+      });
   };
+
+  useEffect(() => {
+    console.log("isOwner:", isOwner);
+  }, [isOwner]);
 
   const fetchSimilarEvents = () => {
     console.log("fetching...");
@@ -765,7 +925,11 @@ function EventDetails() {
           <Stack margin="3rem" gap="1rem">
             <div>
               <Stack direction="row" marginBlock="1rem">
-                <Stack width="100%" justifyContent="flex-start" textAlign="left">
+                <Stack
+                  width="100%"
+                  justifyContent="flex-start"
+                  textAlign="left"
+                >
                   <h1>{eventName}</h1>
 
                   <h3 style={{ color: "#818181" }}>
@@ -781,11 +945,19 @@ function EventDetails() {
                 >
                   <Stack direction="row" alignItems="center" gap="0.5rem">
                     <EventDetailsButton
-                      startIcon={isAddedToCalendar ? <DeleteIcon /> : <EventIcon />}
-                      onClick={isAddedToCalendar ? removeFromCalendar : addToCalendar}
-                      style={{ backgroundColor: isAddedToCalendar ? "#e57373" : "" }}
+                      startIcon={
+                        isAddedToCalendar ? <DeleteIcon /> : <EventIcon />
+                      }
+                      onClick={
+                        isAddedToCalendar ? removeFromCalendar : addToCalendar
+                      }
+                      style={{
+                        backgroundColor: isAddedToCalendar ? "#e57373" : "",
+                      }}
                     >
-                      {isAddedToCalendar ? "Remove from Calendar" : "Add to Calendar"}
+                      {isAddedToCalendar
+                        ? "Remove from Calendar"
+                        : "Add to Calendar"}
                     </EventDetailsButton>
                   </Stack>
 
@@ -796,18 +968,24 @@ function EventDetails() {
                     >
                       Share
                     </EventDetailsButton>
-                    <Dialog open={open} onClose={handleClose} PaperProps={{
-                      component: "form",
-                      onSubmit: (event) => {
-                        event.preventDefault(); // Prevent the default form submission action
-                        displayEmail(event); // Now handle the logic to display emails or whatever your submit action is
-                      }
-                    }}>
+                    <Dialog
+                      open={open}
+                      onClose={handleClose}
+                      PaperProps={{
+                        component: "form",
+                        onSubmit: (event) => {
+                          event.preventDefault(); // Prevent the default form submission action
+                          displayEmail(event); // Now handle the logic to display emails or whatever your submit action is
+                        },
+                      }}
+                    >
                       <DialogTitle>Share Link</DialogTitle>
                       <DialogContent>
                         <DialogContentText>
                           Use this link to share:
-                          <Link href={`http://localhost:5000/eventdetails/${eventID}`}>
+                          <Link
+                            href={`http://localhost:5000/eventdetails/${eventID}`}
+                          >
                             http://localhost:5000/eventdetails/{eventID}
                           </Link>
                         </DialogContentText>
@@ -835,7 +1013,9 @@ function EventDetails() {
                       </DialogContent>
                       <DialogActions>
                         <Button onClick={handleClose}>Close</Button>
-                        <Button type="submit" color="primary">Share</Button>
+                        <Button type="submit" color="primary">
+                          Share
+                        </Button>
                       </DialogActions>
                     </Dialog>
                   </Stack>
@@ -844,7 +1024,12 @@ function EventDetails() {
               <Stack>
                 <img src={testImage} style={{ borderRadius: "1rem" }} />
               </Stack>
-              <Stack alignItems="flex-start" gap="1rem" marginTop="1rem" direction="row">
+              <Stack
+                alignItems="flex-start"
+                gap="1rem"
+                marginTop="1rem"
+                direction="row"
+              >
                 <YellowButton
                   textAlign="left"
                   variant="contained"
@@ -869,13 +1054,25 @@ function EventDetails() {
                 <Dialog open={openRSVP} onClose={handleCloseRSVPDialog}>
                   <DialogTitle>RSVP List</DialogTitle>
                   <DialogContent>
-                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-                      {['all', 'accepted', 'declined', 'needsaction', 'tentative'].map((filter) => (
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        marginBottom: "20px",
+                      }}
+                    >
+                      {[
+                        "all",
+                        "accepted",
+                        "declined",
+                        "needsaction",
+                        "tentative",
+                      ].map((filter) => (
                         <Button
                           key={filter}
                           // color={currentFilter === filter ? '' : 'green'}
                           onClick={() => getRSVPList(filter)}
-                          style={{ margin: '0 10px' }}
+                          style={{ margin: "0 10px" }}
                         >
                           {filter.charAt(0).toUpperCase() + filter.slice(1)}
                         </Button>
@@ -884,13 +1081,21 @@ function EventDetails() {
                     <List>
                       {displayList.map((item, index) => (
                         <ListItem key={index}>
-                          <ListItemText primary={item.name} secondary={`Status: ${item.status.charAt(0).toUpperCase() + item.status.slice(1)}`} />
+                          <ListItemText
+                            primary={item.name}
+                            secondary={`Status: ${
+                              item.status.charAt(0).toUpperCase() +
+                              item.status.slice(1)
+                            }`}
+                          />
                         </ListItem>
                       ))}
                     </List>
                   </DialogContent>
                   <DialogActions>
-                    <GrayButton onClick={handleCloseRSVPDialog}>Close</GrayButton>
+                    <GrayButton onClick={handleCloseRSVPDialog}>
+                      Close
+                    </GrayButton>
                   </DialogActions>
                 </Dialog>
 
@@ -910,13 +1115,16 @@ function EventDetails() {
                     >
                       {/* <GrayButton variant="contained" color="primary" onClick={() => console.log('Clicked')}>Test Button</GrayButton> */}
 
-
                       <IconButton
                         onClick={() => handleRating(1)}
                         aria-label="like"
                         size="small"
                       >
-                        {rating === 1 ? <ThumbUpAltIcon /> : <ThumbUpOffAltIcon />}
+                        {rating === 1 ? (
+                          <ThumbUpAltIcon />
+                        ) : (
+                          <ThumbUpOffAltIcon />
+                        )}
                       </IconButton>
 
                       <IconButton
@@ -949,8 +1157,7 @@ function EventDetails() {
             <LocationSection />
             <OrganizerSection />
             <CategorySection />
-            {isOwner() &&
-              (sessionStorage.getItem("token") ? <EditDelete /> : <div />)}
+            {sessionStorage.getItem("token") && isOwner && <EditDelete />}
             <SimilarEventsSection />
           </Stack>
         </Stack>

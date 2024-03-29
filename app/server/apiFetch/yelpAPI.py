@@ -11,7 +11,7 @@ class YelpAPI:
     API_HOST = 'https://api.yelp.com/v3'
     HEADERS = {'Authorization': f'Bearer {API_KEY}'}
 
-    def __init__(self, type="events", location='New York, NY', amount=50, sort_on='time_start', sort_by='desc', is_free="", start_date="", category=""):
+    def __init__(self, type="events", location='West Lafayette, Indiana, USA', amount=50, sort_on='time_start', sort_by='desc', is_free="", start_date="", category=""):
         # default configurations
         self.default_search_path = os.path.join(self.API_HOST, type)
         self.remaining_requests = 0
@@ -92,23 +92,23 @@ class YelpAPI:
 
     def get_events_based_on_location(self, location="", is_free="", sort_on="", start_date="", category=""):
         # Set parameters only if its passed in 
-        if location != "":
+        if location != None: 
             self.set_location(location)
 
-        if is_free != "":
+        if is_free != None:
             self.set_is_free(is_free)
 
-        if sort_on != "":
+        if sort_on != None: 
             self.set_sort_on(sort_on)
 
-        if start_date != "":
+        if start_date != None:
             self.set_start_date(start_date)
 
-        if category != "":
+        if category != None:
             self.set_category(category)
 
         params = {
-            'location': location,
+            'location': self.location,
             'limit': self.amount,
             'sort_on': self.sort_on,
             'sort_by': self.sort_by,
@@ -116,6 +116,7 @@ class YelpAPI:
             'start_date': self.start_date,
             'categories': self.category,
         }
+
         response = requests.get(
             self.default_search_path, headers=self.HEADERS, params=params)
         
@@ -165,7 +166,7 @@ class YelpAPI:
     def get_businesses_based_on_location(self):
         params = {
             'term': 'restaurants',  # Looking for restaurants as an example
-            'location': 'New York, NY',
+            'location': 'West Lafayette, Indiana, USA',
             'limit': 5
         }
         response = requests.get(

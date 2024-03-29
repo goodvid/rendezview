@@ -41,16 +41,20 @@ import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 
 function Main() {
   const [events, setEvents] = useState([]);
-  const [location, setLocation] = useState("");
+  const [location, setLocation] = useState("West Lafayette, Indiana, USA");
   const [startDate, setStartDate] = useState(null);
   const [unixStartDate, setUnixStartDate] = useState("");
   const [isFree, setIsFree] = useState("");
   const [sortOn, setSortOn] = useState("time_start");
   const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
-  const [locationInput, setLocationInput] = useState("");
+  const [locationInput, setLocationInput] = useState(
+    "West Lafayette, Indiana, USA"
+  );
   const [userCoords, setUserCoords] = useState(null);
   const [locLoading, setLocLoading] = useState(false);
+  const [eventType, setEventType] = useState("Featured");
+  const [recommendedEvents, setRecommendedEvents] = useState([]);
   pinwheel.register(); // Set loading animation
 
   const iconMapping = {
@@ -69,26 +73,47 @@ function Main() {
     other: <MoreHorizIcon />,
   };
 
-  function useEffectSkipFirstRender(effect, deps) {
-    const isFirstRender = useRef(true);
+  useEffect(() => {
+    fetchAndDisplayEvents();
+    getIPGeolocation();
+  }, []);
 
-    useEffect(() => {
-      if (isFirstRender.current) {
-        isFirstRender.current = false;
-        return;
-      }
-      effect();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, deps);
-  }
+  const isFirstRender = useRef(true);
 
-  useEffectSkipFirstRender(() => {
+  useEffect(() => {
+    // if (isFirstRender.current || location == "West Lafayette, Indiana, USA") {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    console.log("Location changed, fetching events...");
     fetchAPIEvents();
   }, [location, isFree, sortOn, unixStartDate, category]);
 
   useEffect(() => {
     setUnixStartDate(dayjs(startDate).unix());
   }, [startDate]);
+
+  useEffect(() => {
+    // Get the recommended events once the backend function is made
+    if (sessionStorage.getItem("token")) {
+      axios
+        .get(`http://127.0.0.1:5000/events/get_recommended`, {
+          headers: {
+            Authorization: "Bearer " + sessionStorage.getItem("token"),
+            "Content-Type": "application/json",
+          },
+        })
+        .then((response) => {
+          fetchAndDisplayEvents();
+        })
+        .catch((error) => {
+          console.error("Error fetching API events:", error);
+          setLoading(false);
+        });
+    }
+  }, []);
 
   const fetchAPIEvents = () => {
     console.log("fetching...");
@@ -101,6 +126,7 @@ function Main() {
     if (sortOn) params.append("sort_on", sortOn);
     if (unixStartDate) params.append("start_date", unixStartDate);
     if (category) params.append("category", category);
+    console.log("url:", `http://127.0.0.1:5000/events/api?${params}`);
     axios
       .get(`http://localhost:5000/events/api?${params}`)
       .then((response) => {
@@ -114,12 +140,23 @@ function Main() {
   };
 
   const fetchAndDisplayEvents = () => {
+    const params = new URLSearchParams();
+    if (location) params.append("location", location);
+    if (isFree) params.append("is_free", isFree);
+    if (sortOn) params.append("sort_on", sortOn);
+    if (unixStartDate) params.append("start_date", unixStartDate);
+    if (category) params.append("category", category);
+    // console.log("url:", `http://127.0.0.1:5000/events/api?${params}`);
     axios
-      .get("http://localhost:5000/events")
+      .get(`http://127.0.0.1:5000/filtered_events?${params}`)
       .then((response) => {
-        // console.log("events status: ", response.data["status"]);
-        console.log("Events fetched:", response.data["events"]);
-        setEvents(response.data["events"]);
+        // console.log("All events:", response.data["all_events"]);
+        // console.log("Fetched events:", response.data["fetched_events"]);
+        // console.log("User events:", response.data["user_events"]);
+        console.log("filters:", response.data["filters"]);
+        console.log("filters:", response.data);
+        console.log("filters:", response.data["sorted"]);
+        setEvents(response.data["sorted"]);
         setLoading(false);
       })
       .catch((error) => {
@@ -133,10 +170,6 @@ function Main() {
     setLocationInput(place.formatted_address);
   }, []);
 
-  useEffect(() => {
-    getIPGeolocation();
-  }, []);
-
   const getIPGeolocation = () => {
     setLocLoading(true);
     fetch("https://ipinfo.io/json?token=f92cb4e0401c19")
@@ -145,8 +178,11 @@ function Main() {
         const { city, region, country } = data;
         const formattedAddress = `${city}, ${region}, ${country}`;
 
-        setLocation(formattedAddress);
-        setLocationInput(formattedAddress);
+        if (formattedAddress != location) {
+          console.log("new location:", formattedAddress);
+          // setLocation(formattedAddress);
+          setLocationInput(formattedAddress);
+        }
         setLocLoading(false);
       })
       .catch((error) => {
@@ -252,6 +288,14 @@ function Main() {
     );
   };
 
+  const setFeatured = () => {
+    setEventType("Featured");
+  };
+
+  const setRecommended = () => {
+    setEventType("Recommended");
+  };
+
   return (
     <div className="w-full h-full">
       <MainNavbar />
@@ -279,7 +323,9 @@ function Main() {
             ))}
           </Stack>
         </div>
-        <div className="flex flex-row flex-wrap gap-5 p-10 pt-10">
+        <div className="flex flex-row flex-wrap gap-5 pl-10 pt-10">
+          <button onClick={setFeatured}>Featured</button> |
+          <button onClick={setRecommended}>Recommended</button>
           <FilteringTab />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 ">
             {loading ? (
@@ -291,12 +337,25 @@ function Main() {
                   color="black"
                 ></l-pinwheel>
               </Stack>
-            ) : (
-              events.reverse().map((event, i) => {
+            ) : eventType == "Featured" ? (
+              events.map((event, i) => {
                 return (
                   <Event
                     name={event.name}
-                    date={dayjs(event.time).toString()}
+                    date={dayjs(event.start_date).toString()}
+                    location={event.location}
+                    key={i}
+                    id={event.id}
+                    desc={event.desc}
+                  />
+                );
+              })
+            ) : (
+              recommendedEvents.map((event, i) => {
+                return (
+                  <Event
+                    name={event.name}
+                    date={dayjs(event.start_date).toString()}
                     location={event.location}
                     key={i}
                     id={event.id}

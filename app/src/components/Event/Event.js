@@ -11,6 +11,7 @@ function Event({ id, name, date, location, desc }) {
   return (
     <div
       onClick={() => navigate(eventLink)}
+      // className="w-[30rem] h-full bg-white rounded-lg border-[3px] border-[#F2C879] flex justify-between items-start gap-5 p-1"
       className="w-full h-full rounded-lg border-2 border-[#1C3659] flex justify-between items-start gap-5 p-1"
     >
       {/* <div className=" w-[180px] h-[180px] bg-light-gray">Image</div> */}
