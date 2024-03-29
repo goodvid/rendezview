@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
-import { withAuth } from "../withAuth";
+//import { withAuth } from "../withAuth";
 
 function CreateEvent() {
   const navigate = useNavigate();
@@ -187,4 +187,4 @@ function CreateEvent() {
     </div>
   );
 }
-export default withAuth(CreateEvent);
+export default (CreateEvent);

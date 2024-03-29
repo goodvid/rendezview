@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import MainNavbar from "../../components/MainNavbar/MainNavbar";
 import Event from "../../components/Event/Event";
-import { withAuth } from "../withAuth";
+//import { withAuth } from "../withAuth";
 
 // function Anon() {
 
@@ -106,4 +106,4 @@ function Events() {
   );
 }
 
-export default withAuth(Events);
+export default (Events);

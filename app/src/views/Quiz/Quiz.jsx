@@ -4,7 +4,7 @@ import { Alert, Box, Button, Chip, Stack, Snackbar } from "@mui/material";
 import Navbar from "../../components/Navbar/Navbar";
 import { useNavigate } from "react-router-dom";
 import "../../styles.css";
-import { withAuth } from "../withAuth";
+//import { withAuth } from "../withAuth";
 
 function Quiz() {
   let resp = false;
@@ -158,4 +158,4 @@ function Quiz() {
   );
 }
 
-export default withAuth(Quiz);
+export default (Quiz);

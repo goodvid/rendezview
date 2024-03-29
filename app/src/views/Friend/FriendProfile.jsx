@@ -55,6 +55,7 @@ function FriendProfile() {
         setExists(false)
       } else {
         setDisplayName(res.data['username'])
+        
       }
     })
     .catch((err) => {
@@ -329,9 +330,9 @@ function FriendProfile() {
               <NearMeIcon style={{ color: "red" }} />
               <h3>Location</h3>
             </TextIconStack>
-            <h3>
+            {/* <h3>
               {friendsNum} FRIENDS • {groupsNum} GROUPS
-            </h3>
+            </h3> */} 
             {friendStatus ? (
               <>
                 {

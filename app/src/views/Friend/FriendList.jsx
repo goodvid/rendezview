@@ -39,7 +39,7 @@ function FriendsList(){
             />
           );
         })}
-        <h3>Friends</h3>
+        <h3>Friends</h3>a
 
         {friends.map((user, _) => {
           console.log(user);

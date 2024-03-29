@@ -1,29 +1,10 @@
-import { useNavigate} from "react-router-dom";
+// ProtectedRoute.jsx
+import React from "react";
+import { Navigate } from "react-router-dom";
 
-export function withAuth(Component) {
-  return function WithAuth(props) {
-    const navigate = useNavigate();
-    
-    // Add your authentication logic here
-    // For example, check if the user is authenticated
-    
+const ProtectedRoute = ({ children }) => {
+  const isAuthenticated = sessionStorage.getItem("token"); // Check for token or implement your authentication logic here
 
-    // Redirect to login page if not authenticated
-    
-     fetch("http://localhost:5000/check_user", {
-       method: "GET",
-       headers: {
-         Authorization: "Bearer " + sessionStorage.getItem("token"),
-         "Content-Type": "application/json",
-       },
-     }).then((response) => {
-       console.log(response);
-       if (response.status != 200) {
-         navigate("/login");
-         return null;
-       }
-     });
-
-    return <Component {...props} />;
-  };
-}
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
+};
+export default ProtectedRoute;

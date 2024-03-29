@@ -29,7 +29,7 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import concertPhoto from "../../media/concert.jpg";
 import Navbar from "../../components/Navbar/Navbar";
-import { withAuth } from "../withAuth";
+//import { withAuth } from "../withAuth";
 import ProfileEvent from "../../components/Event/ProfileEvent";
 import axios from "axios";
 
@@ -258,7 +258,8 @@ function Profile() {
           <h3>Location</h3>
         </TextIconStack>
         <h3>
-          <a href="/profile/friends">{friendsNum} FRIENDS</a> • {groupsNum} GROUPS
+          <a href="/profile/friends">{friendsNum} FRIENDS</a> • {groupsNum}{" "}
+          GROUPS
         </h3>
 
         {/* User Tags */}
@@ -286,6 +287,10 @@ function Profile() {
         <Button variant="contained" onClick={() => navigate("/newevent")}>
           Create event
         </Button>
+        <Button
+          variant="contained"
+          onClick={() => navigate("/addfriends")}
+        >Add friend</Button>
       </Stack>
     );
   };
