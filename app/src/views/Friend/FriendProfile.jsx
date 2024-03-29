@@ -19,31 +19,28 @@ import {
   EditIconButton,
 } from "../../components/StyledComponents/StyledComponents";
 
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-import SettingsIcon from "@mui/icons-material/Settings";
+import {  useNavigate, useParams } from "react-router-dom";
 import NearMeIcon from "@mui/icons-material/NearMe";
-import EditIcon from "@mui/icons-material/Edit";
-import LocalActivityIcon from "@mui/icons-material/LocalActivity";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
-import concertPhoto from "../../media/concert.jpg";
+
 import Navbar from "../../components/Navbar/Navbar";
-import { withAuth } from "../withAuth";
+
 import axios from "axios";
 
 function FriendProfile() {
   const { id } = useParams();
   const [friendStatus, setFriendStatus] = useState(false)
-    
   const navigate = useNavigate();
   const response = false;
 
   //console.log(friendStatus)
   const [displayName, setDisplayName] = useState(id);
   const [profilePic, setProfilePic] = useState("");
-  const [friendsNum, setFriendsNum] = useState(0);
-  const [groupsNum, setGroupsNum] = useState(0);
-  const [exists, setExists] = useState(true);
-  const [status, setStatus] = useState("Friend");
+  // const [friendsNum, setFriendsNum] = useState(0);
+  // const [groupsNum, setGroupsNum] = useState(0);
+  const [exists, setExists] = useState(true)
+  const [status, setStatus] = useState("")
+  const [newStatus, setNewStatus] = useState("")
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     fetch("http://127.0.0.1:5000/user/get_user", {
@@ -55,7 +52,7 @@ function FriendProfile() {
       body: JSON.stringify(id),
     })
       .then((res) => {
-        return res.json()
+        return res.json();
         // const data = res.json()
         // console.log(data)
         // if (data["status"] == "400") {
@@ -64,25 +61,22 @@ function FriendProfile() {
         //   setDisplayName(data["username"]);
         //   setFriendStatus(data["isFriend"]);
         // }
-      }).then((data)=>{
+      })
+      .then((data) => {
         //const data = res
         if (data["status"] == "400") {
           setExists(false);
         } else {
           setDisplayName(data["username"]);
           setFriendStatus(data["isFriend"]);
-          setStatus(data["relationship"])
-          
+          setStatus(data["relationship"]);
         }
       })
       .catch((err) => {
         console.log(err);
       });
   }, []);
-
-  
   const handleAddFriend = () => {
-    console.log(friendStatus)
     fetch("http://127.0.0.1:5000/add_friend", {
       method: "POST",
       headers: {
@@ -95,11 +89,14 @@ function FriendProfile() {
     }).then((res) => {
       if (res.status == 200) {
         //setLabel("Added!");
+        setFriendStatus(true)
+        return res.json()
       }
+    }).then((data)=> {
+      setStatus(data["status"])
     });
   };
   const handleDelete = () => {
-    console.log(friendStatus)
     // eslint-disable-next-line no-restricted-globals
     if (confirm("are you sure you want to delete this friend?")) {
       console.log("here")
@@ -112,6 +109,8 @@ function FriendProfile() {
       })
         .then((response) => {
           if (response.status === 200) {
+            setFriendStatus(false)
+            setStatus("")
             return response.json();
           } else {
             alert("error");
@@ -124,88 +123,33 @@ function FriendProfile() {
     }
   };
 
-  const handleSetStatus = () => {
-
+  const openInput = () => {
+    setShowForm(true);
   }
-  
- 
 
- 
+  const changeStatus = (event) => {
+    setNewStatus(event.target.value);
+  }
 
-  const LeftInfoStack = () => {
-    return (
-      <Stack
-        width="full"
-        height="100vh"
-        style={{
-          backgroundColor: "#4D4D4D",
-          color: "white",
-          padding: "1rem",
-        }}
-        alignItems={"center"}
-        gap="1rem"
-      >
-        <Box
-          sx={{
-            width: "100%",
-            display: "flex",
-            justifyContent: "flex-end",
-          }}
-        ></Box>
-
-        {/* Profile Picture */}
-        <Stack>
-          <Badge
-            overlap="circular"
-            anchorOrigin={{
-              vertical: "bottom",
-              horizontal: "right",
-            }}
-          >
-            <Avatar
-              sx={{ width: "15rem", height: "15rem" }}
-              alt={"avatar"}
-              src={profilePic}
-            />
-          </Badge>
-          <input type="file" style={{ display: "none" }} />
-        </Stack>
-
-        {/* Display Name */}
-        <TextIconStack>
-          <h1>
-            {displayName} {friendStatus ? <div>{status}</div> : <div></div>}
-          </h1>
-        </TextIconStack>
-
-        {/* Location, Friends, Groups */}
-        <TextIconStack>
-          <NearMeIcon style={{ color: "red" }} />
-          <h3>Location</h3>
-        </TextIconStack>
-        <h3>
-          {friendsNum} FRIENDS • {groupsNum} GROUPS
-        </h3>
-
-        {friendStatus ? (
-          <>
-            <Button variant="contained" onClick={handleSetStatus}>
-              Set status
-            </Button>
-            <Button variant="contained" onClick={handleDelete}> delete friend</Button>
-          </>
-        ) : (
-          <Button variant="contained" onClick={handleAddFriend}>
-            Add Friend
-          </Button>
-        )}
-      </Stack>
-    );
+  const handleSubmit = () => {
+    axios.post("http://127.0.0.1:5000/user/set_status", {
+      "email": id,
+      "status": newStatus,
+    }, {
+      headers: {
+        Authorization: "Bearer " + sessionStorage.getItem("token"),
+        "Content-Type": "application/json",
+      },
+    })
+    .then((res) => {
+      setStatus(res.data['new_status']);
+    })
+    .catch((err) => {
+      console.log(err)
+    })
+    setShowForm(false);
   };
 
-  
-
- 
 
   return (
     <div
@@ -220,7 +164,92 @@ function FriendProfile() {
       {exists ? (
         <div>
           <Navbar />
-          <LeftInfoStack />
+          <Stack
+            width="full"
+            height="100vh"
+            style={{
+              backgroundColor: "#4D4D4D",
+              color: "white",
+              padding: "1rem",
+            }}
+            alignItems={"center"}
+            gap="1rem"
+          >
+            <Box
+              sx={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "flex-end",
+              }}
+            ></Box>
+
+            {/* Profile Picture */}
+            <Stack>
+              <Badge
+                overlap="circular"
+                anchorOrigin={{
+                  vertical: "bottom",
+                  horizontal: "right",
+                }}
+              >
+                <Avatar
+                  sx={{ width: "15rem", height: "15rem" }}
+                  alt={"avatar"}
+                  src={profilePic}
+                />
+              </Badge>
+              <input type="file" style={{ display: "none" }} />
+            </Stack>
+
+            {/* Display Name */}
+            <TextIconStack>
+              <h1>
+                {displayName}
+                {status == "" ? "" : " (" + status + ")"}
+              </h1>
+            </TextIconStack>
+
+            {/* Location, Friends, Groups */}
+            <TextIconStack>
+              <NearMeIcon style={{ color: "red" }} />
+              <h3>Location</h3>
+            </TextIconStack>
+            {/* <h3>
+              {friendsNum} FRIENDS • {groupsNum} GROUPS
+            </h3> */}
+            {friendStatus ? (
+              <>
+                {showForm ? (
+                  <div>
+                    <input id="status" onChange={changeStatus} />
+                    <Button variant="contained" onClick={handleSubmit}>
+                      Set
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    {status != "requested" ? (
+                      <>
+                        <Button variant="contained" onClick={openInput}>
+                          Set status
+                        </Button>
+                        <Button variant="contained" onClick={handleDelete}>
+                          {" "}
+                          delete friend
+                        </Button>
+                      </>
+                    ) : (
+                      <h3>Requested</h3>
+                    )}
+                  </>
+                )}
+              </>
+            ) : (
+              <Button variant="contained" onClick={handleAddFriend}>
+                Add Friend
+              </Button>
+            )}
+          </Stack>
         </div>
       ) : (
         <div>User Does Not Exist</div>
@@ -229,4 +258,4 @@ function FriendProfile() {
   );
 }
 
-export default (FriendProfile);
+export default FriendProfile;

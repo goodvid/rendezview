@@ -414,13 +414,14 @@ function EventDetails() {
           <img src={testImage} style={{ borderRadius: "1rem" }} />
         </Stack>
         <Stack alignItems="flex-start" marginTop="1rem" direction="row">
-          <YellowButton
+          {sessionStorage.getItem("token") ?<YellowButton
             textAlign="left"
             variant="contained"
             onClick={handleSubmit}
           >
             Join Event
-          </YellowButton>
+          </YellowButton>: <></> }
+          
 
           {sessionStorage.getItem("token") && checkIfPast() ? (
             <Stack

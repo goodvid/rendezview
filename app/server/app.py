@@ -14,7 +14,7 @@ from flask_jwt_extended import (create_access_token,
                                 JWTManager,
                                 get_jwt
 )
-
+from sqlalchemy import or_
 from config import ApplicationConfig
 from datetime import datetime
 from dateutil import parser
@@ -177,11 +177,29 @@ def changeemail():
 def deleteaccount():
     current_user = get_jwt_identity()
     
+    deleteprofilepic()
     User.query.filter_by(email=current_user["email"]).delete()
     # db.session.delete(user)
     db.session.commit()
 
     return jsonify({"message": "Account deleted successfully"}), 200
+
+@app.route("/user/get_status", methods=["POST"])
+@jwt_required()
+def get_status():
+    data = request.json
+    other_email = data['email']
+
+    current_user = get_jwt_identity()
+
+    current_email = current_user['email']
+
+    status = Status.query.filter_by(user=current_email, friend=other_email).first()
+
+    if status:
+        return {'status': '200', 'cur_status': status.status}
+    else:
+        return {'status': '400'}
 
 @app.route("/user/set_status", methods=["POST"])
 @jwt_required()
@@ -191,22 +209,25 @@ def set_status():
     status_data = data['status']
 
     current_user = get_jwt_identity()
+    
+    u = User.query.filter_by(email=current_user['email']).first()
 
-    current_email = current_user['email']
+    current_email = u.id
 
-    status = Status.query.filter_by(user=current_email, friend=other_email)
+    status = Status.query.filter_by(user=current_email, friend=other_email).first()
 
-    if status:
+    if status != None:
         status.status = status_data
         db.session.commit()
     else:
         new_status = Status(user=current_email,
                     friend=other_email,
                     status=status_data)
+        print(new_status.status)
         db.session.add(new_status)
         db.session.commit()
 
-    return jsonify({"message": "Account deleted successfully"}), 200
+    return {'status': '200', 'new_status': status_data}
 
 @app.route("/user/resetpassword", methods=["POST"])
 def resetpassword():
@@ -228,26 +249,41 @@ def resetpassword():
 
     return jsonify({"message": "Password reset successfully"}), 200
 
+def saveProfilePic(profile_picture, email):
+    picture = profile_picture.filename
+    picture_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, 'public\profile_pics', email + "-" + picture))
+    
+    profile_picture.save(picture_path)
+    picture_path = picture_path[slice(picture_path.find('\profile_pics'), None)].replace('\\', '/')
+    return picture_path
 
 @app.route('/user/register', methods=["POST"])
 def register():
-    data = request.json
-    email = data['email']
-    password = data['password']
+    form = jsonify({"email": request.form['email'], "password": request.form['password']})
+    email = form.json['email']
+    password = form.json['password']
 
     cur_users = User.query.filter_by(email=email).first()
 
     if (cur_users != None):
-        return {'status': '400', 'message': 'This email belongs to an existing account.'}
+       return {'status': '400', 'message': 'This email belongs to an existing account.'}
 
     if (len(password) < 7):
-        return {'status': '400', 'message': 'Please choose a password that is greater than 6.'}
+       return {'status': '400', 'message': 'Please choose a password that is greater than 6.'}
+    
+    if (request.files):
+        picture = request.files['profilePicture']
+        profilePicPath = saveProfilePic(picture, email)
+    else:
+        profilePicPath = 'NULL'
+    
     new_user = User(email=email,
                     username=email,
-                    password=password)
+                    password=password,
+                    picture=profilePicPath)
     db.session.add(new_user)
     db.session.commit()
-    access_token = create_access_token(identity={"email": email, "name": email})
+    access_token = create_access_token(identity={"email": email, "name": email}) 
     return jsonify({"message": "Account created!", "status": 200, "access_token": access_token})
     # return jsonify(access_token), 200
 
@@ -276,19 +312,19 @@ def get_events():
 
     return {'status': '200', 'events': event_values}
 
-@app.route("/events/get_recommended", methods=["GET"])
-@jwt_required()
-def get_recommended():
-    current_user = get_jwt_identity()
+# @app.route("/events/get_recommended", methods=["GET"])
+# @jwt_required
+# def get_recommended():
+#     current_user = get_jwt_identity()
 
-    user = User.query.filter_by(email=current_user['email']).first()
-    preferences = user.preferences
+#     user = User.query.filter_by(email=current_user['email']).first()
+#     preferences = user.preferences
 
-    # Recommendation function to get recs based on preferences
+#     # Recommendation function to get recs based on preferences
 
-    recommendations = None
+#     recommendations = None
 
-    return {'status': '200', 'recommendations': recommendations}
+#     return {'status': '200', 'recommendations': recommendations}
 
 @app.route('/filtered_events', methods=['GET'])
 def get_filtered_events():
@@ -411,12 +447,68 @@ def getusername():
 
     return {'status': '200', 'username': username, "friends": friends}
 
+@app.route('/user/getpreferences', methods=['GET'])
+@jwt_required()
+def getpreferences():
+    current_user = get_jwt_identity()
+
+    user = User.query.filter_by(email=current_user["email"]).first()
+    preferences = user.preferences
+
+    return {'status': '200', 'preferences': preferences}
+
+@app.route('/user/getprofilepic', methods=['GET'])
+@jwt_required()
+def getprofilepic():
+    current_user = get_jwt_identity()
+
+    user = User.query.filter_by(email=current_user["email"]).first()
+    pic = user.picture
+    # print("PATH: " + os.path.abspath(os.path.join(os.getcwd(), os.pardir, 'public' + pic)))
+    # pic = pic[slice(pic.find('\profile_pics'), None)].replace('\\', '/')
+
+    return {'status': '200', 'profilePic': pic}
+
+@app.route('/user/changeprofilepic', methods=['POST'])
+@jwt_required()
+def changeprofilepic():
+    current_user = get_jwt_identity()
+
+    user = User.query.filter_by(email=current_user["email"]).first()
+    email = user.email
+
+    if (request.files):
+        picture = request.files['profilePicture']
+        deleteprofilepic()
+        profilePicPath = saveProfilePic(picture, email)
+    else:
+        profilePicPath = 'NULL'
+
+    user.picture = profilePicPath
+    db.session.commit()
+    
+    return {'status': '200', 'profilePic': profilePicPath}
+
+@app.route("/user/deleteprofilepic", methods=["GET"])
+@jwt_required()
+def deleteprofilepic():
+    current_user = get_jwt_identity()
+    
+    user = User.query.filter_by(email=current_user["email"]).first()
+    # remove profile picture
+    if (user.picture and "profile_pics" in user.picture):
+        abspath = os.path.abspath(os.path.join(os.getcwd(), os.pardir, 'public' + user.picture))
+        os.remove(abspath)
+    user.picture = ""
+    db.session.commit()
+
+    return jsonify({"message": "Profile picture deleted successfully"}), 200
 
 @app.route('/user/get_user', methods=['POST'])
 @jwt_required()
 def get_user():
     data = request.json
-    user = User.query.filter_by(id=data).first()
+    user = User.query.filter_by(id=data['email']).first()
 
     if user == None:
         return {'status': '400', 'username': "None", "isFriend": False}
@@ -427,7 +519,13 @@ def get_user():
     friend = Status.query.filter_by(user=curr.id, friend=user.id).first()
     print(friend, "friend here")
     if friend:
-        return {'status': '200', 'username': user.username, "isFriend": True, "relationship": friend.status}
+        isFriend = friend.status != "requested"
+        return {
+            "status": "200",
+            "username": user.username,
+            "isFriend":True,
+            "relationship": friend.status,
+        }
     else:
         return {"status": "200", "username": user.username, "isFriend": False, "relationship": ""}
 
@@ -539,11 +637,10 @@ def get_users():
 @app.route("/add_friend", methods=["GET", "POST"])
 @jwt_required()
 def add_friend():
-    data = request.get_json()
+    data = User.query.filter_by(email=request.get_json()).first().id
 
     print(data, "check data")
 
-    friend = Status.query.filter_by()
     current_user = get_jwt_identity()
     user = User.query.filter_by(email=current_user["email"]).first()
     friend = Status.query.filter_by(user = user.id,friend = data).first()
@@ -551,10 +648,18 @@ def add_friend():
         return {"status": 200}
     friend_id = data
 
-    new_friend = Status(user=user.id, friend=friend_id, status="follow")
+    status = "requested"
+
+    requested = Status.query.filter_by(user=data, friend=user.id).first()
+
+    if requested:
+        status = "friend"
+        requested.status = "friend"
+
+    new_friend = Status(user=user.id, friend=friend_id, status=status)
     db.session.add(new_friend)
     db.session.commit()
-    return {"status": "200"}
+    return {"status": "200", "status":status}
 
 
 @app.route("/delete_friend", methods=["POST"])
@@ -565,7 +670,10 @@ def delete_friend():
     user = User.query.filter_by(email=current_user["email"]).first()
 
     friend = Status.query.filter_by(user=user.id, friend=data).first()
+
     db.session.delete(friend)
+    friend = Status.query.filter_by(user=data, friend=user.id).first()
+    friend.status = "requested"
     db.session.commit()
 
     return {"status": "200"}
@@ -576,23 +684,50 @@ def get_friends():
     token = get_jwt_identity()
     curr_user = User.query.filter_by(email=token["email"]).first()
 
-    query = Status.query.filter_by(user=curr_user.id)
+    query = Status.query.filter(
+        or_(
+            Status.user == curr_user.id,
+            Status.friend == curr_user.id
+        )
+    ).all()
+
+    print("hello",query)
 
     names = []
+    requests = []
     for q in query:
+        print("user ", type(q.user), q.friend, q.status, type(curr_user.id))
 
-        status = Status.query.filter_by(user=curr_user.id, friend=q.friend).first()
-
-        f = User.query.filter_by(id=q.friend).first()
-        person = {
+        
+        if str(q.user) == str(curr_user.id):
+            print("hello")
+            f = User.query.filter_by(id=q.friend).first()
+            person = {
                 "name": f.username,
                 "isFriend": True,
-                "relationship": status.status,
+                "relationship": q.status,
                 "id": f.id,
-        }
-        names.append(person)
+            }
+            names.append(person)
+        else:
+            if q.status == "requested": #meaning both arent friends
+                f = User.query.filter_by(id=q.user).first()
+                person = {
+                    "name": f.username,
+                    "isFriend": True,
+                    "relationship": q.status,
+                    "id": f.id,
+                }
+                requests.append(person)
 
-    return {"status":200, "names": names}
+        # status = Status.query.filter_by(user=curr_user.id, friend=q.friend).first()
+
+        # print(q.user, q.friend)
+
+    print(requests, "names", names)
+    if len(names) == 0 and len(requests) == 0:
+        return {"status": 404}
+    return {"status":200, "names": names, "requests":requests}
 
 @app.route('/delete_event', methods=['POST'])
 def delete_event():
