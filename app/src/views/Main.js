@@ -99,7 +99,7 @@ function Main() {
     // Get the recommended events once the backend function is made
     if (sessionStorage.getItem("token")) {
       axios
-        .get(`http://127.0.0.1:5000/events/get_recommended`, {
+        .get(`http://localhost:5000/events/get_recommended`, {
           headers: {
             Authorization: "Bearer " + sessionStorage.getItem("token"),
             "Content-Type": "application/json",
@@ -126,7 +126,7 @@ function Main() {
     if (sortOn) params.append("sort_on", sortOn);
     if (unixStartDate) params.append("start_date", unixStartDate);
     if (category) params.append("category", category);
-    console.log("url:", `http://127.0.0.1:5000/events/api?${params}`);
+    console.log("url:", `http://localhost:5000/events/api?${params}`);
     axios
       .get(`http://localhost:5000/events/api?${params}`)
       .then((response) => {
@@ -146,16 +146,16 @@ function Main() {
     if (sortOn) params.append("sort_on", sortOn);
     if (unixStartDate) params.append("start_date", unixStartDate);
     if (category) params.append("category", category);
-    // console.log("url:", `http://127.0.0.1:5000/events/api?${params}`);
+    // console.log("url:", `http://localhost:5000/events/api?${params}`);
     axios
-      .get(`http://127.0.0.1:5000/filtered_events?${params}`)
+      .get(`http://localhost:5000/filtered_events?${params}`)
       .then((response) => {
         // console.log("All events:", response.data["all_events"]);
         // console.log("Fetched events:", response.data["fetched_events"]);
         // console.log("User events:", response.data["user_events"]);
         console.log("filters:", response.data["filters"]);
-        console.log("filters:", response.data);
-        console.log("filters:", response.data["sorted"]);
+        console.log("data:", response.data);
+        console.log("sorted events:", response.data["sorted"]);
         setEvents(response.data["sorted"]);
         setLoading(false);
       })

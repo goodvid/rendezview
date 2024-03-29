@@ -19,7 +19,7 @@ import {
   EditIconButton,
 } from "../../components/StyledComponents/StyledComponents";
 
-import {  useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import NearMeIcon from "@mui/icons-material/NearMe";
 
 import Navbar from "../../components/Navbar/Navbar";
@@ -28,7 +28,7 @@ import axios from "axios";
 
 function FriendProfile() {
   const { id } = useParams();
-  const [friendStatus, setFriendStatus] = useState(false)
+  const [friendStatus, setFriendStatus] = useState(false);
   const navigate = useNavigate();
   const response = false;
 
@@ -37,13 +37,13 @@ function FriendProfile() {
   const [profilePic, setProfilePic] = useState("");
   // const [friendsNum, setFriendsNum] = useState(0);
   // const [groupsNum, setGroupsNum] = useState(0);
-  const [exists, setExists] = useState(true)
-  const [status, setStatus] = useState("")
-  const [newStatus, setNewStatus] = useState("")
+  const [exists, setExists] = useState(true);
+  const [status, setStatus] = useState("");
+  const [newStatus, setNewStatus] = useState("");
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:5000/user/get_user", {
+    fetch("http://localhost:5000/user/get_user", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + sessionStorage.getItem("token"),
@@ -77,7 +77,7 @@ function FriendProfile() {
       });
   }, []);
   const handleAddFriend = () => {
-    fetch("http://127.0.0.1:5000/add_friend", {
+    fetch("http://localhost:5000/add_friend", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + sessionStorage.getItem("token"),
@@ -86,31 +86,34 @@ function FriendProfile() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(id),
-    }).then((res) => {
-      if (res.status == 200) {
-        //setLabel("Added!");
-        setFriendStatus(true)
-        return res.json()
-      }
-    }).then((data)=> {
-      setStatus(data["status"])
-    });
+    })
+      .then((res) => {
+        if (res.status == 200) {
+          //setLabel("Added!");
+          setFriendStatus(true);
+          return res.json();
+        }
+      })
+      .then((data) => {
+        setStatus(data["status"]);
+      });
   };
   const handleDelete = () => {
     // eslint-disable-next-line no-restricted-globals
     if (confirm("are you sure you want to delete this friend?")) {
-      console.log("here")
-      fetch("http://127.0.0.1:5000/delete_friend", {
+      console.log("here");
+      fetch("http://localhost:5000/delete_friend", {
         method: "POST",
         headers: {
           Authorization: "Bearer " + sessionStorage.getItem("token"),
           "Content-Type": "application/json",
-        }, body: JSON.stringify(id)
+        },
+        body: JSON.stringify(id),
       })
         .then((response) => {
           if (response.status === 200) {
-            setFriendStatus(false)
-            setStatus("")
+            setFriendStatus(false);
+            setStatus("");
             return response.json();
           } else {
             alert("error");
@@ -125,31 +128,35 @@ function FriendProfile() {
 
   const openInput = () => {
     setShowForm(true);
-  }
+  };
 
   const changeStatus = (event) => {
     setNewStatus(event.target.value);
-  }
-
-  const handleSubmit = () => {
-    axios.post("http://127.0.0.1:5000/user/set_status", {
-      "email": id,
-      "status": newStatus,
-    }, {
-      headers: {
-        Authorization: "Bearer " + sessionStorage.getItem("token"),
-        "Content-Type": "application/json",
-      },
-    })
-    .then((res) => {
-      setStatus(res.data['new_status']);
-    })
-    .catch((err) => {
-      console.log(err)
-    })
-    setShowForm(false);
   };
 
+  const handleSubmit = () => {
+    axios
+      .post(
+        "http://localhost:5000/user/set_status",
+        {
+          email: id,
+          status: newStatus,
+        },
+        {
+          headers: {
+            Authorization: "Bearer " + sessionStorage.getItem("token"),
+            "Content-Type": "application/json",
+          },
+        }
+      )
+      .then((res) => {
+        setStatus(res.data["new_status"]);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    setShowForm(false);
+  };
 
   return (
     <div
@@ -233,14 +240,15 @@ function FriendProfile() {
                         <Button variant="contained" onClick={openInput}>
                           Set status
                         </Button>
-                        <Button variant="contained" onClick={handleDelete}>
-                          {" "}
-                          delete friend
-                        </Button>
                       </>
                     ) : (
-                      <h3>Requested</h3>
+                      <>
+                        <h3>Requested</h3>
+                      </>
                     )}
+                    <Button variant="contained" onClick={handleDelete}>
+                      delete friend
+                    </Button>
                   </>
                 )}
               </>

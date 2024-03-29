@@ -87,7 +87,7 @@ function EventDetails() {
   }, [id]);
 
   useEffect(() => {
-    console.log(eventObject);
+    console.log("eventObject:", eventObject);
     setEventName(eventObject.name);
     setEventId(eventObject.eventID);
     setDate(eventObject.startDate);
@@ -230,7 +230,7 @@ function EventDetails() {
   const fetchEventObject = () => {
     // Fetch event object
     setLoading(true);
-    fetch("http://127.0.0.1:5000/event/details", {
+    fetch("http://localhost:5000/event/details", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -257,7 +257,7 @@ function EventDetails() {
 
   const getUserID = () => {
     setLoading(true);
-    fetch("http://127.0.0.1:5000/get_user_id", {
+    fetch("http://localhost:5000/get_user_id", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -339,7 +339,7 @@ function EventDetails() {
   };
 
   const getAvgRating = () => {
-    fetch("http://127.0.0.1:5000/get_avg_rating", {
+    fetch("http://localhost:5000/get_avg_rating", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -823,7 +823,7 @@ function EventDetails() {
       return false;
     }
 
-    fetch("http://127.0.0.1:5000/check_owner", {
+    fetch("http://localhost:5000/check_owner", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

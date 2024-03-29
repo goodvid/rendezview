@@ -36,7 +36,7 @@ from blocklist import BLOCKLIST
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
-# CORS(app, resources={r"/api/*": {"origins": "http:///127.0.0.1:3000"}})
+# CORS(app, resources={r"/api/*": {"origins": "http:///localhost:3000"}})
 
 app.secret_key = "super secret essay"
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -322,6 +322,7 @@ def get_events():
                     'latitude': event.latitude,
                     'longitude': event.longitude,
                     'yelpID': event.yelpID,
+                    'hostName': event.hostName,
                     'desc': event.desc}
         event_values.append(values)
 
@@ -367,6 +368,7 @@ def get_filtered_events():
                     'latitude': event.latitude,
                     'longitude': event.longitude,
                     'yelpID': event.yelpID,
+                    'hostName': event.hostName,
                     'desc': event.desc}
 
         if event.yelpID is None:  # Filter user_events
@@ -532,7 +534,7 @@ def deleteprofilepic():
 @jwt_required()
 def get_user():
     data = request.json
-    user = User.query.filter_by(id=data['email']).first()
+    user = User.query.filter_by(id=data).first()
 
     if user == None:
         return {'status': '400', 'username': "None", "isFriend": False}
@@ -661,7 +663,7 @@ def get_users():
 @app.route("/add_friend", methods=["GET", "POST"])
 @jwt_required()
 def add_friend():
-    data = User.query.filter_by(email=request.get_json()).first().id
+    data = User.query.filter_by(id=request.get_json()).first().id
 
     print(data, "check data")
 
@@ -693,11 +695,17 @@ def delete_friend():
     current_user = get_jwt_identity()
     user = User.query.filter_by(email=current_user["email"]).first()
 
+    
     friend = Status.query.filter_by(user=user.id, friend=data).first()
 
-    db.session.delete(friend)
+    if friend:
+        db.session.delete(friend)
+
     friend = Status.query.filter_by(user=data, friend=user.id).first()
-    friend.status = "requested"
+
+    if friend:
+        friend.status = "requested"
+
     db.session.commit()
 
     return {"status": "200"}
@@ -894,8 +902,6 @@ def fetch_api_events():
             else:
                 newEvent = Event(name=name, desc=eventDesc, location=locationAddress, start_date=eventDateTime,
                                  category=category, yelpID=yelpID, hostName=businessID, latitude=latitude, longitude=longitude)
-                newEvent = Event(name=name, desc=eventDesc, location=locationAddress,
-                                 start_date=eventDateTime, category=category, yelpID=yelpID)
                 db.session.add(newEvent)
                 db.session.flush()
                 eventIDTracking.append(newEvent.eventID)
@@ -1077,12 +1083,6 @@ def get_host_rating():
         eventRatingsArr = []
 
     return {'status': '200', 'userID': userID, "eventsHosted": eventsHosted, "eventRatings": eventRatingsArr, "hostRating": hostRating}
-
-@app.route("/check_owner", methods=["POST"])
-@jwt_required()
-def check_owner():
-    event_id = request.json.get('eventID')
-    # user_id = request.json.get('userID')
 
 @app.route("/events/addToCalendar", methods=["POST"])
 def add_event_to_calendar():
