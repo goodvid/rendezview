@@ -508,7 +508,7 @@ def deleteprofilepic():
 @jwt_required()
 def get_user():
     data = request.json
-    user = User.query.filter_by(id=data['email']).first()
+    user = User.query.filter_by(id=data).first()
 
     if user == None:
         return {'status': '400', 'username': "None", "isFriend": False}
@@ -519,7 +519,7 @@ def get_user():
     friend = Status.query.filter_by(user=curr.id, friend=user.id).first()
     print(friend, "friend here")
     if friend:
-        isFriend = friend.status != "requested"
+        
         return {
             "status": "200",
             "username": user.username,
@@ -637,7 +637,8 @@ def get_users():
 @app.route("/add_friend", methods=["GET", "POST"])
 @jwt_required()
 def add_friend():
-    data = User.query.filter_by(email=request.get_json()).first().id
+    print("check here", request.get_json())
+    data = User.query.filter_by(id=request.get_json()).first().id
 
     print(data, "check data")
 
@@ -670,10 +671,15 @@ def delete_friend():
     user = User.query.filter_by(email=current_user["email"]).first()
 
     friend = Status.query.filter_by(user=user.id, friend=data).first()
+    
+    if friend:
 
-    db.session.delete(friend)
+        db.session.delete(friend)
+        
     friend = Status.query.filter_by(user=data, friend=user.id).first()
-    friend.status = "requested"
+    
+    if friend:
+        friend.status = "follow"
     db.session.commit()
 
     return {"status": "200"}

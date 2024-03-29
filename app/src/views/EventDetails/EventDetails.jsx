@@ -45,7 +45,6 @@ function EventDetails() {
   let id = useParams();
   let resp = false;
   const [eventName, setEventName] = useState("");
-  const [isOwner, setIsOwner] = useState(false);
   const [eventID, setEventId] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
@@ -77,6 +76,7 @@ function EventDetails() {
 
   useEffect(() => {
     fetchEventObject();
+    getUserID();
   }, [id]);
 
   useEffect(() => {
@@ -102,15 +102,10 @@ function EventDetails() {
 
     // Get similar events
     fetchSimilarEvents();
-
-    if (sessionStorage.getItem("token")) {
-      getUserID();
-      if (eventObject.eventID) checkOwner();
-    }
   }, [eventObject, id]);
 
   useEffect(() => {
-    console.log("useEffect rating:", userID, eventID, rating);
+    console.log("useEffect rating:", rating);
     if (userID && eventID && rating) {
       updateRating(eventID, userID, rating)
         .then(() => {
@@ -131,6 +126,7 @@ function EventDetails() {
 
   useEffect(() => {
     if (eventID || userID) {
+      console.log("get average rating");
       getAvgRating();
     }
   }, [id, eventID]);
@@ -138,7 +134,7 @@ function EventDetails() {
   const fetchEventObject = () => {
     // Fetch event object
     setLoading(true);
-    return fetch("http://127.0.0.1:5000/event/details", {
+    fetch("http://127.0.0.1:5000/event/details", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -154,17 +150,17 @@ function EventDetails() {
           console.log(data);
           setEventObject(data.event_json);
           setLoading(false);
-          return data.event_json;
         }
       })
       .catch((error) => {
         console.log("error", error);
-        throw error;
       });
   };
 
   const getUserID = () => {
     setLoading(true);
+
+    console.log("user id");
     fetch("http://127.0.0.1:5000/get_user_id", {
       method: "GET",
       headers: {
@@ -174,13 +170,13 @@ function EventDetails() {
     })
       .then((response) => {
         if (resp.status != 200) {
-          // console.log("not logged in");
+          console.log("not logged in");
           return;
         }
         return response.json();
       })
       .then((data) => {
-        // console.log("userID:", data.userID);
+        console.log("userID:", data.userID);
         setUserID(data.userID);
       })
       .catch((error) => {
@@ -236,7 +232,7 @@ function EventDetails() {
       .then((response) => response.json())
       .then((data) => {
         // console.log("rating json:", data);
-        // console.log("get rating:", data.rating);
+        console.log("get rating:", data.rating);
         setRating(data.rating);
         setLoading(false);
       })
@@ -247,6 +243,7 @@ function EventDetails() {
   };
 
   const getAvgRating = () => {
+    console.log("getAvgRating");
     fetch("http://127.0.0.1:5000/get_avg_rating", {
       method: "POST",
       headers: {
@@ -307,6 +304,7 @@ function EventDetails() {
       .get(`http://127.0.0.1:5000/events/business?${params}`)
       .then((response) => {
         console.log("Business fetched: ", response.data);
+        // console.log("name:", response.data.business.name);
         setOrganizer(response.data.business.name);
         setLoading(false);
       })
@@ -533,6 +531,7 @@ function EventDetails() {
       category && ( // Don't show organizer section if there is no organizer
         <Stack className="section">
           <h2>Category</h2>
+          {/* <h2>{category}</h2> */}
           <Stack direction="row" alignItems="center" gap="1rem">
             <Stack
               direction="row"
@@ -573,50 +572,34 @@ function EventDetails() {
         className="w-[100%] flex flex-row justify-center mt-8"
         id="EditDelete"
       >
-        <GrayButton textAlign="left" variant="contained" onClick={editEvent}>
-          Edit Event
-        </GrayButton>
-        <RedButton textAlign="left" variant="contained" onClick={deleteEvent}>
-          Delete Event
-        </RedButton>
+        {userID == eventObject.userID ? (
+          <>
+            <GrayButton
+              textAlign="left"
+              variant="contained"
+              onClick={editEvent}
+            >
+              Edit Event
+            </GrayButton>
+            <RedButton
+              textAlign="left"
+              variant="contained"
+              onClick={deleteEvent}
+            >
+              Delete Event
+            </RedButton>
+          </>
+        ) : (
+          <></>
+        )}
       </div>
     );
   };
 
-  const checkOwner = () => {
-    console.log("eventID:", eventObject.eventID);
-
-    if (eventObject.yelpID) {
-      setIsOwner(false);
-      return false;
-    }
-
-    fetch("http://127.0.0.1:5000/check_owner", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + sessionStorage.getItem("token"),
-      },
-      body: JSON.stringify({
-        eventID: eventObject.eventID,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("owner json:", data);
-        console.log("owner:", data.isOwner);
-        setIsOwner(data.isOwner);
-        // setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        // setLoading(false);
-      });
+  const isOwner = () => {
+    // TODO: check if the current logged in user is the same as the userID of the event
+    return true;
   };
-
-  useEffect(() => {
-    console.log("isOwner:", isOwner);
-  }, [isOwner]);
 
   const fetchSimilarEvents = () => {
     console.log("fetching...");
@@ -696,7 +679,8 @@ function EventDetails() {
             <LocationSection />
             <OrganizerSection />
             <CategorySection />
-            {sessionStorage.getItem("token") && isOwner && <EditDelete />}
+            {isOwner() &&
+              (sessionStorage.getItem("token") ? <EditDelete /> : <div />)}
             <SimilarEventsSection />
           </Stack>
         </Stack>
