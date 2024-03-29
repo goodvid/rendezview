@@ -5,6 +5,10 @@ import { useNavigate } from "react-router-dom";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
+import InfoIcon from '@mui/icons-material/Info';
+import LocationCityIcon from '@mui/icons-material/LocationCity';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+//import { withAuth } from "../withAuth";
 
 function CreateEvent() {
   const navigate = useNavigate();
@@ -45,9 +49,9 @@ function CreateEvent() {
     });
     console.log(eventData, event.target);
   };
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    fetch("http://localhost:5000/event/create", {
+  const handleSubmit = () => {
+    //event.preventDefault();
+    fetch("http://127.0.0.1:5000/event/create", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + sessionStorage.getItem("token"),
@@ -92,21 +96,30 @@ function CreateEvent() {
     <div className="w-full h-full">
       <Navbar />
       <div className="m-[5%] flex flex-col gap-4">
-        <div className="text-5xl font-bold text-left">New Event</div>
-        <div className="text-2xl font-bold text-left mt-[5%]"> Basic Info</div>
-        <div className="text-l  text-left "> Event Title</div>
+        <div className="text-4xl font-bold text-left mb-[3%]">New Event</div>
+        <div className="flex flex-row gap-3">
+          <InfoIcon fontSize="large" style={{ color: "#b2b4b3" }} />
+          <div className="text-3xl text-left"> Basic Info</div>
+        </div>
+        <div className="flex flex-row gap-1">
+          <div className="text-l  text-left "> Event Title</div>
+          <div className="text-l  text-left text-red-600"> *</div>
+        </div>
         <input
           name="eventName"
           onChange={handleChange}
           className="w-[80%] h-[45px] border-login-blue outline rounded-md align-left"
         ></input>
-        <div className="text-l  text-left "> Event Description</div>
+        <div className="text-l  text-left "> Description</div>
         <input
           name="eventDesc"
           onChange={handleChange}
           className="w-[80%] h-[300px] border-login-blue outline rounded-md align-left"
         ></input>
-        <div className="text-l  text-left "> Organizer Name</div>
+        <div className="flex flex-row gap-1">
+          <div className="text-l  text-left "> Organizer</div>
+          <div className="text-l  text-left text-red-600"> *</div>
+        </div>
         <input
           name="hostName"
           onChange={handleChange}
@@ -125,7 +138,7 @@ function CreateEvent() {
             value="Private Event"
             onClick={() => handleEventType("Private Event")}
             class={`${selected === "Private Event" ? "bg-[#A1CFFF4D]" : "bg-transparent"
-              } border-2 border-[#02407F] hover:bg-[#A1CFFF4D] text-[#02407F] font-bold py-4 px-6 rounded`}
+              } border-2 border-[#02407F] hover:bg-[#A1CFFF4D] text-[#02407F] font-bold py-4 px-10 rounded-lg`}
           >
             Private Event
           </button>
@@ -134,7 +147,7 @@ function CreateEvent() {
             value="Public Event"
             onClick={() => handleEventType("Public Event")}
             class={`${selected === "Public Event" ? "bg-[#A1CFFF4D]" : "bg-transparent"
-              } border-2 border-[#02407F] hover:bg-[#A1CFFF4D] text-[#02407F] font-bold py-4 px-6 rounded`}
+              } border-2 border-[#02407F] hover:bg-[#A1CFFF4D] text-[#02407F] font-bold py-4 px-10 rounded-lg`}
           >
             Public Event
           </button>
@@ -142,8 +155,14 @@ function CreateEvent() {
 
         <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"></hr>
 
-        <div className="text-2xl font-bold  text-left ">Location</div>
-        <div className="text-l text-left ">Location address</div>
+        <div className="flex flex-row gap-3">
+          <LocationCityIcon fontSize="large" style={{ color: "#b2b4b3" }} />
+          <div className="text-3xl text-left"> Location</div>
+        </div>
+        <div className="flex flex-row gap-1">
+          <div className="text-l text-left ">Address</div>
+          <div className="text-l  text-left text-red-600"> *</div>
+        </div>
         <input
           name="location"
           onChange={handleChange}
@@ -151,7 +170,10 @@ function CreateEvent() {
         ></input>
         <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"></hr>
 
-        <div className="text-2xl font-bold  text-left ">Date and Time</div>
+        <div className="flex flex-row gap-3">
+          <CalendarTodayIcon fontSize="large" style={{ color: "#b2b4b3" }} />
+          <div className="text-3xl text-left"> Date and Time</div>
+        </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1">
             <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -173,7 +195,7 @@ function CreateEvent() {
 
         <button
           onClick={handleSubmit}
-          class="w-[20%] h-[45px] bg-yellow-500 mt-5 text-white font-bold  rounded"
+          class="w-[20%] h-[60px] bg-yellow-500 mt-5 text-white font-bold  rounded-xl"
         >
           Create Event
         </button>
@@ -184,4 +206,4 @@ function CreateEvent() {
     </div>
   );
 }
-export default CreateEvent;
+export default (CreateEvent);

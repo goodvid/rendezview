@@ -287,8 +287,8 @@ class GoogleAPI:
         summary = "This is a test event to see if adding to calendar works"
         start_time = '10:00:00'
         end_time = '11:00:00'
-        start_date = '2024-03-17'
-        end_date = '2024-03-17'
+        start_date = '2024-03-30'
+        end_date = '2024-03-30'
         timeZone = 'America/New_York'
         # need to save an event id to the database for each event that is
         # added to the database
@@ -321,6 +321,9 @@ class GoogleAPI:
             print(f"Event ID: {event_id}")
             print(
                 f"Event created and invitations sent: {event_result.get('htmlLink')}")
+            print("--------moreee--------")
+            print(event_result)
+            print("--------moreee--------")
             return event_result, event_id
         except HttpError as error:
             print(f"An error occurred: {error}")

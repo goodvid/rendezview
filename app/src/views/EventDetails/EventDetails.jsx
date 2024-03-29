@@ -575,6 +575,135 @@ function EventDetails() {
     }
   };
 
+  const EventInfoSection = () => {
+    return (
+      <div>
+        <Stack direction="row" marginBlock="1rem">
+          <Stack width="100%" justifyContent="flex-start" textAlign="left">
+            <h1>{eventName}</h1>
+
+            <h3 style={{ color: "#818181" }}>
+              {date} {time}
+            </h3>
+          </Stack>
+          <Stack
+            width="100%"
+            direction="row"
+            justifyContent="flex-end"
+            gap="1rem"
+            color="#818181"
+          >
+            <Stack direction="row" alignItems="center" gap="0.5rem">
+              <EventDetailsButton
+                startIcon={<EventIcon />}
+              // onClick={}
+              >
+                Add to Calendar
+              </EventDetailsButton>
+            </Stack>
+
+            <Stack direction="row" alignItems="center" gap="0.5rem">
+              <EventDetailsButton
+                startIcon={<ShareIcon />}
+                onClick={handleClickOpen}
+              >
+                Share
+              </EventDetailsButton>
+              <Dialog
+                open={open}
+                onClose={handleClose}
+                PaperProps={{
+                  component: "form",
+                  onSubmit: (event) => {
+                    event.preventDefault();
+                    const formData = new FormData(event.currentTarget);
+                    const formJson = Object.fromEntries(formData.entries());
+                    const email = formJson.email;
+                    console.log(email);
+                    handleClose();
+                  },
+                }}
+              >
+                <DialogTitle>Share Link</DialogTitle>
+                <DialogContent>
+                  <DialogContentText>
+                    <Link
+                      href={`http://localhost:3000/eventdetails/${eventID}`}
+                    >
+                      http://localhost:3000/eventdetails/{eventID}
+                    </Link>
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={handleClose}>Close</Button>
+                </DialogActions>
+              </Dialog>
+            </Stack>
+          </Stack>
+        </Stack>
+        <Stack>
+          <img src={testImage} style={{ borderRadius: "1rem" }} />
+        </Stack>
+        <Stack alignItems="flex-start" marginTop="1rem" direction="row">
+          {sessionStorage.getItem("token") ? <YellowButton
+            textAlign="left"
+            variant="contained"
+            onClick={handleSubmit}
+          >
+            Join Event
+          </YellowButton> : <></>}
+
+
+          {sessionStorage.getItem("token") && checkIfPast() ? (
+            <Stack
+              direction="row"
+              marginInline="2rem"
+              alignItems="center"
+              justifyItems="center"
+              gap="1rem"
+            >
+              <Stack
+                direction="row"
+                // marginInline="2rem"
+                alignItems="center"
+                gap="0.5rem"
+              >
+                <IconButton
+                  onClick={() => handleRating(1)}
+                  aria-label="like"
+                  size="small"
+                >
+                  {rating === 1 ? <ThumbUpAltIcon /> : <ThumbUpOffAltIcon />}
+                </IconButton>
+
+                <IconButton
+                  onClick={() => handleRating(-1)}
+                  aria-label="like"
+                  size="small"
+                >
+                  {rating === -1 ? (
+                    <ThumbDownAltIcon />
+                  ) : (
+                    <ThumbDownOffAltIcon />
+                  )}
+                </IconButton>
+              </Stack>
+              {numOfRatings > 0 ? (
+                <p>
+                  {avgRating}% ({numOfRatings})
+                </p>
+              ) : (
+                <p>(Event not rated)</p>
+              )}
+            </Stack>
+          ) : (
+            <div />
+          )}
+        </Stack>
+      </div>
+    );
+  };
+
   const EventDetailsSection = () => {
     return (
       <Stack className="section">
@@ -675,12 +804,26 @@ function EventDetails() {
         className="w-[100%] flex flex-row justify-center mt-8"
         id="EditDelete"
       >
-        <GrayButton textAlign="left" variant="contained" onClick={editEvent}>
-          Edit Event
-        </GrayButton>
-        <RedButton textAlign="left" variant="contained" onClick={deleteEvent}>
-          Delete Event
-        </RedButton>
+        {userID == eventObject.userID ? (
+          <>
+            <GrayButton
+              textAlign="left"
+              variant="contained"
+              onClick={editEvent}
+            >
+              Edit Event
+            </GrayButton>
+            <RedButton
+              textAlign="left"
+              variant="contained"
+              onClick={deleteEvent}
+            >
+              Delete Event
+            </RedButton>
+          </>
+        ) : (
+          <></>
+        )}
       </div>
     );
   };

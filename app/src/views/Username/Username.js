@@ -1,14 +1,14 @@
 import React from "react";
 import { useState } from "react";
 import Navbar from "../../components/Navbar/Navbar";
-import { withAuth } from "../withAuth";
+//import { withAuth } from "../withAuth";
 import { useNavigate } from "react-router-dom";
 
 function Username() {
   const navigate = useNavigate();
 
   const checkLogin = () => {
-    console.log("t4ijewtwijr");
+    //console.log("t4ijewtwijr");
     if ("token" in sessionStorage) {
       console.log("yes");
       return true;
@@ -108,4 +108,4 @@ function Username() {
   );
 }
 
-export default withAuth(Username);
+export default (Username);

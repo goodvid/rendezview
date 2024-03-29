@@ -1,7 +1,7 @@
 import "./Profile.css";
 import { React, useState, useEffect } from "react";
 import {
-  Card,
+  
   Avatar,
   Button,
   Box,
@@ -17,6 +17,7 @@ import {
   ReadMoreButton,
   TextIconStack,
   EditIconButton,
+  
 } from "../../components/StyledComponents/StyledComponents";
 import dayjs from "dayjs";
 
@@ -29,7 +30,7 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import concertPhoto from "../../media/concert.jpg";
 import Navbar from "../../components/Navbar/Navbar";
-import { withAuth } from "../withAuth";
+//import { withAuth } from "../withAuth";
 import ProfileEvent from "../../components/Event/ProfileEvent";
 import axios from "axios";
 
@@ -37,7 +38,7 @@ function Profile() {
   const navigate = useNavigate();
   const response = false;
 
-  const [displayName, setDisplayName] = useState("Display Name");
+  const [displayName, setDisplayName] = useState("");
   const [profilePic, setProfilePic] = useState("");
   const [friendsNum, setFriendsNum] = useState(0);
   const [groupsNum, setGroupsNum] = useState(0);
@@ -56,6 +57,38 @@ function Profile() {
         console.log(res.data["status"]);
         console.log(res.data["username"]);
         setDisplayName(res.data["username"]);
+        setFriendsNum(res.data["friends"])
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
+      axios
+      .get("http://127.0.0.1:5000/user/getprofilepic", {
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        console.log(res.data["status"]);
+        setProfilePic(res.data["profilePic"]);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
+      axios
+      .get("http://127.0.0.1:5000/user/getpreferences", {
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        console.log(res.data["status"]);
+        const preferences = res.data["preferences"];
+        setTags(preferences.split(","));
       })
       .catch((err) => {
         console.log(err);
@@ -110,16 +143,7 @@ function Profile() {
       });
   };
 
-  // Dummy data; replace with actual database data
-  const [tags, setTags] = useState([
-    "Comedy",
-    "Food",
-    "Film",
-    "Travel",
-    "Rock",
-    "Yoga",
-    "DIY",
-  ]);
+  const [tags, setTags] = useState([]);
 
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [pastEvents, setPastEvents] = useState([]);
@@ -185,6 +209,7 @@ function Profile() {
     return (
       <Stack
         width="50vh"
+        height="100vh"
         style={{
           backgroundColor: "#4D4D4D",
           color: "white",
@@ -205,45 +230,30 @@ function Profile() {
             aria-label="edit display name"
             size="large"
           >
-            <SettingsIcon fontSize="inherit" height="2rem" width="2rem" />
+            <SettingsIcon onClick={() => navigate("/settings")} fontSize="inherit" height="2rem" width="2rem" />
           </IconButton>
         </Box>
 
         {/* Profile Picture */}
         <Stack>
-          <Badge
-            overlap="circular"
-            anchorOrigin={{
-              vertical: "bottom",
-              horizontal: "right",
-            }}
-            badgeContent={
-              <IconButton
-                style={{ color: "#4D4D4D", backgroundColor: "white" }}
-              >
-                <EditIcon />
-              </IconButton>
-            }
-          >
-            <Avatar
+          <Avatar
               sx={{ width: "15rem", height: "15rem" }}
-              alt={"avatar"}
               src={profilePic}
             />
-          </Badge>
-          <input type="file" style={{ display: "none" }} />
         </Stack>
 
         {/* Display Name */}
         <TextIconStack>
           <h1>{displayName}</h1>
+          {/* 
           <IconButton
             sx={{ color: "white" }}
             aria-label="edit display name"
             size="large"
           >
             <EditIcon fontSize="inherit" />
-          </IconButton>
+          </IconButton> 
+          */}
         </TextIconStack>
 
         <TextIconStack>
@@ -257,7 +267,8 @@ function Profile() {
           <h3>Location</h3>
         </TextIconStack>
         <h3>
-          {friendsNum} FRIENDS • {groupsNum} GROUPS
+          <a href="/profile/friends">{friendsNum} FRIENDS</a> • {groupsNum}{" "}
+          GROUPS
         </h3>
 
         {/* User Tags */}
@@ -285,6 +296,10 @@ function Profile() {
         <Button variant="contained" onClick={() => navigate("/newevent")}>
           Create event
         </Button>
+        <Button
+          variant="contained"
+          onClick={() => navigate("/addfriends")}
+        >Add friend</Button>
       </Stack>
     );
   };
@@ -304,7 +319,7 @@ function Profile() {
     return (
       <Stack className="profile-components">
         <h2>Upcoming Events</h2>
-        <Box sx={{ overflowX: "auto", width: "100%" }}>
+        <Box sx={{ overflowX: "auto", '&::-webkit-scrollbar': {width: '0.4em'}, width: "100%" }}>
           <Stack
             direction="row"
             gap={2}
@@ -332,7 +347,7 @@ function Profile() {
     return (
       <Stack className="profile-components">
         <h2>Past Events</h2>
-        <Box sx={{ overflowX: "auto", width: "100%" }}>
+        <Box sx={{ overflowX: "auto", '&::-webkit-scrollbar': {width: '0.4em'}, width: "100%" }}>
           {/* <Stack direction="row" gap={2} sx={{ minWidth: "max-content" }}> */}
           <Stack
             direction="row"
@@ -367,7 +382,7 @@ function Profile() {
     return (
       <Stack className="profile-components">
         <h2>Blogs</h2>
-        <Box sx={{ overflowX: "auto", width: "100%" }}>
+        <Box sx={{ overflowX: "auto", '&::-webkit-scrollbar': {width: '0.4em'}, width: "100%" }}>
           <Stack
             direction="row"
             gap={2}
@@ -459,7 +474,7 @@ function Profile() {
     >
       <Navbar />
       <Stack
-        width="100vw"
+        width="100%"
         direction="row"
         gap="2rem"
         justifyContent="space-between"
@@ -471,4 +486,4 @@ function Profile() {
   );
 }
 
-export default withAuth(Profile);
+export default (Profile);
