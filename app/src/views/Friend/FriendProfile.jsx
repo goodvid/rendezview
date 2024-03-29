@@ -233,23 +233,22 @@ function FriendProfile() {
                         <Button variant="contained" onClick={openInput}>
                           Set status
                         </Button>
-                        <Button variant="contained" onClick={handleDelete}>
-                          {" "}
-                          delete friend
-                        </Button>
                       </>
                     ) : (
                       <h3>Requested</h3>
                     )}
                   </>
                 )}
+                <Button variant="contained" onClick={handleDelete}>
+                  {" "}
+                  delete friend
+                </Button>
               </>
             ) : (
               <>
                 <Button variant="contained" onClick={handleAddFriend}>
                   Add Friend
                 </Button>
-                
               </>
             )}
           </Stack>
