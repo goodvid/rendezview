@@ -49,38 +49,44 @@ function FriendProfile() {
   useEffect(() => {
     axios.post("http://127.0.0.1:5000/user/get_user", {
       "email": id
+    },  {
+      headers: {
+      Authorization: "Bearer " + sessionStorage.getItem("token"),
+      "Content-Type": "application/json",
+      }
     })
     .then((res) => {
       if (res.data['status'] == '400') {
-        setExists(false)
+        setExists(false);
       } else {
-        setDisplayName(res.data['username'])
+        setDisplayName(res.data['username']);
+        setFriendStatus(res.data['isFriend']);
+        setStatus(res.data['relationship'])
       }
     })
     .catch((err) => {
       console.log(err);
     });
 
-    axios.post("http://127.0.0.1:5000/user/get_status", {
-      "email": id
-    }, {
-      headers: {
-        Authorization: "Bearer " + sessionStorage.getItem("token"),
-        "Content-Type": "application/json",
-      },
-    })
-    .then((res) => {
-      if (res.data['status'] == '200') {
-        setStatus(res.data['cur_status'])
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+    // axios.post("http://127.0.0.1:5000/user/get_status", {
+    //   "email": id
+    // }, {
+    //   headers: {
+    //     Authorization: "Bearer " + sessionStorage.getItem("token"),
+    //     "Content-Type": "application/json",
+    //   },
+    // })
+    // .then((res) => {
+    //   if (res.data['status'] == '200') {
+    //     setStatus(res.data['cur_status'])
+    //   }
+    // })
+    // .catch((err) => {
+    //   console.log(err);
+    // });
   }, []);
 
   const handleAddFriend = () => {
-    console.log(friendStatus)
     fetch("http://127.0.0.1:5000/add_friend", {
       method: "POST",
       headers: {
@@ -97,7 +103,6 @@ function FriendProfile() {
     });
   };
   const handleDelete = () => {
-    console.log(friendStatus)
     // eslint-disable-next-line no-restricted-globals
     if (confirm("are you sure you want to delete this friend?")) {
       console.log("here")

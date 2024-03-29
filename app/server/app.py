@@ -368,7 +368,7 @@ def getusername():
 @jwt_required()
 def get_user():
     data = request.json
-    user = User.query.filter_by(id=data).first()
+    user = User.query.filter_by(id=data['email']).first()
 
     if user == None:
         return {'status': '400', 'username': "None", "isFriend": False}
@@ -376,10 +376,11 @@ def get_user():
 
     current_user = get_jwt_identity()
     curr = User.query.filter_by(email=current_user["email"]).first()
-    friend = Status.query.filter_by(user=curr.id, friend=user.id).first()
-    print(friend, "friend here")
-    if friend:
-        return {'status': '200', 'username': user.username, "isFriend": True, "relationship": friend.status}
+    curr_to_other = Status.query.filter_by(user=curr.id, friend=user.id).first()
+    other_to_curr = Status.query.filter_by(user=user.id, friend=curr.id).first()
+
+    if curr_to_other and other_to_curr:
+        return {'status': '200', 'username': user.username, "isFriend": True, "relationship": curr_to_other.status}
     else:
         return {"status": "200", "username": user.username, "isFriend": False, "relationship": ""}
 
@@ -491,11 +492,10 @@ def get_users():
 @app.route("/add_friend", methods=["GET", "POST"])
 @jwt_required()
 def add_friend():
-    data = request.get_json()
+    data = User.query.filter_by(email=request.get_json()).first().id
 
     print(data, "check data")
 
-    friend = Status.query.filter_by()
     current_user = get_jwt_identity()
     user = User.query.filter_by(email=current_user["email"]).first()
     friend = Status.query.filter_by(user = user.id,friend = data).first()
