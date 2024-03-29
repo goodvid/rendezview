@@ -190,7 +190,7 @@ def get_rsvp_list(event):
 
 
 def handle_authentication():
-    print("Invoked Function!!!")
+    # print("Invoked Function!!!")
     try:
         google_api_instance = GoogleAPI(os.getcwd())
         credentials = google_api_instance.user_token_exists()

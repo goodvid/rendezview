@@ -27,6 +27,11 @@ function Login() {
       .then((res) => {
         if (res.data.status === 200) {
           // Navigate to another route on success
+          if ("login_method" in res.data) {
+            sessionStorage.setItem("login_method", "google");
+          } else {
+            sessionStorage.setItem("login_method", "normal");
+          }
           sessionStorage.setItem("token", res.data.access_token);
           console.log("token", sessionStorage.getItem("token"));
           navigate("/"); // Adjust '/success-route' as needed

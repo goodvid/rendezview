@@ -8,6 +8,7 @@ from dateutil import parser
 from sqlalchemy.exc import SQLAlchemyError
 from flask_migrate import Migrate
 import handle_google_api
+import rc_system
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required
@@ -54,7 +55,8 @@ def link_google_account():
         # need to get user and strengthen validationm for email
         # but for now its ok, couldn't save stuff to database
         response = jsonify(
-            {"access_token": access_token, "message": "success", "status": 200}
+            {"access_token": access_token, "message": "success",
+                "status": 200, "login_method": "google"}
         )
         # Specify the status code explicitly if needed, though 'status' within the JSON is also informative
         response.status_code = 200
@@ -68,6 +70,10 @@ def link_google_account():
 
 @app.route("/delinkGoogle", methods=["GET"])
 def signOutFromGoogle():
+    # data = request.json
+    # print("------logs-------")
+    # print(data)
+    # print("------logs-------")
     response = handle_google_api.handle_deauthentication()
     if response:
         return jsonify({
@@ -754,6 +760,19 @@ def getGoogleID():
             return jsonify({"status": 400, "message": "Doesn't exist"})
     else:
         return jsonify({"status": 400, "message": "event doesn't exist"})
+
+
+@app.route("/events/dummyCall", methods=["POST"])
+@jwt_required()
+def dummy_call():
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(email=current_user['email']).first()
+    print("-------logs-------")
+    event_obj_lst = rc_system.select_events_to_reccommend(user=user)
+    print(event_obj_lst)
+    print("-------logs-------")
+
+    return jsonify({"status": 200, "events": event_obj_lst}), 200
 
 
 @jwt_required

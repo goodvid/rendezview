@@ -115,7 +115,7 @@ function EventDetails() {
     // Ensure eventObject is not empty and has an eventID
     if (eventObject.eventID) {
       console.log("HEREEEEE");
-      fetch("http://localhost:5000/getGoogleID", {
+      fetch("http://localhost:5000/events/getGoogleID", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -124,6 +124,7 @@ function EventDetails() {
       })
         .then(response => response.json())
         .then(data => {
+          console.log("HEREEEEE");
           console.log(data);
           if (data.googleID) {
             setGoogleID(data.googleID); // This will also update isAddedToCalendar due to the useEffect dependency on googleID
@@ -135,7 +136,7 @@ function EventDetails() {
         })
         .catch(error => console.error("Failed to fetch googleID:", error));
     }
-  }, [googleID]);
+  }, [eventObject, googleID]);
 
   useEffect(() => {
     setIsAddedToCalendar(!!googleID);
@@ -459,6 +460,25 @@ function EventDetails() {
     console.log('Emails to share with:', emailsList);
 
   };
+
+  const dummyCall = (event) => {
+    // Figure out how to get userID
+    const user_id = { userID: userID }
+    fetch("http://localhost:5000/events/dummyCall", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + sessionStorage.getItem("token"),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(user_id),
+    })
+      .catch(error => {
+        console.error("Error:", error);
+      });
+
+  };
+
+
 
   const dummyRSVPList = [
     { name: 'John Doe', status: 'accepted' },
@@ -838,6 +858,13 @@ function EventDetails() {
                   onClick={handleOpenRSVPDialog}
                 >
                   See RSVP List
+                </GrayButton>
+                <GrayButton
+                  textAlign="Center"
+                  variant="contained"
+                  onClick={dummyCall}
+                >
+                  Dummy Call
                 </GrayButton>
                 <Dialog open={openRSVP} onClose={handleCloseRSVPDialog}>
                   <DialogTitle>RSVP List</DialogTitle>
