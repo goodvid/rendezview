@@ -86,12 +86,40 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/changeusername" element={<ChangeUsername />} />
-          <Route path="/changeemail" element={<ChangeEmail />} />
-          <Route path="/changepassword" element={<ChangePassword />} />
+          <Route
+            path="/changeusername"
+            element={
+              <ProtectedRoute>
+                <ChangeUsername />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/changeemail"
+            element={
+              <ProtectedRoute>
+                <ChangeEmail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/changepassword"
+            element={
+              <ProtectedRoute>
+                <ChangePassword />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/resetpassword" element={<ResetPassword />} />
           <Route path="/test" element={<Test />} />
-          <Route path="/friend/:id" element={<FriendProfile />} />
+          <Route
+            path="/friend/:id"
+            element={
+              <ProtectedRoute>
+                <FriendProfile />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/addfriends"
             element={

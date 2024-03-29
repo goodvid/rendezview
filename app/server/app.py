@@ -206,8 +206,10 @@ def set_status():
     status_data = data['status']
 
     current_user = get_jwt_identity()
+    
+    u = User.query.filter_by(email=current_user['email']).first()
 
-    current_email = current_user['email']
+    current_email = u.id
 
     status = Status.query.filter_by(user=current_email, friend=other_email).first()
 
@@ -379,7 +381,13 @@ def get_user():
     friend = Status.query.filter_by(user=curr.id, friend=user.id).first()
     print(friend, "friend here")
     if friend:
-        return {'status': '200', 'username': user.username, "isFriend": True, "relationship": friend.status}
+        isFriend = friend.status != "requested"
+        return {
+            "status": "200",
+            "username": user.username,
+            "isFriend":True,
+            "relationship": friend.status,
+        }
     else:
         return {"status": "200", "username": user.username, "isFriend": False, "relationship": ""}
 
@@ -503,10 +511,18 @@ def add_friend():
         return {"status": 200}
     friend_id = data
 
-    new_friend = Status(user=user.id, friend=friend_id, status="follow")
+    status = "requested"
+
+    requested = Status.query.filter_by(user=data, friend=user.id).first()
+
+    if requested:
+        status = "friend"
+        requested.status = "friend"
+
+    new_friend = Status(user=user.id, friend=friend_id, status=status)
     db.session.add(new_friend)
     db.session.commit()
-    return {"status": "200"}
+    return {"status": "200", "status":status}
 
 
 @app.route("/delete_friend", methods=["POST"])
@@ -517,7 +533,10 @@ def delete_friend():
     user = User.query.filter_by(email=current_user["email"]).first()
 
     friend = Status.query.filter_by(user=user.id, friend=data).first()
+
     db.session.delete(friend)
+    friend = Status.query.filter_by(user=data, friend=user.id).first()
+    friend.status = "requested"
     db.session.commit()
 
     return {"status": "200"}
@@ -542,6 +561,7 @@ def get_friends():
     for q in query:
         print("user ", type(q.user), q.friend, q.status, type(curr_user.id))
 
+        
         if str(q.user) == str(curr_user.id):
             print("hello")
             f = User.query.filter_by(id=q.friend).first()
@@ -553,20 +573,23 @@ def get_friends():
             }
             names.append(person)
         else:
-            # f = User.query.filter_by(id=q.user).first()
-            person = {
-                "name": curr_user.username,
-                "isFriend": True,
-                "relationship": q.status,
-                "id": curr_user.id,
-            }
-            requests.append(person)
+            if q.status == "requested": #meaning both arent friends
+                f = User.query.filter_by(id=q.user).first()
+                person = {
+                    "name": f.username,
+                    "isFriend": True,
+                    "relationship": q.status,
+                    "id": f.id,
+                }
+                requests.append(person)
 
         # status = Status.query.filter_by(user=curr_user.id, friend=q.friend).first()
 
         # print(q.user, q.friend)
 
-    print(requests, "names")
+    print(requests, "names", names)
+    if len(names) == 0 and len(requests) == 0:
+        return {"status": 404}
     return {"status":200, "names": names, "requests":requests}
 
 @app.route('/delete_event', methods=['POST'])
