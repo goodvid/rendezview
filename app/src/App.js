@@ -16,7 +16,10 @@ import ChangeUsername from "./views/Settings/ChangeUsername/ChangeUsername";
 import ChangeEmail from "./views/Settings/ChangeEmail/ChangeEmail";
 import ChangePassword from "./views/Settings/ChangePassword/ChangePassword";
 import ResetPassword from "./views/ResetPassword/ResetPassword";
-import FriendsList from "./views/Profile/FriendsList/FriendsList";
+import Test from "./views/Test/Test";
+import FriendProfile from "./views/Friend/FriendProfile";
+import Friends from "./views/Friend/AddFriends";
+import FriendsList from "./views/Friend/FriendList";
 import ChangeProfilePicture from "./views/Settings/ChangeProfilePic/ChangeProfilePic";
 
 function App() {
@@ -39,7 +42,10 @@ function App() {
           <Route path="/changeemail" element={<ChangeEmail />} />
           <Route path="/changepassword" element={<ChangePassword />} />
           <Route path="/resetpassword" element={<ResetPassword />} />
-          <Route path="/friendslist" element={<FriendsList />} />
+          <Route path="/test" element={<Test />} />
+          <Route path="/friend/:id" element={<FriendProfile />} />
+          <Route path="/addfriends" element={<Friends/>}></Route>
+          <Route path="/profile/friends" element={<FriendsList/>}></Route>
           <Route path="/changeprofilepic" element={<ChangeProfilePicture />} />
         </Routes>
       </BrowserRouter>

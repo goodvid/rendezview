@@ -51,6 +51,8 @@ function Main() {
   const [locationInput, setLocationInput] = useState("");
   const [userCoords, setUserCoords] = useState(null);
   const [locLoading, setLocLoading] = useState(false);
+  const [eventType, setEventType] = useState("Featured");
+  const [recommendedEvents, setRecommendedEvents] = useState([]);
   pinwheel.register(); // Set loading animation
 
   const iconMapping = {
@@ -89,6 +91,26 @@ function Main() {
   useEffect(() => {
     setUnixStartDate(dayjs(startDate).unix());
   }, [startDate]);
+
+  useEffect(() => {
+    // Get the recommended events once the backend function is made
+    if (sessionStorage.getItem("token")) {
+      axios
+      .get(`http://127.0.0.1:5000/events/get_recommended`, {
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        }
+      })
+      .then((response) => {
+        fetchAndDisplayEvents();
+      })
+      .catch((error) => {
+        console.error("Error fetching API events:", error);
+        setLoading(false);
+      });
+    }
+  }, [])
 
   const fetchAPIEvents = () => {
     console.log("fetching...");
@@ -252,6 +274,14 @@ function Main() {
     );
   };
 
+  const setFeatured = () => {
+    setEventType("Featured");
+  }
+
+  const setRecommended = () => {
+    setEventType("Recommended");
+  }
+
   return (
     <div className="w-full h-full">
       <MainNavbar />
@@ -280,30 +310,63 @@ function Main() {
           </Stack>
         </div>
         <div className="flex flex-row flex-wrap gap-5 pl-10 pt-10">
+          <button onClick={setFeatured}>Featured</button> |
+          <button onClick={setRecommended}>Recommended</button>
           <FilteringTab />
-          {loading ? (
-            <Stack width="100%" height="100%" alignItems="center">
-              <l-pinwheel
-                size="100"
-                stroke="3.5"
-                speed="0.9"
-                color="black"
-              ></l-pinwheel>
-            </Stack>
-          ) : (
-            events.reverse().map((event, i) => {
-              return (
-                <Event
-                  name={event.name}
-                  date={event.time}
-                  location={event.location}
-                  key={i}
-                  id={event.id}
-                  desc={event.desc}
-                />
-              );
-            })
-          )}
+          {eventType == "Featured" ?
+            <div>
+              {loading ? (
+                <Stack width="100%" height="100%" alignItems="center">
+                  <l-pinwheel
+                    size="100"
+                    stroke="3.5"
+                    speed="0.9"
+                    color="black"
+                  ></l-pinwheel>
+                </Stack>
+              ) : (
+                events.reverse().map((event, i) => {
+                  return (
+                    <Event
+                      name={event.name}
+                      date={event.time}
+                      location={event.location}
+                      key={i}
+                      id={event.id}
+                      desc={event.desc}
+                    />
+                  );
+                })
+              )}
+            </div>
+            :
+            <div>
+              b
+              {loading ? (
+                <Stack width="100%" height="100%" alignItems="center">
+                  <l-pinwheel
+                    size="100"
+                    stroke="3.5"
+                    speed="0.9"
+                    color="black"
+                  ></l-pinwheel>
+                </Stack>
+              ) : (
+                recommendedEvents.map((event, i) => {
+                  return (
+                    <Event
+                      name={event.name}
+                      date={event.time}
+                      location={event.location}
+                      key={i}
+                      id={event.id}
+                      desc={event.desc}
+                    />
+                  );
+                })
+              )}
+            </div>
+          }
         </div>
       </div>
     </div>

@@ -9,6 +9,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import LocationCityIcon from '@mui/icons-material/LocationCity';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import Info from "@mui/icons-material/Info";
+import { withAuth } from "../withAuth";
 
 function CreateEvent() {
   const navigate = useNavigate();
@@ -49,8 +50,8 @@ function CreateEvent() {
     });
     console.log(eventData, event.target);
   };
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  const handleSubmit = () => {
+    //event.preventDefault();
     fetch("http://127.0.0.1:5000/event/create", {
       method: "POST",
       headers: {
@@ -208,4 +209,4 @@ function CreateEvent() {
     </div>
   );
 }
-export default CreateEvent;
+export default withAuth(CreateEvent);
