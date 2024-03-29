@@ -829,31 +829,32 @@ function EventDetails() {
     console.log("eventID:", eventObject.eventID);
 
     if (eventObject.yelpID) {
-      setIsOwner(false);
+      //setIsOwner(false);
       return false;
     }
+    return userID == eventObject.userID;
 
-    fetch("http://localhost:5000/check_owner", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + sessionStorage.getItem("token"),
-      },
-      body: JSON.stringify({
-        eventID: eventObject.eventID,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("owner json:", data);
-        console.log("owner:", data.isOwner);
-        setIsOwner(data.isOwner);
-        // setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        // setLoading(false);
-      });
+    // fetch("http://localhost:5000/check_owner", {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //     Authorization: "Bearer " + sessionStorage.getItem("token"),
+    //   },
+    //   body: JSON.stringify({
+    //     eventID: eventObject.eventID,
+    //   }),
+    // })
+    //   .then((response) => response.json())
+    //   .then((data) => {
+    //     console.log("owner json:", data);
+    //     //console.log("owner:", data.isOwner);
+    //     //setIsOwner(data.isOwner);
+    //     // setLoading(false);
+    //   })
+    //   .catch((error) => {
+    //     console.error("Error:", error);
+    //     // setLoading(false);
+    //   });
   };
 
   useEffect(() => {
@@ -1167,7 +1168,7 @@ function EventDetails() {
             <LocationSection />
             <OrganizerSection />
             <CategorySection />
-            {isOwner() &&
+            {checkOwner() &&
               (sessionStorage.getItem("token") ? <EditDelete /> : <div />)}
             <SimilarEventsSection />
           </Stack>
