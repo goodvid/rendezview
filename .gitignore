@@ -2,5 +2,7 @@
 *.pyc
 ./app/server/venv/
 ./app/server/env/
+env/
+venv/
 ./app/server/venv/pyvenv.cfg
 ./app/server/venv/pyvenv.cfg
