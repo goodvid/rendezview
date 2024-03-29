@@ -572,12 +572,26 @@ function EventDetails() {
         className="w-[100%] flex flex-row justify-center mt-8"
         id="EditDelete"
       >
-        <GrayButton textAlign="left" variant="contained" onClick={editEvent}>
-          Edit Event
-        </GrayButton>
-        <RedButton textAlign="left" variant="contained" onClick={deleteEvent}>
-          Delete Event
-        </RedButton>
+        {userID == eventObject.userID ? (
+          <>
+            <GrayButton
+              textAlign="left"
+              variant="contained"
+              onClick={editEvent}
+            >
+              Edit Event
+            </GrayButton>
+            <RedButton
+              textAlign="left"
+              variant="contained"
+              onClick={deleteEvent}
+            >
+              Delete Event
+            </RedButton>
+          </>
+        ) : (
+          <></>
+        )}
       </div>
     );
   };
