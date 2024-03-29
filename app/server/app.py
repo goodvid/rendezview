@@ -197,8 +197,8 @@ def resetpassword():
 
 def saveProfilePic(profile_picture, email):
     picture = profile_picture.filename
-    picture_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir, 'public\profile_pics', email + "-" + picture))
-
+    picture_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, 'public\profile_pics', email + "-" + picture))
+    
     profile_picture.save(picture_path)
     picture_path = picture_path[slice(picture_path.find('\profile_pics'), None)].replace('\\', '/')
     return picture_path
