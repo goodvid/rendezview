@@ -54,7 +54,7 @@ class Event(db.Model):
     userID = db.Column(db.Integer, db.ForeignKey("user.id"))
     eventID = db.Column(db.Integer, primary_key = True)
     yelpID = db.Column(db.String(500))
-    # googleID = db.Column(db.String(100))
+    googleID = db.Column(db.String(100))
 
     desc = db.Column(db.String(5000))
     name = db.Column(db.String(50))
@@ -66,8 +66,8 @@ class Event(db.Model):
     hostName = db.Column(db.String(50))
     rating = db.Column(db.Float)
     category = db.Column(db.String(50))
-    # longitude = db.Column(db.Float)
-    # latitude = db.Column(db.Float)
+    longitude = db.Column(db.Float)
+    latitude = db.Column(db.Float)
 
     type = db.Column(db.String(50))
     def as_dict(self):
