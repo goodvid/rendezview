@@ -93,10 +93,11 @@ function Main() {
   }, [startDate]);
 
   useEffect(() => {
+    console.log('hi')
     // Get the recommended events once the backend function is made
     if (sessionStorage.getItem("token")) {
       axios
-      .get(`http://127.0.0.1:5000/events/get_recommended`, {
+      .get(`http://localhost:5000/events/get_recommended`, {
         headers: {
           Authorization: "Bearer " + sessionStorage.getItem("token"),
           "Content-Type": "application/json",
@@ -315,7 +316,7 @@ function Main() {
           <button onClick={setRecommended}>Recommended</button>
           <FilteringTab />
           {eventType == "Featured" ?
-            <div>
+            <div className="flex flex-row flex-wrap gap-10 mt-10">
               {loading ? (
                 <Stack width="100%" height="100%" alignItems="center">
                   <l-pinwheel
@@ -328,20 +329,22 @@ function Main() {
               ) : (
                 events.reverse().map((event, i) => {
                   return (
-                    <Event
-                      name={event.name}
-                      date={event.time}
-                      location={event.location}
-                      key={i}
-                      id={event.id}
-                      desc={event.desc}
-                    />
+                    <div className="w-[500px] h-[300px]">
+                      <Event
+                        name={event.name}
+                        date={event.time}
+                        location={event.location}
+                        key={i}
+                        id={event.id}
+                        desc={event.desc}
+                      />
+                    </div>
                   );
                 })
               )}
             </div>
             :
-            <div>
+            <div className="flex flex-row flex-wrap gap-10 mt-10">
               {loading ? (
                 <Stack width="100%" height="100%" alignItems="center">
                   <l-pinwheel
@@ -354,14 +357,17 @@ function Main() {
               ) : (
                 recommendedEvents.map((event, i) => {
                   return (
-                    <Event
-                      name={event.name}
-                      date={event.time}
-                      location={event.location}
-                      key={i}
-                      id={event.id}
-                      desc={event.desc}
-                    />
+                    <div className="w-[500px] h-[300px]">
+                      <Event
+                        name={event.name}
+                        date={event.time}
+                        location={event.location}
+                        key={i}
+                        id={event.id}
+                        desc={event.desc}
+                      />
+                    </div>
+                    
                   );
                 })
               )}
