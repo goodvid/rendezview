@@ -341,17 +341,22 @@ def get_events():
 
     return {'status': '200', 'events': event_values}
 
-@app.route("/events/get_recommended", methods=["GET"])
+@app.route("/events/get_recommended", methods=['GET'])
 @jwt_required()
 def get_recommended():
+    print('hi')
 
     current_user = get_jwt_identity()
+    print(current_user)
+    user = User.query.filter_by(email=current_user['email']).first()
 
-    recommendations = rc_system.select_events_to_reccommend(user=current_user)
+    recommendations = rc_system.select_events_to_reccommend(user=user)
 
     event_values = []
 
-    for event in recommendations:
+    for event_tuple in recommendations:
+        event = event_tuple[0]
+
         values = {'id': event.eventID,
                     'name': event.name,
                     'time': event.start_date,
@@ -363,7 +368,7 @@ def get_recommended():
                     'desc': event.desc}
         event_values.append(values)
 
-    return {'status': '200', 'recommendations': recommendations}
+    return {'status': '200', 'recommendations': event_values}
 
 
 @app.route('/filtered_events', methods=['GET'])
