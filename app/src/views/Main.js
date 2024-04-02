@@ -112,7 +112,7 @@ function Main() {
         setLoading(false);
       });
     }
-  }, [])
+  }, []);
 
   const fetchAPIEvents = () => {
     console.log("fetching...");
@@ -125,6 +125,7 @@ function Main() {
     if (sortOn) params.append("sort_on", sortOn);
     if (unixStartDate) params.append("start_date", unixStartDate);
     if (category) params.append("category", category);
+    console.log("url:", `http://localhost:5000/events/api?${params}`);
     axios
       .get(`http://localhost:5000/events/api?${params}`)
       .then((response) => {
@@ -138,12 +139,23 @@ function Main() {
   };
 
   const fetchAndDisplayEvents = () => {
+    const params = new URLSearchParams();
+    if (location) params.append("location", location);
+    if (isFree) params.append("is_free", isFree);
+    if (sortOn) params.append("sort_on", sortOn);
+    if (unixStartDate) params.append("start_date", unixStartDate);
+    if (category) params.append("category", category);
+    // console.log("url:", `http://localhost:5000/events/api?${params}`);
     axios
-      .get("http://localhost:5000/events")
+      .get(`http://localhost:5000/filtered_events?${params}`)
       .then((response) => {
-        // console.log("events status: ", response.data["status"]);
-        console.log("Events fetched:", response.data["events"]);
-        setEvents(response.data["events"]);
+        // console.log("All events:", response.data["all_events"]);
+        // console.log("Fetched events:", response.data["fetched_events"]);
+        // console.log("User events:", response.data["user_events"]);
+        console.log("filters:", response.data["filters"]);
+        console.log("data:", response.data);
+        console.log("sorted events:", response.data["sorted"]);
+        setEvents(response.data["sorted"]);
         setLoading(false);
       })
       .catch((error) => {
@@ -278,11 +290,11 @@ function Main() {
 
   const setFeatured = () => {
     setEventType("Featured");
-  }
+  };
 
   const setRecommended = () => {
     setEventType("Recommended");
-  }
+  };
 
   return (
     <div className="w-full h-full">
@@ -315,64 +327,44 @@ function Main() {
           <button onClick={setFeatured}>Featured</button> |
           <button onClick={setRecommended}>Recommended</button>
           <FilteringTab />
-          {eventType == "Featured" ?
-            <div className="flex flex-row flex-wrap gap-10 mt-10">
-              {loading ? (
-                <Stack width="100%" height="100%" alignItems="center">
-                  <l-pinwheel
-                    size="100"
-                    stroke="3.5"
-                    speed="0.9"
-                    color="black"
-                  ></l-pinwheel>
-                </Stack>
-              ) : (
-                events.reverse().map((event, i) => {
-                  return (
-                    <div className="w-[500px] h-[300px]">
-                      <Event
-                        name={event.name}
-                        date={event.time}
-                        location={event.location}
-                        key={i}
-                        id={event.id}
-                        desc={event.desc}
-                      />
-                    </div>
-                  );
-                })
-              )}
-            </div>
-            :
-            <div className="flex flex-row flex-wrap gap-10 mt-10">
-              {loading ? (
-                <Stack width="100%" height="100%" alignItems="center">
-                  <l-pinwheel
-                    size="100"
-                    stroke="3.5"
-                    speed="0.9"
-                    color="black"
-                  ></l-pinwheel>
-                </Stack>
-              ) : (
-                recommendedEvents.map((event, i) => {
-                  return (
-                    <div className="w-[500px] h-[300px]">
-                      <Event
-                        name={event.name}
-                        date={event.time}
-                        location={event.location}
-                        key={i}
-                        id={event.id}
-                        desc={event.desc}
-                      />
-                    </div>
-                    
-                  );
-                })
-              )}
-            </div>
-          }
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 ">
+            {loading ? (
+              <Stack width="100%" height="100%" alignItems="center">
+                <l-pinwheel
+                  size="100"
+                  stroke="3.5"
+                  speed="0.9"
+                  color="black"
+                ></l-pinwheel>
+              </Stack>
+            ) : eventType == "Featured" ? (
+              events.map((event, i) => {
+                return (
+                  <Event
+                    name={event.name}
+                    date={dayjs(event.start_date).toString()}
+                    location={event.location}
+                    key={i}
+                    id={event.id}
+                    desc={event.desc}
+                  />
+                );
+              })
+            ) : (
+              recommendedEvents.map((event, i) => {
+                return (
+                  <Event
+                    name={event.name}
+                    date={dayjs(event.start_date).toString()}
+                    location={event.location}
+                    key={i}
+                    id={event.id}
+                    desc={event.desc}
+                  />
+                );
+              })
+            )}
+          </div>
         </div>
       </div>
     </div>

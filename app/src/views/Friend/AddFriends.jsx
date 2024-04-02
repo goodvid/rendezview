@@ -1,17 +1,16 @@
 import { React, useState, useEffect } from "react";
 import Navbar from "../../components/Navbar/Navbar";
 import User from "../../components/User/User";
-function Friends(){
-  const [username, setUsername] = useState("")
-  const [users, setUsers] = useState([])
+function Friends() {
+  const [username, setUsername] = useState("");
+  const [users, setUsers] = useState([]);
   const handleChange = (event) => {
-    setUsername(event.target.value)
-    console.log(username, event.target.value)
-
-  }
+    setUsername(event.target.value);
+    console.log(username, event.target.value);
+  };
   const handleSubmit = (event) => {
-    console.log(username, "fjfjfj")
-    fetch("http://127.0.0.1:5000/get_all_usernames", {
+    console.log(username, "fjfjfj");
+    fetch("http://localhost:5000/get_all_usernames", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + sessionStorage.getItem("token"),
@@ -29,7 +28,7 @@ function Friends(){
         setUsers(data["names"]);
         console.log(data, users);
       });
-  }
+  };
   return (
     <>
       <Navbar></Navbar>
@@ -53,12 +52,18 @@ function Friends(){
       </div>
       <div style={{marginLeft: "5%"}}>
         {users.map((user, _) => {
-          console.log(user)
-          return <User name={user.name} isFriend={user.isFriend} relationship={user.relationship} id={user.id} />;
+          console.log(user);
+          return (
+            <User
+              name={user.name}
+              isFriend={user.isFriend}
+              relationship={user.relationship}
+              id={user.id}
+            />
+          );
         })}
       </div>
     </>
   );
-
-  }
-export default Friends
+}
+export default Friends;

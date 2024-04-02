@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect, React } from "react";
 import axios from "axios";
 
-
 function ChangeUsername() {
   const navigate = useNavigate();
 
@@ -38,22 +37,22 @@ function ChangeUsername() {
 
   useEffect(() => {
     axios
-    .get("http://127.0.0.1:5000/user/getusername", {
-      headers: {
-        Authorization: "Bearer " + sessionStorage.getItem("token"),
-        "Content-Type": "application/json",
-      },
-    })
-    .then((res) => {
-      console.log(res.data["status"]);
-      setUsername(res.data["username"]);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-    
+      .get("http://localhost:5000/user/getusername", {
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        console.log(res.data["status"]);
+        setUsername(res.data["username"]);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
     axios
-      .get("http://127.0.0.1:5000/user/getprofilepic", {
+      .get("http://localhost:5000/user/getprofilepic", {
         headers: {
           Authorization: "Bearer " + sessionStorage.getItem("token"),
           "Content-Type": "application/json",
@@ -66,7 +65,6 @@ function ChangeUsername() {
       .catch((err) => {
         console.log(err);
       });
-      
   }, []);
 
   let resp = "";
