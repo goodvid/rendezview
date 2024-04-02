@@ -8,7 +8,7 @@ class YelpAPI:
     # API Key
     API_KEY = 'tm1qsKBzMGovoQww-WCTy1eHHngfjCbZP8Rm1bkk1hbJdSK-1BSKAljekIPcDJM_5Iao2n7rJbZ_wAYa6Dd75x_wEJoQrHgXaA_jfyzeYunUrPnKkXQlzecdX5zLZXYx'
     # API constants, you shouldn't have to change these.
-    API_HOST = 'https://api.yelp.com/v3'
+    API_HOST = 'https://api.yelp.com/v3/'
     HEADERS = {'Authorization': f'Bearer {API_KEY}'}
 
     def __init__(self, type="events", location='West Lafayette, Indiana, USA', amount=50, sort_on='time_start', sort_by='desc', is_free="", start_date="", category=""):
@@ -22,6 +22,7 @@ class YelpAPI:
         self.start_date = start_date 
         self.is_free = is_free 
         self.category = category 
+        
 
     def expand_search_path(self, input_path):
         new_path = os.path.join(self.default_search_path, input_path)
@@ -74,7 +75,7 @@ class YelpAPI:
                 return "Good"
 
     def get_business_from_id(self, businessID):
-        # Set parameters only if its passed in 
+        # Set parameters only if its passed in
         self.set_base_search_path("businesses")
 
         url_with_location = f"{self.default_search_path}/{businessID}"
@@ -91,7 +92,7 @@ class YelpAPI:
             # return jsonify({"message": "An error occurred while processing events"}), 500
 
     def get_events_based_on_location(self, location="", is_free="", sort_on="", start_date="", category=""):
-        # Set parameters only if its passed in 
+        # Set parameters only if its passed in
         if location != None: 
             self.set_location(location)
 
@@ -119,13 +120,15 @@ class YelpAPI:
 
         response = requests.get(
             self.default_search_path, headers=self.HEADERS, params=params)
-        
+        print( "look here")
+        print(self.default_search_path, self.HEADERS)
         if response.status_code == 200:
             print(self.check_rate_limit(response.headers))
             events = response.json()['events']
             return events
         else:
-            return jsonify({"message": "An error occurred while processing events"}), 500
+
+            return jsonify({"message": "An error occurred while these specific processing events"}), 500
 
     def get_events_based_on_category(self, category):
         # for test
@@ -181,8 +184,6 @@ class YelpAPI:
             print("Failed to fetch businesses")
 
         return
-    
-    
 
 
 if __name__ == '__main__':

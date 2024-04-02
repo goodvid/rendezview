@@ -61,7 +61,8 @@ def link_google_account():
         email = response["email"]
         # access_token = create_access_token(identity=email, username=email)
         access_token = create_access_token(
-            identity={"email": email, "name": email}
+            identity={"email": email, "name": email},
+            fresh=datetime.timedelta(minutes=60),
         )
         # need to get user and strengthen validationm for email
         # but for now its ok, couldn't save stuff to database
@@ -80,7 +81,7 @@ def link_google_account():
 
 
 @app.route("/delinkGoogle", methods=["GET"])
-@jwt_required
+@jwt_required()
 def signOutFromGoogle():
     # data = request.json
     # print("------logs-------")
@@ -107,7 +108,8 @@ def create_token():
     print(email, password)
     if user and password == user.password:
         access_token = create_access_token(
-            identity={"email": email, "name": user.username}
+            identity={"email": email, "name": user.username},
+            fresh=datetime.timedelta(minutes=60),
         )
         return jsonify(access_token=access_token)
     else:
@@ -180,7 +182,9 @@ def changeemail():
     if not duplicate and user:
         username = user.username
         access_token = create_access_token(
-            identity={'email': request.json["newEmail"], 'name': username})
+            identity={"email": request.json["newEmail"], "name": username},
+            fresh=datetime.timedelta(minutes=60),
+        )
         user.email = request.json["newEmail"]
         print("check here", get_jwt_identity(), request.json["newEmail"])
         db.session.commit()
@@ -267,7 +271,8 @@ def resetpassword():
     user.password = request.json["newPassword"]
     db.session.commit()
     access_token = create_access_token(
-        identity={"email": request.json["email"], "name": user.username}
+        identity={"email": request.json["email"], "name": user.username},
+        fresh=datetime.timedelta(minutes=60),
     )
 
     return jsonify({"message": "Password reset successfully"}), 200
@@ -311,7 +316,9 @@ def register():
                     picture=profilePicPath)
     db.session.add(new_user)
     db.session.commit()
-    access_token = create_access_token(identity={"email": email, "name": email}) 
+    access_token = create_access_token(
+        identity={"email": email, "name": email}, fresh=datetime.timedelta(minutes=60)
+    )
     return jsonify({"message": "Account created!", "status": 200, "access_token": access_token})
     # return jsonify(access_token), 200
 
@@ -586,6 +593,14 @@ def get_user():
             "relationship": friend.status,
         }
     else:
+        friend = Status.query.filter_by(friend=curr.id, user=user.id).first()
+        if friend:
+            return {
+                "status": "200",
+                "username": user.username,
+                "isFriend": False,
+                "relationship": "asked to follow",
+            }
         return {"status": "200", "username": user.username, "isFriend": False, "relationship": ""}
 
 
@@ -797,6 +812,26 @@ def get_friends():
         return {"status": 404}
     return {"status": 200, "names": names, "requests": requests}
 
+@app.route('/friend/deny_request', methods=['POST'])
+@jwt_required()
+def deny_request():
+    data = request.json
+    print("check here")
+
+    curr = User.query.filter_by(email=get_jwt_identity()['email']).first()
+
+    friend = User.query.filter_by(id=data).first()
+
+    relationship = Status.query.filter_by(user = friend.id, friend = curr.id).first()
+
+    if relationship:
+        db.session.delete(relationship)
+        db.session.commit()
+        print("deleted here")
+    else:
+        return {"status":"400", "message":"friend not found"}
+    return {"status": "200"}
+
 
 @app.route('/delete_event', methods=['POST'])
 def delete_event():
@@ -915,7 +950,7 @@ def fetch_api_events():
 
         eventIDTracking = []
         for event in events:
-            # print(event.json)
+            #print(event.json(), "check event")
             yelpID = event['id']
             eventDesc = event['description']
             name = event['name']
@@ -1085,7 +1120,7 @@ def get_avg_rating():
         posRatings = 0
         message = "Not yet rated"
 
-    return jsonify({"message": message, "eventID": event_id, "ratingFrom": ratingFrom, "avgRating": avgRating, "numOfRatings": numOfRatings, "posRatings": posRatings}), 201
+    return jsonify({"message": message, "eventID": event_id, "ratingFrom": ratingFrom, "avgRating": avgRating, "numOfRatings": numOfRatings, "posRatings": posRatings}), 200
 
 
 @app.route('/user/get_host_rating', methods=['GET'])
