@@ -23,8 +23,9 @@ from flask_jwt_extended import (create_access_token,
 )
 from sqlalchemy import or_
 from config import ApplicationConfig
-from datetime import datetime
+from datetime import timedelta
 from dateutil import parser
+import datetime
 
 from apiFetch.yelpAPI import YelpAPI
 
@@ -62,7 +63,7 @@ def link_google_account():
         # access_token = create_access_token(identity=email, username=email)
         access_token = create_access_token(
             identity={"email": email, "name": email},
-            fresh=datetime.timedelta(minutes=60),
+            fresh=timedelta(minutes=60),
         )
         # need to get user and strengthen validationm for email
         # but for now its ok, couldn't save stuff to database
@@ -109,7 +110,7 @@ def create_token():
     if user and password == user.password:
         access_token = create_access_token(
             identity={"email": email, "name": user.username},
-            fresh=datetime.timedelta(minutes=60),
+            fresh=timedelta(minutes=60),
         )
         return jsonify(access_token=access_token)
     else:
@@ -183,7 +184,7 @@ def changeemail():
         username = user.username
         access_token = create_access_token(
             identity={"email": request.json["newEmail"], "name": username},
-            fresh=datetime.timedelta(minutes=60),
+            fresh=timedelta(minutes=60),
         )
         user.email = request.json["newEmail"]
         print("check here", get_jwt_identity(), request.json["newEmail"])
@@ -272,7 +273,7 @@ def resetpassword():
     db.session.commit()
     access_token = create_access_token(
         identity={"email": request.json["email"], "name": user.username},
-        fresh=datetime.timedelta(minutes=60),
+        fresh=timedelta(minutes=60),
     )
 
     return jsonify({"message": "Password reset successfully"}), 200
@@ -317,7 +318,7 @@ def register():
     db.session.add(new_user)
     db.session.commit()
     access_token = create_access_token(
-        identity={"email": email, "name": email}, fresh=datetime.timedelta(minutes=60)
+        identity={"email": email, "name": email}, fresh=timedelta(minutes=60)
     )
     return jsonify({"message": "Account created!", "status": 200, "access_token": access_token})
     # return jsonify(access_token), 200
@@ -1262,6 +1263,22 @@ def check_owner():
 
 
     return jsonify({"userID": user.id, "eventID": event_id, "isOwner": isOwner}), 200
+
+@app.route("/blog/delete_history", methods = ["GET"])
+@jwt_required()
+def delete_blog():
+    user = get_jwt_identity()
+    
+    curr = User.query.filter_by(email=user["email"]).first()
+    
+    curr.blogs.clear()
+    
+    db.session.commit()
+    #db.session.update()
+    
+    return jsonify({"message": "deletion successful"}), 200
+
+
 
 
 @app.route("/check_user", methods = ["POST", "GET"])

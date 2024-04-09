@@ -198,6 +198,30 @@ function Profile() {
         });
     }
   };
+  const handleBlogs = () => {
+    // eslint-disable-next-line no-restricted-globals
+    if (confirm("are you sure you want to delete all blog history?")) {
+      fetch("http://localhost:5000/blog/delete_history", {
+        method: "GET",
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => {
+          if (response.status === 200) {
+            return response.json();
+          } else {
+            alert("error");
+            return false;
+          }
+        })
+        .then((data) => {})
+        .catch((error) => {
+          console.log("error", error);
+        });
+    }
+  };
 
   const handleReadMore = (id) => {
     return <>//TODO: navigate to blog post</>;
@@ -299,6 +323,7 @@ function Profile() {
         <Button variant="contained" onClick={() => navigate("/addfriends")}>
           Add friend
         </Button>
+        <Button variant = "contained" onClick={handleBlogs}>Delete blog history</Button>
       </Stack>
     );
   };
