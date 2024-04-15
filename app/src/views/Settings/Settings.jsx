@@ -1,6 +1,6 @@
 import * as React from "react";
 import "./Settings.css";
-import { Avatar, Button, Stack, IconButton, requirePropFactory } from "@mui/material/";
+import { Avatar, Button, Stack, IconButton } from "@mui/material/";
 import SettingsIcon from "@mui/icons-material/Settings";
 import CloseIcon from "@mui/icons-material/Close";
 import MainNavbar from "../../components/MainNavbar/MainNavbar";
@@ -33,10 +33,8 @@ function Settings() {
       .catch((err) => {
         console.log(err);
       });
-
-    
-      axios
-      .get("http://127.0.0.1:5000/user/getprofilepic", {
+    axios
+      .get("http://localhost:5000/user/getprofilepic", {
         headers: {
           Authorization: "Bearer " + sessionStorage.getItem("token"),
           "Content-Type": "application/json",
@@ -49,7 +47,6 @@ function Settings() {
       .catch((err) => {
         console.log(err);
       });
-
   }, []);
 
   const changeUsernameClick = () => {
@@ -85,7 +82,7 @@ function Settings() {
     event.preventDefault();
 
     // Send to Flask server
-    fetch("http://127.0.0.1:5000/user/deleteprofilepic", {
+    fetch("http://localhost:5000/user/deleteprofilepic", {
       method: "GET",
       headers: {
         Authorization: "Bearer " + sessionStorage.getItem("token"),
@@ -249,7 +246,6 @@ function Settings() {
               >
                 Delete Profile Picture
               </Button>
-              
             </Stack>
           </Stack>
 

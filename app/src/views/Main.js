@@ -48,7 +48,7 @@ function Main() {
   const [sortOn, setSortOn] = useState("time_start");
   const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
-  const [locationInput, setLocationInput] = useState("");
+  const [locationInput, setLocationInput] = useState("West Lafayette, IN, USA");
   const [userCoords, setUserCoords] = useState(null);
   const [locLoading, setLocLoading] = useState(false);
   const [eventType, setEventType] = useState("Featured");
@@ -90,6 +90,7 @@ function Main() {
 
   useEffect(() => {
     setUnixStartDate(dayjs(startDate).unix());
+    // console.log("startDate:", dayjs(startDate).unix());
   }, [startDate]);
 
   useEffect(() => {
@@ -168,27 +169,27 @@ function Main() {
     setLocationInput(place.formatted_address);
   }, []);
 
-  useEffect(() => {
-    getIPGeolocation();
-  }, []);
+  // useEffect(() => {
+  //   getIPGeolocation();
+  // }, []);
 
-  const getIPGeolocation = () => {
-    setLocLoading(true);
-    fetch("https://ipinfo.io/json?token=f92cb4e0401c19")
-      .then((response) => response.json())
-      .then((data) => {
-        const { city, region, country } = data;
-        const formattedAddress = `${city}, ${region}, ${country}`;
+  // const getIPGeolocation = () => {
+  //   setLocLoading(true);
+  //   fetch("https://ipinfo.io/json?token=f92cb4e0401c19")
+  //     .then((response) => response.json())
+  //     .then((data) => {
+  //       const { city, region, country } = data;
+  //       const formattedAddress = `${city}, ${region}, ${country}`;
 
-        setLocation(formattedAddress);
-        setLocationInput(formattedAddress);
-        setLocLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error getting IP-based location:", error);
-        setLocLoading(false);
-      });
-  };
+  //       setLocation(formattedAddress);
+  //       setLocationInput(formattedAddress);
+  //       setLocLoading(false);
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error getting IP-based location:", error);
+  //       setLocLoading(false);
+  //     });
+  // };
 
   const LocationFilter = () => {
     return (

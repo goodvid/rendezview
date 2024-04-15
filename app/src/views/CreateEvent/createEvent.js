@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Navbar from "../../components/Navbar/Navbar";
 import { useNavigate } from "react-router-dom";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -8,11 +8,22 @@ import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import InfoIcon from "@mui/icons-material/Info";
 import LocationCityIcon from "@mui/icons-material/LocationCity";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-//import { withAuth } from "../withAuth";
+import {
+  OutlinedInput,
+  Select,
+  FormControl,
+  MenuItem,
+  InputLabel,
+} from "@mui/material";
+import MapAutocomplete from "react-google-autocomplete";
+import categories from "../eventCategories.json";
+import dayjs from "dayjs";
 
 function CreateEvent() {
   const navigate = useNavigate();
   const [selected, setSelected] = useState("");
+  const [locationInput, setLocationInput] = useState("");
+  const [tagsInput, setTagsInput] = useState("");
   const [eventData, setEventData] = useState({
     eventName: "",
     eventDesc: "",
@@ -31,12 +42,13 @@ function CreateEvent() {
   }, [eventData]);
 
   const handleDateTime = (startEnd, value) => {
-    const dateString = value.format("YYYY-MM-DD");
+    // console.log("value:", value.format("YYYY-MM-DDTHH:mm:ssZ"));
+    const formattedDateTime = value.format("YYYY-MM-DDTHH:mm:ssZ");
     const timeString = value.format("HH:mm:ss");
 
     setEventData({
       ...eventData,
-      [`${startEnd}Date`]: dateString,
+      [`${startEnd}Date`]: formattedDateTime,
       [`${startEnd}Time`]: timeString,
     });
   };
@@ -47,7 +59,6 @@ function CreateEvent() {
       ...eventData,
       [event.target.name]: event.target.value,
     });
-    console.log(eventData, event.target);
   };
   const handleSubmit = () => {
     // event.preventDefault();
@@ -68,7 +79,6 @@ function CreateEvent() {
         }
       })
       .then((data) => {
-        console.log(data, "adafewrg");
         navigate(`/eventdetails/${data.eventID}`);
       })
       .catch((error) => {
@@ -90,6 +100,21 @@ function CreateEvent() {
         ["eventType"]: type,
       });
     }
+  };
+
+  const handlePlaceSelected = (place) => {
+    setLocationInput(place.formatted_address);
+    setEventData({
+      ...eventData,
+      ["location"]: place.formatted_address,
+    });
+  };
+
+  const handleCategorySelected = (event) => {
+    setEventData({
+      ...eventData,
+      ["tags"]: event.target.value,
+    });
   };
 
   return (
@@ -125,19 +150,31 @@ function CreateEvent() {
           onChange={handleChange}
           className="w-[80%] h-[45px] border-login-blue outline rounded-md align-left"
         ></input>
-        <div className="text-l  text-left "> Tags</div>
-        <input
-          name="tags"
-          onChange={handleChange}
-          className="w-[80%] h-[45px] border-login-blue outline rounded-md align-left"
-        ></input>
+        <div className="text-l  text-left ">Category</div>
+        <FormControl fullWidth>
+          <InputLabel id="demo-simple-select-label">Category</InputLabel>
+          <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            label="Category"
+            defaultValue=""
+            sx={{ width: "80%", textAlign: "left", backgroundColor: "white" }}
+            onChange={handleCategorySelected}
+          >
+            {categories.map(({ name, value }, index) => (
+              <MenuItem key={index} value={value}>
+                {name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
         <div className="text-l  text-left ">Event Type</div>
         <div className="flex flex-row gap-8  justify-start">
           <button
             name="eventType"
             value="Private Event"
             onClick={() => handleEventType("Private Event")}
-            class={`${
+            className={`${
               selected === "Private Event" ? "bg-[#A1CFFF4D]" : "bg-transparent"
             } border-2 border-[#02407F] hover:bg-[#A1CFFF4D] text-[#02407F] font-bold py-4 px-10 rounded-lg`}
           >
@@ -147,7 +184,7 @@ function CreateEvent() {
             name="eventType"
             value="Public Event"
             onClick={() => handleEventType("Public Event")}
-            class={`${
+            className={`${
               selected === "Public Event" ? "bg-[#A1CFFF4D]" : "bg-transparent"
             } border-2 border-[#02407F] hover:bg-[#A1CFFF4D] text-[#02407F] font-bold py-4 px-10 rounded-lg`}
           >
@@ -155,7 +192,7 @@ function CreateEvent() {
           </button>
         </div>
 
-        <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"></hr>
+        <hr className="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"></hr>
 
         <div className="flex flex-row gap-3">
           <LocationCityIcon fontSize="large" style={{ color: "#b2b4b3" }} />
@@ -165,44 +202,41 @@ function CreateEvent() {
           <div className="text-l text-left ">Address</div>
           <div className="text-l  text-left text-red-600"> *</div>
         </div>
-        <input
-          name="location"
-          onChange={handleChange}
-          className="w-[80%] h-[45px] border-login-blue outline rounded-md align-left"
-        ></input>
-        <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"></hr>
+        <OutlinedInput
+          className="w-[80%] bg-white h-[45px] rounded-md align-left"
+          color="secondary"
+          inputComponent={({ inputRef, onFocus, onBlur, ...props }) => (
+            <MapAutocomplete
+              apiKey="AIzaSyBMp7w0sRedU-xNT_Z5DGFCYPFkHa-QTMg"
+              {...props}
+              defaultValue={locationInput}
+              onPlaceSelected={handlePlaceSelected}
+            />
+          )}
+        />
+        <hr className="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"></hr>
 
         <div className="flex flex-row gap-3">
           <CalendarTodayIcon fontSize="large" style={{ color: "#b2b4b3" }} />
           <div className="text-3xl text-left"> Date and Time</div>
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1">
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DateTimePicker
-                label="Start Date/Time"
-                onChange={(value) => handleDateTime("start", value)}
-              />
-            </LocalizationProvider>
-          </div>
-          <div className="flex flex-col gap-1">
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DateTimePicker
-                label="End Date/Time"
-                onChange={(value) => handleDateTime("end", value)}
-              />
-            </LocalizationProvider>
-          </div>
+        <div className="flex flex-col gap-1 w-[80%] bg-white">
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DateTimePicker
+              label="Start Date/Time"
+              onChange={(value) => handleDateTime("start", value)}
+            />
+          </LocalizationProvider>
         </div>
 
         <button
           onClick={handleSubmit}
-          class="w-[20%] h-[60px] bg-yellow-500 mt-5 text-white font-bold  rounded-xl"
+          className="w-[20%] h-[60px] bg-yellow-500 mt-5 text-white font-bold  rounded-xl"
         >
           Create Event
         </button>
 
-        <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"></hr>
+        <hr className="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"></hr>
       </div>
       <script src="../path/to/flowbite/dist/datepicker.js"></script>
     </div>

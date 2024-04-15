@@ -23,8 +23,9 @@ from flask_jwt_extended import (create_access_token,
 )
 from sqlalchemy import or_
 from config import ApplicationConfig
-from datetime import datetime
+import datetime
 from dateutil import parser
+import pytz
 
 from apiFetch.yelpAPI import YelpAPI
 
@@ -375,6 +376,10 @@ def get_filtered_events():
     is_free = request.args.get('is_free', default=None, type=str)
     category = request.args.get('category', default=None, type=str)
 
+    if start_date is not None:
+        # Convert from unix to datetime utc
+        start_date = datetime.datetime.fromtimestamp(int(start_date), datetime.timezone.utc)
+
     events = Event.query.all()
 
     event_values = []
@@ -394,7 +399,7 @@ def get_filtered_events():
                     'hostName': event.hostName,
                     'desc': event.desc}
 
-        if event.yelpID is None:  # Filter user_events
+        if values["yelpID"] is None:  # Filter user_events
             passes_filters = True
 
             if loc is not None and values["location"] != loc:
@@ -404,14 +409,10 @@ def get_filtered_events():
                 passes_filters = False
 
             if start_date is not None:
-                values_start_date = datetime.strptime(
-                    values["start_date"], '%Y-%m-%d').date()
+                # Convert to datetime utc
+                event_start_date = parser.parse(values["start_date"]).astimezone(pytz.utc)
 
-                # Assuming start_date is a string in "2010-09-24 20:00:00-04:00" (datetime) format
-                start_date_datetime = parser.parse(start_date)
-                start_date_date = start_date_datetime.date()
-
-                if values_start_date <= start_date_date:
+                if event_start_date <= start_date:
                     passes_filters = False
 
             if passes_filters:
@@ -424,13 +425,9 @@ def get_filtered_events():
         events = fetched_events + user_events
         sortedEvents = fetched_events + user_events
 
-        for event in sortedEvents:
-            event['start_datetime'] = parser.parse(
-                event["start_date"]).replace(tzinfo=None)
-
         if sort_on == "time_start":
             sortedEvents = sorted(
-                sortedEvents, key=lambda x: x['start_datetime'], reverse=True)
+                sortedEvents, key=lambda x: x['start_date'], reverse=True)
 
     return {'status': '200', 'filters': filters, 'sorted': sortedEvents, 'events': events, 'all_events': event_values, 'fetched_events': fetched_events, 'user_events': user_events}
 
@@ -909,8 +906,6 @@ def fetch_api_events():
     try:
         db.session.query(Event).filter(Event.yelpID.isnot(
             None)).delete(synchronize_session=False)
-        db.session.query(Event).filter(Event.yelpID.isnot(
-            None)).delete(synchronize_session=False)
         # db.session.query(Event).delete()
 
         eventIDTracking = []
@@ -921,7 +916,7 @@ def fetch_api_events():
             name = event['name']
             yelpLocation = event['location']
             locationAddress = ', '.join(yelpLocation['display_address'])
-            eventDateTime = parser.isoparse(event['time_start'])
+            eventDateTime = (event['time_start'])
             category = event['category']
             businessID = event['business_id']
             latitude = event['latitude']

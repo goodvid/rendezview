@@ -8,10 +8,10 @@ class YelpAPI:
     # API Key
     API_KEY = 'tm1qsKBzMGovoQww-WCTy1eHHngfjCbZP8Rm1bkk1hbJdSK-1BSKAljekIPcDJM_5Iao2n7rJbZ_wAYa6Dd75x_wEJoQrHgXaA_jfyzeYunUrPnKkXQlzecdX5zLZXYx'
     # API constants, you shouldn't have to change these.
-    API_HOST = 'https://api.yelp.com/v3'
+    API_HOST = 'https://api.yelp.com/v3/'
     HEADERS = {'Authorization': f'Bearer {API_KEY}'}
 
-    def __init__(self, type="events", location='West Lafayette, Indiana, USA', amount=50, sort_on='time_start', sort_by='desc', is_free="", start_date="", category=""):
+    def __init__(self, type="events", location='West Lafayette, IN, USA', amount=50, sort_on='time_start', sort_by='desc', is_free="", start_date="", category=""):
         # default configurations
         self.default_search_path = os.path.join(self.API_HOST, type)
         self.remaining_requests = 0
@@ -166,7 +166,7 @@ class YelpAPI:
     def get_businesses_based_on_location(self):
         params = {
             'term': 'restaurants',  # Looking for restaurants as an example
-            'location': 'West Lafayette, Indiana, USA',
+            'location': 'West Lafayette, IN, USA',
             'limit': 5
         }
         response = requests.get(

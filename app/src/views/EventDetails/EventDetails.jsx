@@ -11,6 +11,8 @@ import { pinwheel } from "ldrs";
 import categories from "../eventCategories.json";
 import Event from "../../components/Event/Event";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 
 import {
   Stack,
@@ -81,6 +83,9 @@ function EventDetails() {
   });
 
   const navigate = useNavigate();
+
+  dayjs.extend(utc);
+  dayjs.extend(timezone);
 
   useEffect(() => {
     fetchEventObject();
@@ -899,7 +904,7 @@ function EventDetails() {
               <Event
                 id={event.id}
                 name={event.name}
-                date={event.time + " " + event.date}
+                date={dayjs(event.time).toString() + " " + event.date}
                 location={event.location}
                 desc={event.desc}
                 key={i}
@@ -944,7 +949,7 @@ function EventDetails() {
                   <h1>{eventName}</h1>
 
                   <h3 style={{ color: "#818181" }}>
-                    {date} {time}
+                    {dayjs(date).tz("America/New_York").toString()}
                   </h3>
                 </Stack>
                 <Stack

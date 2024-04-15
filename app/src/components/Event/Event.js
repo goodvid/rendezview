@@ -4,6 +4,7 @@ import "./Event.css";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import { useNavigate } from "react-router-dom";
+import dayjs from "dayjs";
 
 function Event({ id, name, date, location, desc }) {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ function Event({ id, name, date, location, desc }) {
         <div className="flex flex-col gap-3">
           <div className="flex flex-row gap-3">
             <AccessTimeIcon sx={{ color: "#1C3659" }} />
-            <p className="text-left">{date}</p>
+            <p className="text-left">{dayjs(date).toString()}</p>
           </div>
           <div className="flex flex-row gap-3">
             <LocationOnIcon sx={{ color: "#1C3659" }} />
