@@ -203,13 +203,19 @@ def handle_authentication():
             user_email = google_api_instance.get_user_email(credentials)
             google_api_instance.save_credentials_and_email(
                 credentials, user_email)
+
+            possible_user = User.query.filter_by(email=user_email).first()
+            if possible_user:
+                return {"flag": True, "credentials": credentials, "email": user_email, "quiz": True}
+
+            # but if the user does not exist then we create the user and add it to the data base
             # Add the new user
             new_user = User(email=user_email,
                             username=user_email, password="N/A")
             db.session.add(new_user)
             db.session.commit()
             # probably need another function here to actually save it to the database
-            return {"flag": True, "credentials": credentials, "email": user_email}
+            return {"flag": True, "credentials": credentials, "email": user_email, "quiz": False}
     except Exception as e:
         print(e)
         return {"flag": False}
@@ -217,13 +223,14 @@ def handle_authentication():
 
 def handle_deauthentication():
     try:
-        google_api_instance = GoogleAPI()
+        google_api_instance = GoogleAPI(os.getcwd())
         token_data = google_api_instance.revoke_google_token()
-        if token_data:
-            # because right now username and email are the same
-            email = token_data["account"]
-            User.query.filter_by(email=email).delete()
-            db.session.commit()
+        # if token_data:
+        #     # because right now username and email are the same
+        #     # modify to not delete from database potentially?
+        #     email = token_data["account"]
+        #     User.query.filter_by(email=email).delete()
+        #     db.session.commit()
         return True
     except Exception as e:
         print(e)

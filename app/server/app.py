@@ -1,4 +1,4 @@
-from flask import Flask,  request, jsonify, session
+from flask import Flask,  request, jsonify, session, redirect
 from flask_session import Session
 from models import db  # Importing the db instance and models
 from flask_cors import CORS, cross_origin
@@ -42,12 +42,35 @@ def index():
     return "Hello, World!"
 
 
+@app.route("/auth/google/callback")
+def google_auth_callback():
+    # ... code to handle the Google response and exchange code for tokens ...
+
+    # Instead of redirecting, return a page with JavaScript to close the window
+    return '''
+    <html>
+    <body>
+    <script>
+    // Check if this page is opened in a popup window
+    if (window.opener) {
+        // Send a message to the opener window
+        window.opener.postMessage('authentication successful', '*');
+        // Close the popup
+        window.close();
+    }
+    </script>
+    </body>
+    </html>
+    '''
+
+
 @app.route("/authenticate", methods=["GET"])
 def link_google_account():
     response = handle_google_api.handle_authentication()
     print(response)
     if response["flag"]:
         email = response["email"]
+
         # access_token = create_access_token(identity=email, username=email)
         access_token = create_access_token(
             identity={"email": email, "name": email}
@@ -56,7 +79,7 @@ def link_google_account():
         # but for now its ok, couldn't save stuff to database
         response = jsonify(
             {"access_token": access_token, "message": "success",
-                "status": 200, "login_method": "google"}
+                "status": 200, "login_method": "google", "quiz": response["quiz"]}
         )
         # Specify the status code explicitly if needed, though 'status' within the JSON is also informative
         response.status_code = 200

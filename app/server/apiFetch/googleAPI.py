@@ -33,6 +33,8 @@ class GoogleAPI:
     def __init__(self, curr_path=''):
         self.TOKEN_FILE_NAME = 'token.json'
         self. CREDENTIAL_FILE_NAME = 'credentials.json'
+        print("ahhhhhhhh")
+        print(curr_path)
         if curr_path == '':
             self.BASE_PATH = os.getcwd()
             # self.BASE_PATH = "/Users/visathongdee/Documents/GitHub/rendezview/app/server/apiFetch"
@@ -76,12 +78,13 @@ class GoogleAPI:
                     self.CREDENTIALS_FILE_PATH, self.SCOPES
                 )
             try:
-                creds = flow.run_local_server(port=self.PORT_NO)
+                creds = flow.run_local_server(port=self.PORT_NO, )
             except OSError as e:
                 if e.errno == errno.EADDRINUSE:
                     print(f"Port {self.PORT_NO} in use, retrying...")
                     time.sleep(self.TIME_BREAK)
-                    creds = flow.run_local_server(port=self.PORT_NO)
+                    creds = flow.run_local_server(
+                        port=self.PORT_NO)
                 else:
                     raise
 
@@ -128,9 +131,11 @@ class GoogleAPI:
             token (str): The token to be revoked. This could be an access token or a refresh token.
         """
         token_data = None
+        print("------LOGOUT-------\n")
         print("\n"+self.TOKEN_FILE_PATH+"\n")
         print("\n"+self.BASE_PATH+"\n")
         print("\n"+self.CREDENTIALS_FILE_PATH+"\n")
+        print("------LOGOUT-------\n")
         if os.path.exists(self.TOKEN_FILE_PATH):
             print("entered hereeee")
             with open(self.TOKEN_FILE_PATH, 'r') as token_file:
