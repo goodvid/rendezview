@@ -694,8 +694,11 @@ def get_host_rating():
 
     # eventRatings = [{"eventID": rating.eventID, "rating": rating.rating} for rating in eventRatings]
     eventRatingsArr = [rating.rating for rating in eventRatings]
-
-    hostRating = round(statistics.mean(eventRatingsArr), 2)
+    if eventRatingsArr:
+        hostRating = round(statistics.mean(eventRatingsArr), 2)
+    else:
+        hostRating = None
+        eventRatingsArr = []
 
     return {'status': '200', 'userID': userID, "eventsHosted": eventsHosted, "eventRatings": eventRatingsArr, "hostRating": hostRating}
 

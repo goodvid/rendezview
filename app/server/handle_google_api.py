@@ -72,7 +72,9 @@ def add_to_calendar(event):
                 summary=event_title, start_date=event_start_date, start_time=event_start_time, time_zone=event_time_zone)
             google_event_tuple = google_api_instance.add_event(
                 creds=credentials, event=google_event)
-            if not google_event_tuple:
+            if google_event_tuple == "conflict":
+                return {"flag": False, "status": 400, "message": "You have a conflicting event at this time!"}
+            elif not google_event_tuple:
                 print("here")
                 return {"flag": False, "status": 400, "message": "Event was not added successfully"}
             else:
@@ -190,7 +192,6 @@ def get_rsvp_list(event):
 
 
 def handle_authentication():
-    # print("Invoked Function!!!")
     try:
         google_api_instance = GoogleAPI(os.getcwd())
         credentials = google_api_instance.user_token_exists()

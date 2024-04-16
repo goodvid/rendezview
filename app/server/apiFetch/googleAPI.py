@@ -15,6 +15,7 @@ from googleapiclient.errors import HttpError
 from pprint import pprint
 from datetime import datetime, timedelta
 from flask import redirect
+import pytz
 
 
 class GoogleAPI:
@@ -158,6 +159,65 @@ class GoogleAPI:
         with open(self.TOKEN_FILE_PATH, 'w') as token_file:
             json.dump(token_info, token_file, indent=2)
 
+    @staticmethod
+    def is_conflict(event_start, event_end, new_start, new_end):
+        """
+        Determines if two events conflict based on their start and end times.
+        """
+        return not (new_start >= event_end or new_end <= event_start)
+
+    def check_for_conflicts(self, creds, event):
+        """
+        Checks for conflicts using an event object that includes datetime and timezone information.
+
+        Args:
+            creds: The OAuth2 credentials of the user.
+            event (dict): The event to check, which includes 'start' and 'end' keys with 'dateTime' and 'timeZone'.
+
+        Returns:
+            str: The name of the conflicting event if a conflict exists, otherwise an empty string.
+        """
+        try:
+            # Create a service object
+            service = build('calendar', 'v3', credentials=creds)
+
+            # Extract event times and localize them
+            new_event_start = datetime.fromisoformat(event['start']['dateTime']).replace(
+                tzinfo=pytz.timezone(event['start']['timeZone']))
+            new_event_end = datetime.fromisoformat(event['end']['dateTime']).replace(
+                tzinfo=pytz.timezone(event['end']['timeZone']))
+            date_to_check = new_event_start.date()
+
+            # Define the day range to search for events
+            start_of_day = datetime.combine(
+                date_to_check, datetime.min.time(), tzinfo=pytz.utc)
+            end_of_day = start_of_day + timedelta(days=1)
+
+            events_result = service.events().list(
+                calendarId='primary',
+                timeMin=start_of_day.isoformat(),
+                timeMax=end_of_day.isoformat(),
+                singleEvents=True,
+                orderBy='startTime'
+            ).execute()
+            events = events_result.get('items', [])
+
+            # Check each event for conflicts
+            for event in events:
+                event_start = datetime.fromisoformat(event['start']['dateTime']).replace(
+                    tzinfo=pytz.timezone(event['start']['timeZone']))
+                event_end = datetime.fromisoformat(event['end']['dateTime']).replace(
+                    tzinfo=pytz.timezone(event['end']['timeZone']))
+                if self.is_conflict(event_start, event_end, new_event_start, new_event_end):
+                    # Return the name of the event causing the conflict
+                    return {'name': event['summary'], 'isConflict': True}
+
+            # Return empty string if no conflict is found
+            return {'isConflict': False}
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return {'isConflict': False}
+
     def add_event(self, creds, event):
         """
         Adds an event to the user's primary calendar.
@@ -169,6 +229,12 @@ class GoogleAPI:
         Returns:
             The created event if successful, including the event ID, None otherwise.
         """
+        ret = self.check_for_conflicts(creds=creds, event=event)
+        isConflict = ret['isConflict']
+        if isConflict:
+            if 'name' in ret:
+                return "conflict"
+
         try:
             service = build('calendar', 'v3', credentials=creds)
             event_result = service.events().insert(
@@ -292,14 +358,14 @@ class GoogleAPI:
         summary = "This is a test event to see if adding to calendar works"
         start_time = '10:00:00'
         end_time = '11:00:00'
-        start_date = '2024-03-17'
-        end_date = '2024-03-17'
+        start_date = '2024-04-18'
+        end_date = '2024-04-18'
         timeZone = 'America/New_York'
         # need to save an event id to the database for each event that is
         # added to the database
         events = self.create_event_dict(summary=summary, start_date=start_date,
                                         end_date=end_date, start_time=start_time, end_time=end_time, time_zone=timeZone)
-        pprint(events)
+        # pprint(events)
         return events
 
     def add_event_with_attendees(self, creds, event, attendee_emails):
@@ -317,7 +383,6 @@ class GoogleAPI:
         # Add the attendees to the event dictionary
         attendees = [{'email': email} for email in attendee_emails]
         event['attendees'] = attendees
-
         try:
             service = build('calendar', 'v3', credentials=creds)
             event_result = service.events().insert(
@@ -384,7 +449,20 @@ class GoogleAPI:
         while True:
             try:
                 x = input("Enter a letter: ")
-                if x == "t":
+                if x == "z":
+                    event = self.create_test_event()
+                    creds = self.user_token_exists()
+                    # start = event['start']['dateTime']
+                    # end = event['end']['dateTime']
+                    # print(start, end)
+                    # print(event)
+                    # print(event['start']['dateTime'])
+                    val = self.check_for_conflicts(creds=creds, event=event)
+                    print(val)
+                    # val = self.check_for_conflicts(
+                    #     creds=creds, date=date_to_check, new_event_start=date_to_check, new_event_end=end_date_to_check)
+                    # print(val)
+                elif x == "t":
                     print(
                         "-------Adding event to calendar with attendees...-------------")
                     event = self.create_test_event()
@@ -401,6 +479,7 @@ class GoogleAPI:
                     print("-------Adding event to calendar...-------------")
                     event = self.create_test_event()
                     creds = self.user_token_exists()
+
                     event_result, event_id = self.add_event(
                         creds=creds, event=event)
                 elif x == "e":
