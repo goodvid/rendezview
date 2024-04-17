@@ -42,6 +42,7 @@ function Profile() {
   const [groupsNum, setGroupsNum] = useState(0);
   const [userEvents, setUserEvents] = useState([]);
   const [hostRating, setHostRating] = useState(null);
+  const [location, setLocation] = useState("");
 
   useEffect(() => {
     axios
@@ -101,11 +102,13 @@ function Profile() {
         },
       })
       .then((res) => {
+        console.log("response:", res);
         console.log("userEvents:", res.data["events"]);
         setUserEvents(res.data["events"]);
       });
 
     getHostRating();
+    getUserLocation();
   }, []);
 
   useEffect(() => {
@@ -138,6 +141,35 @@ function Profile() {
         // console.log("hostRating object:", res.data);
         // console.log("hostRating:", res.data.hostRating);
         setHostRating(res.data.hostRating);
+      });
+  };
+
+  const getUserLocation = () => {
+    // setLoading(true);
+    fetch("http://localhost:5000/user/get_location", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + sessionStorage.getItem("token"),
+      },
+    })
+      .then((response) => {
+        if (response.status != 200) {
+          console.log("not logged in");
+          return;
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("location:", data.location);
+        if (data.location) {
+          setLocation(data.location);
+        }
+        // setLoading(false);
+      })
+      .catch((error) => {
+        console.log("error", error);
+        // setLoading(false);
       });
   };
 
@@ -245,27 +277,22 @@ function Profile() {
         {/* Display Name */}
         <TextIconStack>
           <h1>{displayName}</h1>
-          {/* 
-          <IconButton
-            sx={{ color: "white" }}
-            aria-label="edit display name"
-            size="large"
-          >
-            <EditIcon fontSize="inherit" />
-          </IconButton> 
-          */}
         </TextIconStack>
 
-        <TextIconStack>
-          <ThumbUpIcon />
-          <h3>{hostRating}%</h3>
-        </TextIconStack>
+        {hostRating && (
+          <TextIconStack>
+            <ThumbUpIcon />
+            <h3>{hostRating}%</h3>
+          </TextIconStack>
+        )}
 
         {/* Location, Friends, Groups */}
-        <TextIconStack>
-          <NearMeIcon style={{ color: "red" }} />
-          <h3>Location</h3>
-        </TextIconStack>
+        {location && (
+          <TextIconStack>
+            <NearMeIcon style={{ color: "red" }} />
+            <h3>{location}</h3>
+          </TextIconStack>
+        )}
         <h3>
           <a href="/profile/friends">{friendsNum} FRIENDS</a> • {groupsNum}{" "}
           GROUPS
@@ -330,18 +357,22 @@ function Profile() {
             gap={2}
             sx={{ minWidth: "max-content", marginBlock: "0.5rem" }}
           >
-            {upcomingEvents.map((event, i) => {
-              return (
-                <ProfileEvent
-                  name={event.name}
-                  date={event.date}
-                  location={event.location}
-                  key={i}
-                  id={event.id}
-                  desc={event.desc}
-                />
-              );
-            })}
+            {upcomingEvents.length > 0 ? (
+              upcomingEvents.map((event, i) => {
+                return (
+                  <ProfileEvent
+                    name={event.name}
+                    date={event.date}
+                    location={event.location}
+                    key={i}
+                    id={event.id}
+                    desc={event.desc}
+                  />
+                );
+              })
+            ) : (
+              <h3>No upcoming events</h3>
+            )}
           </Stack>
         </Box>
       </Stack>
@@ -370,19 +401,23 @@ function Profile() {
               minWidth: "max-content",
             }}
           >
-            {pastEvents.map((event, i) => {
-              return (
-                <ProfileEvent
-                  name={event.name}
-                  date={event.date}
-                  location={event.location}
-                  key={i}
-                  id={event.id}
-                  desc={event.desc}
-                  rating={event.rating}
-                />
-              );
-            })}
+            {pastEvents.length > 0 ? (
+              pastEvents.map((event, i) => {
+                return (
+                  <ProfileEvent
+                    name={event.name}
+                    date={event.date}
+                    location={event.location}
+                    key={i}
+                    id={event.id}
+                    desc={event.desc}
+                    rating={event.rating}
+                  />
+                );
+              })
+            ) : (
+              <h3>No past events</h3>
+            )}
           </Stack>
         </Box>
       </Stack>

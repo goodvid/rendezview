@@ -265,7 +265,7 @@ function EventDetails() {
       },
     })
       .then((response) => {
-        if (resp.status != 200) {
+        if (response.status != 200) {
           console.log("not logged in");
           return;
         }
@@ -904,7 +904,7 @@ function EventDetails() {
               <Event
                 id={event.id}
                 name={event.name}
-                date={dayjs(event.time).toString() + " " + event.date}
+                date={dayjs(event.time).toString()}
                 location={event.location}
                 desc={event.desc}
                 key={i}

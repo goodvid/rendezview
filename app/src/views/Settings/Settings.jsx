@@ -65,6 +65,10 @@ function Settings() {
     navigate("/changeprofilepic");
   };
 
+  const changeLocationClick = () => {
+    navigate("/changeLocation");
+  };
+
   // Delete Account
   const [deleteOpen, setDeleteOpen] = React.useState(false);
 
@@ -245,6 +249,21 @@ function Settings() {
                 onClick={deleteProfilePictureClick}
               >
                 Delete Profile Picture
+              </Button>
+              <Button
+                variant="contained"
+                disableElevation
+                sx={{
+                  textTransform: "none",
+                  width: "200px",
+                  height: "50px",
+                  backgroundColor: "#D1EEFF",
+                  color: "black",
+                  "&:hover": { backgroundColor: "#8bd4ff", color: "black" },
+                }}
+                onClick={changeLocationClick}
+              >
+                Change Location
               </Button>
             </Stack>
           </Stack>

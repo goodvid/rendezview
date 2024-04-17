@@ -111,8 +111,40 @@ function Main() {
           console.error("Error fetching API events:", error);
           setLoading(false);
         });
+
+      getUserLocation();
     }
   }, []);
+
+  const getUserLocation = () => {
+    setLocLoading(true);
+    fetch("http://localhost:5000/user/get_location", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + sessionStorage.getItem("token"),
+      },
+    })
+      .then((response) => {
+        if (response.status != 200) {
+          console.log("not logged in");
+          return;
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("location:", data.location);
+        if (data.location) {
+          setLocation(data.location);
+          setLocationInput(data.location);
+        }
+        setLocLoading(false);
+      })
+      .catch((error) => {
+        console.log("error", error);
+        setLocLoading(false);
+      });
+  };
 
   const fetchAPIEvents = () => {
     console.log("fetching...");
@@ -303,7 +335,6 @@ function Main() {
         <span className="font-medium text-3xl">Featured Event + Details</span>
       </div>
       <div className="w-full h-[533px] flex flex-col">
-        <span className="text-xl">Categories</span>
         <div className="flex overflow-x-scroll p-10" style={{ height: "auto" }}>
           <Stack direction="row" gap={2} sx={{ minWidth: "max-content" }}>
             {categories.map((item, index) => (
