@@ -35,10 +35,16 @@ function CreateBlog() {
     let previews = [];
     let photos = [];
 
+    var pattern = /image-*/;
+
     for (let i = 0; i < event.target.files.length; i++) {
+      if (!event.target.files[i].type.match(pattern)) {
+        alert("Please choose an image file.");
+        return;
+      }
+
       previews.push(URL.createObjectURL(event.target.files[i]));
       photos.push(event.target.files[i]);
-      console.log("Picture " + i + ": " + event.target.files[i].name);
     }
 
     setImagePreviews(previews);
@@ -46,17 +52,29 @@ function CreateBlog() {
   };
 
   const handleSubmit = () => {
+    let formData = new FormData();
+    formData.append("blogName", blogData.blogName);
+    formData.append("blogContent", blogData.blogContent);
+    formData.append("blogType", blogData.blogType);
+    if (blogPhotos) {
+      for (let i = 0; i < blogPhotos.length; i++) {
+        formData.append("blogPhotos[]", blogPhotos[i]);
+      }
+    }
+
+    console.log("FORM DATA: ", formData.getAll("blogPhotos[]"));
+
     fetch("http://localhost:5000/blog/create", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + sessionStorage.getItem("token"),
-        "Content-Type": "application/json",
       },
-      body: JSON.stringify(blogData),
+      body: formData,
     })
       .then((response) => {
-        if (response.status === 422) {
+        if (response.status === 401) {
           alert("unauthorized");
+          return response.json();
         } else if (response.status == 200) {
           alert("Blog made"); 
           return response.json();

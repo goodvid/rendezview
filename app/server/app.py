@@ -1229,18 +1229,46 @@ def check_owner():
     return jsonify({"userID": user.id, "eventID": event_id, "isOwner": isOwner}), 200
 
 
+def saveBlogPhoto(blog_photo, email):
+    picture = blog_photo.filename
+    picture_path = os.path.abspath(os.path.join(os.path.dirname(
+        __file__), os.pardir, r"public\blogs", email + "-" + picture))
+
+    '''profile_picture.save(picture_path)
+    picture_path = picture_path[slice(picture_path.find(
+        '\profile_pics'), None)].replace('\\', '/')'''
+    return picture
+
+
 @app.route("/blog/create", methods=["POST"])
 @jwt_required()
 def createBlog():
     current_user = get_jwt_identity()
     user = User.query.filter_by(email=current_user["email"]).first()
 
-    title = request.json["blogName"]
-    text = request.json["blogContent"]
+    form = jsonify({
+        "blogName": request.form['blogName'], 
+        "blogContent": request.form['blogContent'],
+        "blogType": request.form['blogType']
+    })
+
+    if (request.files):
+        pictures = []
+
+        for photo in request.files.getlist('blogPhotos[]'):
+            photoPath = saveBlogPhoto(photo, user.email)
+            pictures.append(photoPath)
+    else:
+        pictures = 'NULL'
+
+    print("PHOTOS: ", pictures)
+
+    title = form.json["blogName"]
+    text = form.json["blogContent"]
     authorID = user.id
     authorName = user.username
     blogDate = date.today().strftime('%B %d, %Y')
-    visibility = request.json["blogType"]
+    visibility = form.json["blogType"]
 
     new_blog = Blog(
         title = title,
@@ -1249,12 +1277,14 @@ def createBlog():
         authorName = authorName,
         date = blogDate,
         visibility = visibility,
-        pictures = "TEST"
+        pictures = pictures
     )
 
-    db.session.add(new_blog)
-    db.session.commit()
-    
+    print("NEW BLOG: ", new_blog.text)
+
+    # db.session.add(new_blog)
+    # db.session.commit()
+
     return jsonify({"message": "Blog created!"}), 200
 
 
