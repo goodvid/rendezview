@@ -94,10 +94,11 @@ function Main() {
   }, [startDate]);
 
   useEffect(() => {
+    console.log("hi");
     // Get the recommended events once the backend function is made
     if (sessionStorage.getItem("token")) {
       axios
-        .get(`http://127.0.0.1:5000/events/get_recommended`, {
+        .get(`http://localhost:5000/events/get_recommended`, {
           headers: {
             Authorization: "Bearer " + sessionStorage.getItem("token"),
             "Content-Type": "application/json",
@@ -111,8 +112,6 @@ function Main() {
           console.error("Error fetching API events:", error);
           setLoading(false);
         });
-
-      getUserLocation();
     }
   }, []);
 

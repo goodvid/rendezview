@@ -10,9 +10,9 @@ function Event({ id, name, date, location, desc }) {
   const navigate = useNavigate();
   const eventLink = "/eventdetails/" + id;
   return (
-    <div
+    <button
       onClick={() => navigate(eventLink)}
-      className="w-full h-full rounded-lg border-2 border-[#1C3659] flex justify-between items-start gap-5 p-1"
+      className="w-full h-full rounded-lg border-2 border-[#1C3659] flex justify-between items-start gap-5 p-2 overflow-scroll"
     >
       {/* <div className=" w-[180px] h-[180px] bg-light-gray">Image</div> */}
       <div className="w-full flex flex-col p-[1rem] gap-5">
@@ -31,7 +31,7 @@ function Event({ id, name, date, location, desc }) {
           </div>
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 
