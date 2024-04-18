@@ -2,7 +2,7 @@ from flask import Flask,  request, jsonify, session
 from flask_session import Session
 from models import db  # Importing the db instance and models
 from flask_cors import CORS, cross_origin
-from models import User, Event, EventRating, Status
+from models import User, Event, EventRating, Status, Blog
 from types import SimpleNamespace
 from dateutil import parser
 from sqlalchemy.exc import SQLAlchemyError
@@ -23,7 +23,7 @@ from flask_jwt_extended import (create_access_token,
 )
 from sqlalchemy import or_
 from config import ApplicationConfig
-from datetime import datetime
+from datetime import (datetime, date)
 from dateutil import parser
 
 from apiFetch.yelpAPI import YelpAPI
@@ -1227,6 +1227,36 @@ def check_owner():
 
 
     return jsonify({"userID": user.id, "eventID": event_id, "isOwner": isOwner}), 200
+
+
+@app.route("/blog/create", methods=["POST"])
+@jwt_required()
+def createBlog():
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(email=current_user["email"]).first()
+
+    title = request.json["blogName"]
+    text = request.json["blogContent"]
+    authorID = user.id
+    authorName = user.username
+    blogDate = date.today().strftime('%B %d, %Y')
+    visibility = request.json["blogType"]
+
+    new_blog = Blog(
+        title = title,
+        text = text,
+        authorID = authorID,
+        authorName = authorName,
+        date = blogDate,
+        visibility = visibility,
+        pictures = "TEST"
+    )
+
+    db.session.add(new_blog)
+    db.session.commit()
+    
+    return jsonify({"message": "Blog created!"}), 200
+
 
 
 @app.route("/check_user", methods = ["POST", "GET"])

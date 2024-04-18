@@ -11,6 +11,8 @@ import EventDetails from "./views/EventDetails/EventDetails";
 import CreateEvent from "./views/CreateEvent/createEvent";
 import Events from "./views/Events/Events";
 import EditEvent from "./views/EditEvent/EditEvent";
+import CreateBlog from "./views/CreateBlog/createBlog";
+import Blogs from "./views/Blogs/Blogs";
 import Settings from "./views/Settings/Settings";
 import ChangeUsername from "./views/Settings/ChangeUsername/ChangeUsername";
 import ChangeEmail from "./views/Settings/ChangeEmail/ChangeEmail";
@@ -139,6 +141,22 @@ function App() {
               </ProtectedRoute>
             }
           ></Route>
+          <Route
+            path="/newblog"
+            element={
+              <ProtectedRoute>
+                <CreateBlog />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/blogs"
+            element={
+              <ProtectedRoute>
+                <Blogs />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </div>

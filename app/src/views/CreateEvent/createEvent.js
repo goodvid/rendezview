@@ -15,7 +15,6 @@ import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import ImageListItemBar from '@mui/material/ImageListItemBar';
 //import { withAuth } from "../withAuth";
-import "./createEvent.css";
 
 function CreateEvent() {
   const navigate = useNavigate();
@@ -197,14 +196,11 @@ function CreateEvent() {
         </div>     
 
         {imagePreviews && (
-          <div>
-            <Stack direction="row" gap={2} sx={{overflowX: "auto", "&::-webkit-scrollbar": { width: "0.4em" }}}>
+            <Stack direction="row" gap={2} sx={{overflowX: "auto"}}>
               {imagePreviews.map((img, i) => (
                   <img src={img} style={{height: "200px"}}/>
               ))}
             </Stack>
-
-          </div>
         )}
 
         <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"></hr>

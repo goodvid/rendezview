@@ -95,10 +95,14 @@ class Event(db.Model):
 
 class Blog(db.Model):
     blogID = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100))
     text = db.Column(db.String(5000))
-    author = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    event = db.Column(db.Integer, db.ForeignKey('event.eventID'))
-    time = db.Column(db.DateTime)
+    authorID = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    authorName = db.Column(db.String(50))
+    # event = db.Column(db.Integer, db.ForeignKey('event.eventID'))
+    date = db.Column(db.String(50))
+    visibility = db.Column(db.String(50))
+    pictures = db.Column(db.String(500))
 
 
 class EventRating(db.Model):
