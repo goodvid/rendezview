@@ -1229,15 +1229,18 @@ def check_owner():
     return jsonify({"userID": user.id, "eventID": event_id, "isOwner": isOwner}), 200
 
 
-def saveBlogPhoto(blog_photo, email):
+def saveBlogPhoto(blog_photo, email, blogNum):
     picture = blog_photo.filename
     picture_path = os.path.abspath(os.path.join(os.path.dirname(
-        __file__), os.pardir, r"public\blogs", email + "-" + picture))
+        __file__), os.pardir, r"public\blogs\\", str(blogNum) + "-" + email))
+    if not os.path.exists(picture_path):
+        os.mkdir(picture_path)
 
-    '''profile_picture.save(picture_path)
-    picture_path = picture_path[slice(picture_path.find(
-        '\profile_pics'), None)].replace('\\', '/')'''
-    return picture
+    picture_path = os.path.join(picture_path, picture)
+
+    blog_photo.save(picture_path)
+    picture_path = picture_path[slice(picture_path.find(r'\blogs'), None)].replace('\\', '/')
+    return picture_path
 
 
 @app.route("/blog/create", methods=["POST"])
@@ -1251,18 +1254,7 @@ def createBlog():
         "blogContent": request.form['blogContent'],
         "blogType": request.form['blogType']
     })
-
-    if (request.files):
-        pictures = []
-
-        for photo in request.files.getlist('blogPhotos[]'):
-            photoPath = saveBlogPhoto(photo, user.email)
-            pictures.append(photoPath)
-    else:
-        pictures = 'NULL'
-
-    print("PHOTOS: ", pictures)
-
+    
     title = form.json["blogName"]
     text = form.json["blogContent"]
     authorID = user.id
@@ -1270,20 +1262,35 @@ def createBlog():
     blogDate = date.today().strftime('%B %d, %Y')
     visibility = form.json["blogType"]
 
+
     new_blog = Blog(
         title = title,
         text = text,
         authorID = authorID,
         authorName = authorName,
         date = blogDate,
-        visibility = visibility,
-        pictures = pictures
+        visibility = visibility
     )
 
-    print("NEW BLOG: ", new_blog.text)
 
-    # db.session.add(new_blog)
-    # db.session.commit()
+    db.session.add(new_blog)
+    db.session.commit()
+
+    # SAVE PICTURE HERE
+    if (request.files):
+        pictures = []
+
+        for photo in request.files.getlist('blogPhotos[]'):
+            photoPath = saveBlogPhoto(photo, user.email, new_blog.blogID)
+            pictures.append(photoPath)
+        
+        pictures = ','.join(pictures)
+    else:
+        pictures = 'NULL'
+
+    blog = Blog.query.filter_by(blogID=new_blog.blogID).first()
+    blog.pictures = pictures
+    db.session.commit()
 
     return jsonify({"message": "Blog created!"}), 200
 
