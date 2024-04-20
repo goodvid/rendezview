@@ -7,23 +7,12 @@ import Event from "../../components/Event/Event";
 import { Button } from '@mui/material';
 //import { withAuth } from "../withAuth";
 
-// function Anon() {
-
-//     const navigate
-
-//     return (
-//         <div className='text-3xl ml-[9%] mt-[10%]'>
-//             Please sign up or log in to view your events!
-//         </div>
-//     )
-// }
-
-function EventList() {
+function BlogList() {
     const navigate = useNavigate();
 
     const createBlogClick = () => {
         navigate("/newblog");
-      };
+    };
 
     const [events, setEvents] = useState([]);
 
@@ -90,7 +79,7 @@ function Blogs() {
     return (
         <div className="w-full h-full">
             <MainNavbar />
-            {sessionStorage.getItem("token") ? <EventList /> : <div />}
+            {sessionStorage.getItem("token") ? <BlogList /> : <div />}
         </div>
     );
 }

@@ -1295,6 +1295,29 @@ def createBlog():
     return jsonify({"message": "Blog created!"}), 200
 
 
+@app.route("/blog/details", methods=["POST"])
+def getBlogDetails():
+    id = request.json["id"]
+    blog = Blog.query.filter_by(blogID=id).first()
+
+    if not blog:
+        return jsonify({"message": "Blog not found!"}), 404
+    
+    title = blog.title
+    text = blog.text
+    date = blog.date
+    authorID = blog.authorID
+    authorName = blog.authorName
+    pictures = blog.pictures
+
+    return jsonify({"title": title, 
+                    "text": text,
+                    "date": date,
+                    "authorID": authorID,
+                    "authorName": authorName,
+                    "pictures": pictures,
+                    "message": "Blog details returned!"}), 200
+
 
 @app.route("/check_user", methods = ["POST", "GET"])
 @jwt_required()
