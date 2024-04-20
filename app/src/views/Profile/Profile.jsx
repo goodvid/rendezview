@@ -299,6 +299,9 @@ function Profile() {
         <Button variant="contained" onClick={() => navigate("/addfriends")}>
           Add friend
         </Button>
+        <Button variant="contained" onClick={() => navigate("/creategroups")}>
+          Create Group
+        </Button>
       </Stack>
     );
   };

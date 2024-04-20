@@ -22,6 +22,7 @@ import FriendProfile from "./views/Friend/FriendProfile";
 import Friends from "./views/Friend/AddFriends";
 import FriendsList from "./views/Friend/FriendList";
 import ProtectedRoute from "./views/withAuth";
+import CreateGroups from "./views/CreateGroup/createGroup";
 
 function App() {
   return (
@@ -139,6 +140,14 @@ function App() {
               </ProtectedRoute>
             }
           ></Route>
+          <Route
+            path="/creategroups"
+            element={
+              <ProtectedRoute>
+                <CreateGroups />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </div>
