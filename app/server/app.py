@@ -1292,7 +1292,7 @@ def createBlog():
     blog.pictures = pictures
     db.session.commit()
 
-    return jsonify({"message": "Blog created!"}), 200
+    return jsonify({"message": "Blog created!", "blogID": new_blog.blogID}), 200
 
 
 @app.route("/blog/details", methods=["POST"])

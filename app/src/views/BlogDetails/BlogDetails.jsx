@@ -24,10 +24,29 @@ function BlogDetails() {
   const [date, setDate] = useState("");
   const [photos, setPhotos] = useState("");
 
+  const [username, setUsername] = useState("");
+
   const navigate = useNavigate();
 
   useEffect(() => {
-    // setLoading(true);
+    axios
+      .get("http://localhost:5000/user/getusername", {
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        console.log("USERNAME: ", res.data["username"]);
+        setUsername(res.data["username"]);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
+
+  useEffect(() => {  
+    setLoading(true);
     fetch("http://localhost:5000/blog/details", {
         method: "POST",
         headers: {
@@ -42,7 +61,7 @@ function BlogDetails() {
       })
       .then((data) => {
         if (resp.status === 200) {
-            // setLoading(false);
+            setLoading(false);
             setBlogTitle(data.title);
             setBlogText(data.text);
             setAuthorID(data.authorID);
@@ -73,37 +92,11 @@ function BlogDetails() {
     navigate(`/edit_event/${eventObject.eventID}`);
   };*/}
 
-  {/*const checkOwner = () => {
-    console.log("eventID:", eventObject.eventID);
-
-    if (eventObject.yelpID) {
-      //setIsOwner(false);
-      return false;
-    }
-return userID == eventObject.userID;*/}
-
-    // fetch("http://localhost:5000/check_owner", {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //     Authorization: "Bearer " + sessionStorage.getItem("token"),
-    //   },
-    //   body: JSON.stringify({
-    //     eventID: eventObject.eventID,
-    //   }),
-    // })
-    //   .then((response) => response.json())
-    //   .then((data) => {
-    //     console.log("owner json:", data);
-    //     //console.log("owner:", data.isOwner);
-    //     //setIsOwner(data.isOwner);
-    //     // setLoading(false);
-    //   })
-    //   .catch((error) => {
-    //     console.error("Error:", error);
-    //     // setLoading(false);
-    //   });
-  //};
+  const checkOwner = () => {   
+    console.log(authorName);
+    console.log(username);
+    return username == authorName;
+  }
   
   return (
     <div>
@@ -123,15 +116,6 @@ return userID == eventObject.userID;*/}
                         <h3 style={{ color: "#818181" }}> by {authorName} </h3>
                     </Stack>
                 </Stack>
-
-                <Stack direction="row" justifyContent="flex-end" >
-                    <GrayButton textAlign="left" variant="contained" justifyContent="center" style={{margin: 8, height: "30%"}} >
-                        Edit Event
-                    </GrayButton>
-                    <RedButton textAlign="left" variant="contained" style={{margin: 8, height: "30%"}}>
-                        Delete Event
-                    </RedButton> 
-                </Stack>
             </Stack>
               
             <Stack>
@@ -144,8 +128,16 @@ return userID == eventObject.userID;*/}
 
             </div>
 
-            {/*{checkOwner() &&
-              (sessionStorage.getItem("token") ? <EditDelete /> : <div />)}*/}
+            {checkOwner() && (sessionStorage.getItem("token") ? 
+              <Stack direction="row" justifyContent="flex-end" >
+                  <GrayButton textAlign="left" variant="contained" justifyContent="center" style={{margin: 8, height: "30%"}} >
+                      Edit Event
+                  </GrayButton>
+                  <RedButton textAlign="left" variant="contained" style={{margin: 8, height: "30%"}}>
+                      Delete Event
+                  </RedButton> 
+              </Stack> 
+              : <div />)}
           </Stack>
         </Stack>
       )}

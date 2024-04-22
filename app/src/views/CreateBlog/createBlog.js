@@ -76,13 +76,12 @@ function CreateBlog() {
           alert("unauthorized");
           return response.json();
         } else if (response.status == 200) {
-          alert("Blog made"); 
           return response.json();
         }
       })
       .then((data) => {
         console.log(data);
-        // navigate(`/eventdetails/${data.eventID}`);
+        navigate(`/blogdetails/${data.blogID}`);
       })
       .catch((error) => {
         console.log("error", error);
