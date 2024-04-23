@@ -2,7 +2,7 @@ from flask import Flask,  request, jsonify, session
 from flask_session import Session
 from models import db  # Importing the db instance and models
 from flask_cors import CORS, cross_origin
-from models import User, Event, EventRating, Status
+from models import User, Event, EventRating, Status, Group
 from types import SimpleNamespace
 from dateutil import parser
 from sqlalchemy.exc import SQLAlchemyError
@@ -377,6 +377,86 @@ def get_recommended():
         event_values.append(values)
 
     return {'status': '200', 'recommendations': event_values}
+
+@jwt_required()
+@app.route('/group/leave_group', methods=['GET'])
+def leave_group():
+    
+    group_num = request.json["gid"]
+    curr = User.query.filter_by(email=get_jwt_identity()['email']).first()
+    
+    group = Group.query.filter_by(gid=group_num).first()
+    
+    if group.user == curr.id:
+        db.session.delete(group)
+    else:
+        members = group.friends
+        members.remove(str(curr.id))
+        group.friends = members
+    db.session.commit()
+    
+    return {'status':200, 'msg': "left group"}
+
+
+@jwt_required()
+@app.route('/group/add_members', methods = ["GET", "POST"])
+def add_members():
+    req = request.json
+
+    friend = req['friend']
+    gid = req['gid']
+
+    if gid != User.query.filter_by(email=get_jwt_identity()["email"]).first().id:
+        return {"status": "401", "msg": "cannot manage this group"}
+
+    group = Group.query.filter_by(gid=gid)
+
+    members = group.friends
+
+    members.append("," + friend)
+
+    group.friends = members
+
+    db.session.commit()
+
+
+@jwt_required()
+@app.route("/group/remove_members", methods=["GET", "POST"])
+def remove_members():
+    req = request.json
+
+    friend = req["friend"]
+    gid = req["gid"]
+
+    group = Group.query.filter_by(gid=gid)
+    
+    if gid != User.query.filter_by(email=get_jwt_identity()["email"]).first().id:
+        return {"status": "401", "msg": "cannot manage this group"}
+
+    members = group.friends
+
+    members.remove("," + friend)
+
+    group.friends = members
+
+    db.session.commit()
+
+
+@jwt_required()
+@app.route("/group/view_members", methods=["POST"])
+def view_members():
+    gid = request.json["gid"]
+
+    members = []
+
+    members = Group.query.filter_by(gid=gid).first().members.split(",")
+
+    for member in members:
+
+        members.append(
+            {"id": member, "name": User.query.filter_by(id=member).first().id}
+        )
+    return {'status':200, 'members': members}
 
 
 @app.route('/filtered_events', methods=['GET'])
@@ -1282,8 +1362,6 @@ def delete_blog():
     #db.session.update()
     
     return jsonify({"message": "deletion successful"}), 200
-
-
 
 
 @app.route("/check_user", methods = ["POST", "GET"])
