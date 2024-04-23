@@ -15,12 +15,14 @@ import Settings from "./views/Settings/Settings";
 import ChangeUsername from "./views/Settings/ChangeUsername/ChangeUsername";
 import ChangeEmail from "./views/Settings/ChangeEmail/ChangeEmail";
 import ChangePassword from "./views/Settings/ChangePassword/ChangePassword";
+import ChangeProfilePicture from "./views/Settings/ChangeProfilePic/ChangeProfilePic";
 import ResetPassword from "./views/ResetPassword/ResetPassword";
 import Test from "./views/Test/Test";
 import FriendProfile from "./views/Friend/FriendProfile";
 import Friends from "./views/Friend/AddFriends";
 import FriendsList from "./views/Friend/FriendList";
 import ProtectedRoute from "./views/withAuth";
+
 function App() {
   return (
     <div className="App">
@@ -111,6 +113,7 @@ function App() {
             }
           />
           <Route path="/resetpassword" element={<ResetPassword />} />
+          <Route path="/changeprofilepic" element={<ChangeProfilePicture />} />
           <Route path="/test" element={<Test />} />
           <Route
             path="/friend/:id"
