@@ -391,6 +391,9 @@ class GoogleAPI:
             print(f"Event ID: {event_id}")
             print(
                 f"Event created and invitations sent: {event_result.get('htmlLink')}")
+            print("--------moreee--------")
+            print(event_result)
+            print("--------moreee--------")
             return event_result, event_id
         except HttpError as error:
             print(f"An error occurred: {error}")

@@ -153,6 +153,9 @@ def add_event_with_people(event, email_lst):
                 summary=event_title, start_date=event_start_date, start_time=event_start_time, time_zone=event_time_zone)
             google_event_tuple = google_api_instance.add_event_with_attendees(
                 creds=credentials, event=google_event, attendee_emails=email_lst)
+            print("-------debug-------")
+            pprint(google_event_tuple)
+            print("-------debug-------")
             if not google_event_tuple:
                 print("here")
                 return {"flag": False, "status": 400, "message": "Event was not added successfully"}

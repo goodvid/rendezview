@@ -1,39 +1,32 @@
-import "./ChangeUsername.css";
-import { Avatar, Button, Stack, IconButton, TextField } from "@mui/material/";
+import { Avatar, Button, Stack, IconButton, Badge } from "@mui/material/";
 import SettingsIcon from "@mui/icons-material/Settings";
+import EditIcon from "@mui/icons-material/Edit";
 import MainNavbar from "../../../components/MainNavbar/MainNavbar";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, React } from "react";
 import axios from "axios";
 
-function ChangeUsername() {
+function ChangeProfilePicture() {
   const navigate = useNavigate();
-
-  const settingsClick = () => {
-    navigate("/settings");
-  };
-
-  const [email, setEmail] = useState("");
-  const updateEmail = (event) => {
-    if (event != null) {
-      setEmail(event.target.value);
-    }
-  };
-  const [newUsername, setnewUsername] = useState("");
-  const updateNewUsername = (event) => {
-    if (event != null) {
-      setnewUsername(event.target.value);
-    }
-  };
-  const [confirmNewUsername, setconfirmNewUsername] = useState("");
-  const updateConfirmNewUsername = (event) => {
-    if (event != null) {
-      setconfirmNewUsername(event.target.value);
-    }
-  };
 
   const [username, setUsername] = useState("");
   const [profilePic, setProfilePic] = useState("");
+  const [displayPic, setDisplayPic] = useState();
+  const [profPic, setProfPic] = useState(null);
+  const handleProfPicChange = (event) => {
+    if (event) {
+      const file = event.target.files[0];
+      var pattern = /image-*/;
+
+      if (!file.type.match(pattern)) {
+        alert("Please choose an image file.");
+        return;
+      }
+
+      setDisplayPic(URL.createObjectURL(event.target.files[0]));
+      setProfPic(event.target.files[0]);
+    }
+  };
 
   useEffect(() => {
     axios
@@ -67,33 +60,34 @@ function ChangeUsername() {
       });
   }, []);
 
+  const settingsClick = () => {
+    navigate("/settings");
+  };
+
   let resp = "";
 
   const saveClick = (event) => {
-    if (newUsername != confirmNewUsername) {
-      alert("Your usernames don't match! Please ensure they are the same.");
+    event.preventDefault();
+
+    let formData = new FormData();
+    if (profPic) {
+      formData.append("profilePicture", profPic);
+    } else {
       return;
     }
 
-    console.log(email + newUsername);
-    event.preventDefault();
-
     // Send to Flask server
-    fetch("http://localhost:5000/user/changeusername", {
+    fetch("http://localhost:5000/user/changeprofilepic", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + sessionStorage.getItem("token"),
-        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email: email, newUsername: newUsername }),
+      body: formData,
     })
       .then((response) => {
         if (response.status === 200) {
           resp = response;
           return response.json();
-        } else if (response.status === 401) {
-          alert("That username is taken. Please choose a different username.");
-          return false;
         } else {
           alert("Unauthorized.");
           return false;
@@ -102,7 +96,7 @@ function ChangeUsername() {
       .then((data) => {
         if (resp.status === 200) {
           console.log(sessionStorage.getItem("token"));
-          navigate("/settings");
+          window.location.reload();
         }
       })
       .catch((error) => {
@@ -162,19 +156,43 @@ function ChangeUsername() {
             </Stack>
           </Stack>
 
-          <Stack direction="column" spacing={2}>
-            <h1 style={{ textAlign: "left" }}>Change Username</h1>
-
-            <Stack direction="column" spacing={1}>
-              <h4 style={{ textAlign: "left" }}>Email</h4>
-              <TextField onChange={updateEmail} />
-
-              <h4 style={{ textAlign: "left" }}>New Username</h4>
-              <TextField onChange={updateNewUsername} />
-
-              <h4 style={{ textAlign: "left" }}>Confirm New Username</h4>
-              <TextField onChange={updateConfirmNewUsername} />
-            </Stack>
+          <Stack alignItems={"center"}>
+            <h1 style={{ textAlign: "left" }}>Change Profile Picture</h1>
+            <div className="mt-4 w-[300px]">
+              <Stack>
+                <Badge
+                  overlap="circular"
+                  anchorOrigin={{
+                    vertical: "bottom",
+                    horizontal: "right",
+                  }}
+                  badgeContent={
+                    <label htmlFor="icon-button-file">
+                      <IconButton
+                        aria-label="upload picture"
+                        style={{ background: "white" }}
+                        component="span"
+                      >
+                        <EditIcon />
+                      </IconButton>
+                    </label>
+                  }
+                >
+                  <Avatar
+                    sx={{ width: "250px", height: "250px" }}
+                    alt={"avatar"}
+                    src={displayPic}
+                  />
+                </Badge>
+                <input
+                  accept="image/*"
+                  id="icon-button-file"
+                  type="file"
+                  style={{ display: "none" }}
+                  onChange={handleProfPicChange}
+                />
+              </Stack>
+            </div>
 
             <Button
               className="SaveButton"
@@ -186,6 +204,7 @@ function ChangeUsername() {
                 width: "200px",
                 height: "50px",
                 backgroundColor: "#02407F",
+                mt: 8,
               }}
             >
               Save Changes
@@ -197,4 +216,4 @@ function ChangeUsername() {
   );
 }
 
-export default ChangeUsername;
+export default ChangeProfilePicture;
