@@ -28,8 +28,7 @@ function Register() {
   const [alertMsg, setAlertMsg] = useState("");
 
   const [displayPic, setDisplayPic] = useState();
-  const [profilePic, setProfilePic] = useState(null);
-
+  const [profilePic, setProfilePic] = useState([null]);
   const handleProfilePicChange = (event) => {
     if (event) {
       const file = event.target.files[0];

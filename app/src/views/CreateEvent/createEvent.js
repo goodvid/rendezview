@@ -8,6 +8,12 @@ import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import InfoIcon from "@mui/icons-material/Info";
 import LocationCityIcon from "@mui/icons-material/LocationCity";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import FileUploadIcon from "@mui/icons-material/FileUpload";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { IconButton, Stack, Box } from "@mui/material";
+import ImageList from "@mui/material/ImageList";
+import ImageListItem from "@mui/material/ImageListItem";
+import ImageListItemBar from "@mui/material/ImageListItemBar";
 import {
   OutlinedInput,
   Select,
@@ -59,7 +65,25 @@ function CreateEvent() {
       ...eventData,
       [event.target.name]: event.target.value,
     });
+    console.log(eventData, event.target);
   };
+
+  const [imagePreviews, setImagePreviews] = useState([]);
+  const [eventPhotos, setEventPhotos] = useState([]);
+  const handlePhotoChange = (event) => {
+    let previews = [];
+    let photos = [];
+
+    for (let i = 0; i < event.target.files.length; i++) {
+      previews.push(URL.createObjectURL(event.target.files[i]));
+      photos.push(event.target.files[i]);
+      console.log("Picture " + i + ": " + event.target.files[i].name);
+    }
+
+    setImagePreviews(previews);
+    setEventPhotos(photos);
+  };
+
   const handleSubmit = () => {
     // event.preventDefault();
     fetch("http://localhost:5000/event/create", {
@@ -122,10 +146,12 @@ function CreateEvent() {
       <Navbar />
       <div className="m-[5%] flex flex-col gap-4">
         <div className="text-4xl font-bold text-left mb-[3%]">New Event</div>
+
         <div className="flex flex-row gap-3">
           <InfoIcon fontSize="large" style={{ color: "#b2b4b3" }} />
           <div className="text-3xl text-left"> Basic Info</div>
         </div>
+
         <div className="flex flex-row gap-1">
           <div className="text-l  text-left "> Event Title</div>
           <div className="text-l  text-left text-red-600"> *</div>
@@ -133,14 +159,16 @@ function CreateEvent() {
         <input
           name="eventName"
           onChange={handleChange}
-          className="w-[80%] h-[45px] border-login-blue outline rounded-md align-left"
+          className="w-full h-[45px] border-login-blue outline rounded-md align-left"
         ></input>
+
         <div className="text-l  text-left "> Description</div>
         <input
           name="eventDesc"
           onChange={handleChange}
-          className="w-[80%] h-[300px] border-login-blue outline rounded-md align-left"
+          className="w-full h-[300px] border-login-blue outline rounded-md align-left"
         ></input>
+
         <div className="flex flex-row gap-1">
           <div className="text-l  text-left "> Organizer</div>
           <div className="text-l  text-left text-red-600"> *</div>
@@ -148,7 +176,7 @@ function CreateEvent() {
         <input
           name="hostName"
           onChange={handleChange}
-          className="w-[80%] h-[45px] border-login-blue outline rounded-md align-left"
+          className="w-full h-[45px] border-login-blue outline rounded-md align-left"
         ></input>
         <div className="text-l  text-left ">Category</div>
         <FormControl fullWidth>
@@ -191,6 +219,72 @@ function CreateEvent() {
             Public Event
           </button>
         </div>
+
+        <div className="text-l  text-left ">Event Photos</div>
+        <div class="flex items-center justify-center w-full">
+          <label
+            for="dropzone-file"
+            class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
+          >
+            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+              <FileUploadIcon
+                fontSize="large"
+                style={{ color: "#6b7280", marginBottom: 5 }}
+              />
+              <p class="mb-2 text-gray-500 dark:text-gray-400">
+                Click to upload
+              </p>
+            </div>
+            <input
+              id="dropzone-file"
+              type="file"
+              multiple
+              class="hidden"
+              onChange={handlePhotoChange}
+            />
+          </label>
+        </div>
+
+        {imagePreviews && (
+          <Stack direction="row" gap={2} sx={{ overflowX: "auto" }}>
+            {imagePreviews.map((img, i) => (
+              <img src={img} style={{ height: "200px" }} />
+            ))}
+          </Stack>
+        )}
+
+        <div className="text-l  text-left ">Event Photos</div>
+        <div class="flex items-center justify-center w-full">
+          <label
+            for="dropzone-file"
+            class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
+          >
+            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+              <FileUploadIcon
+                fontSize="large"
+                style={{ color: "#6b7280", marginBottom: 5 }}
+              />
+              <p class="mb-2 text-gray-500 dark:text-gray-400">
+                Click to upload
+              </p>
+            </div>
+            <input
+              id="dropzone-file"
+              type="file"
+              multiple
+              class="hidden"
+              onChange={handlePhotoChange}
+            />
+          </label>
+        </div>
+
+        {imagePreviews && (
+          <Stack direction="row" gap={2} sx={{ overflowX: "auto" }}>
+            {imagePreviews.map((img, i) => (
+              <img src={img} style={{ height: "200px" }} />
+            ))}
+          </Stack>
+        )}
 
         <hr className="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"></hr>
 

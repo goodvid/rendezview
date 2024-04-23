@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, session
 from flask_session import Session
 from models import db  # Importing the db instance and models
 from flask_cors import CORS, cross_origin
-from models import User, Event, EventRating, Status
+from models import User, Event, EventRating, Status, Blog
 from types import SimpleNamespace
 from dateutil import parser
 from sqlalchemy.exc import SQLAlchemyError
@@ -25,7 +25,7 @@ from flask_jwt_extended import (
 )
 from sqlalchemy import or_
 from config import ApplicationConfig
-import datetime
+from datetime import (datetime, date, timedelta)
 from dateutil import parser
 import pytz
 
@@ -63,7 +63,10 @@ def link_google_account():
     if response["flag"]:
         email = response["email"]
         # access_token = create_access_token(identity=email, username=email)
-        access_token = create_access_token(identity={"email": email, "name": email})
+        access_token = create_access_token(
+            identity={"email": email, "name": email},
+            fresh=timedelta(minutes=60),
+        )
         # need to get user and strengthen validationm for email
         # but for now its ok, couldn't save stuff to database
         response = jsonify(
@@ -85,7 +88,7 @@ def link_google_account():
 
 
 @app.route("/delinkGoogle", methods=["GET"])
-@jwt_required
+@jwt_required()
 def signOutFromGoogle():
     # data = request.json
     # print("------logs-------")
@@ -112,7 +115,8 @@ def create_token():
     print(email, password)
     if user and password == user.password:
         access_token = create_access_token(
-            identity={"email": email, "name": user.username}
+            identity={"email": email, "name": user.username},
+            fresh=timedelta(minutes=60),
         )
         return jsonify(access_token=access_token)
     else:
@@ -184,7 +188,8 @@ def changeemail():
     if not duplicate and user:
         username = user.username
         access_token = create_access_token(
-            identity={"email": request.json["newEmail"], "name": username}
+            identity={"email": request.json["newEmail"], "name": username},
+            fresh=timedelta(minutes=60),
         )
         user.email = request.json["newEmail"]
         print("check here", get_jwt_identity(), request.json["newEmail"])
@@ -276,7 +281,8 @@ def resetpassword():
     user.password = request.json["newPassword"]
     db.session.commit()
     access_token = create_access_token(
-        identity={"email": request.json["email"], "name": user.username}
+        identity={"email": request.json["email"], "name": user.username},
+        fresh=timedelta(minutes=60),
     )
 
     return jsonify({"message": "Password reset successfully"}), 200
@@ -351,18 +357,10 @@ def register():
     )
     db.session.add(new_user)
     db.session.commit()
-    access_token = create_access_token(identity={"email": email, "name": email})
-    return (
-        jsonify(
-            {
-                "message": "Account created!",
-                "status": 200,
-                "access_token": access_token,
-                "location": location,
-            }
-        ),
-        200,
+    access_token = create_access_token(
+        identity={"email": email, "name": email}, fresh=timedelta(minutes=60)
     )
+    return jsonify({"message": "Account created!", "status": 200, "access_token": access_token})
     # return jsonify(access_token), 200
 
 
@@ -653,12 +651,15 @@ def get_user():
             "relationship": friend.status,
         }
     else:
-        return {
-            "status": "200",
-            "username": user.username,
-            "isFriend": False,
-            "relationship": "",
-        }
+        friend = Status.query.filter_by(friend=curr.id, user=user.id).first()
+        if friend:
+            return {
+                "status": "200",
+                "username": user.username,
+                "isFriend": False,
+                "relationship": "asked to follow",
+            }
+        return {"status": "200", "username": user.username, "isFriend": False, "relationship": ""}
 
 
 @app.route("/user_events", methods=["GET"])
@@ -870,8 +871,28 @@ def get_friends():
         return {"status": 404}
     return {"status": 200, "names": names, "requests": requests}
 
+@app.route('/friend/deny_request', methods=['POST'])
+@jwt_required()
+def deny_request():
+    data = request.json
+    print("check here")
 
-@app.route("/delete_event", methods=["POST"])
+    curr = User.query.filter_by(email=get_jwt_identity()['email']).first()
+
+    friend = User.query.filter_by(id=data).first()
+
+    relationship = Status.query.filter_by(user = friend.id, friend = curr.id).first()
+
+    if relationship:
+        db.session.delete(relationship)
+        db.session.commit()
+        print("deleted here")
+    else:
+        return {"status":"400", "message":"friend not found"}
+    return {"status": "200"}
+
+
+@app.route("/delete_event", methods=['POST'])
 def delete_event():
     data = request.json
 
@@ -1412,6 +1433,112 @@ def check_owner():
         isOwner = True
 
     return jsonify({"userID": user.id, "eventID": event_id, "isOwner": isOwner}), 200
+
+
+def saveBlogPhoto(blog_photo, email, blogNum):
+    picture = blog_photo.filename
+    picture_path = os.path.abspath(os.path.join(os.path.dirname(
+        __file__), os.pardir, r"public\blogs\\", str(blogNum) + "-" + email))
+    if not os.path.exists(picture_path):
+        os.mkdir(picture_path)
+
+    picture_path = os.path.join(picture_path, picture)
+
+    blog_photo.save(picture_path)
+    picture_path = picture_path[slice(picture_path.find(r'\blogs'), None)].replace('\\', '/')
+    return picture_path
+
+
+@app.route("/blog/create", methods=["POST"])
+@jwt_required()
+def createBlog():
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(email=current_user["email"]).first()
+
+    form = jsonify({
+        "blogName": request.form['blogName'], 
+        "blogContent": request.form['blogContent'],
+        "blogType": request.form['blogType']
+    })
+    
+    title = form.json["blogName"]
+    text = form.json["blogContent"]
+    authorID = user.id
+    authorName = user.username
+    blogDate = date.today().strftime('%B %d, %Y')
+    visibility = form.json["blogType"]
+
+
+    new_blog = Blog(
+        title = title,
+        text = text,
+        authorID = authorID,
+        authorName = authorName,
+        date = blogDate,
+        visibility = visibility
+    )
+
+
+    db.session.add(new_blog)
+    db.session.commit()
+
+    # SAVE PICTURE HERE
+    if (request.files):
+        pictures = []
+
+        for photo in request.files.getlist('blogPhotos[]'):
+            photoPath = saveBlogPhoto(photo, user.email, new_blog.blogID)
+            pictures.append(photoPath)
+        
+        pictures = ','.join(pictures)
+    else:
+        pictures = 'NULL'
+
+    blog = Blog.query.filter_by(blogID=new_blog.blogID).first()
+    blog.pictures = pictures
+    db.session.commit()
+
+    return jsonify({"message": "Blog created!", "blogID": new_blog.blogID}), 200
+
+
+@app.route("/blog/details", methods=["POST"])
+def getBlogDetails():
+    id = request.json["id"]
+    blog = Blog.query.filter_by(blogID=id).first()
+
+    if not blog:
+        return jsonify({"message": "Blog not found!"}), 404
+    
+    title = blog.title
+    text = blog.text
+    date = blog.date
+    authorID = blog.authorID
+    authorName = blog.authorName
+    pictures = blog.pictures
+
+    return jsonify({"title": title, 
+                    "text": text,
+                    "date": date,
+                    "authorID": authorID,
+                    "authorName": authorName,
+                    "pictures": pictures,
+                    "message": "Blog details returned!"}), 200
+
+@app.route("/blog/delete_history", methods = ["GET"])
+@jwt_required()
+def delete_blog():
+    user = get_jwt_identity()
+    
+    curr = User.query.filter_by(email=user["email"]).first()
+    
+    curr.blogs.clear()
+    
+    db.session.commit()
+    #db.session.update()
+    
+    return jsonify({"message": "deletion successful"}), 200
+
+
 
 
 @app.route("/check_user", methods=["POST", "GET"])
