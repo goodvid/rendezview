@@ -716,6 +716,8 @@ def add_event_to_calendar():
         response = handle_google_api.add_to_calendar(event=event)
         if response["status"] == 200:
             return jsonify({"status": 200, "message": "Success"}), 200
+        elif response["status"] == 100:
+            return jsonify({"status": 400, "message": "This conflicts with another event!"}), 400
         else:
             return jsonify({"status": 400, "message": "Something went wrong with add to calendar"}), 400
     else:

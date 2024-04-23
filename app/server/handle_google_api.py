@@ -73,7 +73,7 @@ def add_to_calendar(event):
             google_event_tuple = google_api_instance.add_event(
                 creds=credentials, event=google_event)
             if google_event_tuple == "conflict":
-                return {"flag": False, "status": 400, "message": "You have a conflicting event at this time!"}
+                return {"flag": False, "status": 100, "message": "You have a conflicting event at this time!"}
             elif not google_event_tuple:
                 print("here")
                 return {"flag": False, "status": 400, "message": "Event was not added successfully"}

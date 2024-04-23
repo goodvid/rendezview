@@ -859,13 +859,13 @@ function EventDetails() {
                 >
                   See RSVP List
                 </GrayButton>
-                <GrayButton
+                {/* <GrayButton
                   textAlign="Center"
                   variant="contained"
                   onClick={dummyCall}
                 >
                   Dummy Call
-                </GrayButton>
+                </GrayButton> */}
                 <Dialog open={openRSVP} onClose={handleCloseRSVPDialog}>
                   <DialogTitle>RSVP List</DialogTitle>
                   <DialogContent>
