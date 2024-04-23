@@ -2,7 +2,7 @@ from flask import Flask,  request, jsonify, session
 from flask_session import Session
 from models import db  # Importing the db instance and models
 from flask_cors import CORS, cross_origin
-from models import User, Event, EventRating, Status
+from models import User, Event, EventRating, Status, Blog
 from types import SimpleNamespace
 from dateutil import parser
 from sqlalchemy.exc import SQLAlchemyError
@@ -23,7 +23,7 @@ from flask_jwt_extended import (create_access_token,
 )
 from sqlalchemy import or_
 from config import ApplicationConfig
-from datetime import timedelta
+from datetime import (datetime, date)
 from dateutil import parser
 import datetime
 
@@ -1268,6 +1268,96 @@ def check_owner():
 
 
     return jsonify({"userID": user.id, "eventID": event_id, "isOwner": isOwner}), 200
+
+
+def saveBlogPhoto(blog_photo, email, blogNum):
+    picture = blog_photo.filename
+    picture_path = os.path.abspath(os.path.join(os.path.dirname(
+        __file__), os.pardir, r"public\blogs\\", str(blogNum) + "-" + email))
+    if not os.path.exists(picture_path):
+        os.mkdir(picture_path)
+
+    picture_path = os.path.join(picture_path, picture)
+
+    blog_photo.save(picture_path)
+    picture_path = picture_path[slice(picture_path.find(r'\blogs'), None)].replace('\\', '/')
+    return picture_path
+
+
+@app.route("/blog/create", methods=["POST"])
+@jwt_required()
+def createBlog():
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(email=current_user["email"]).first()
+
+    form = jsonify({
+        "blogName": request.form['blogName'], 
+        "blogContent": request.form['blogContent'],
+        "blogType": request.form['blogType']
+    })
+    
+    title = form.json["blogName"]
+    text = form.json["blogContent"]
+    authorID = user.id
+    authorName = user.username
+    blogDate = date.today().strftime('%B %d, %Y')
+    visibility = form.json["blogType"]
+
+
+    new_blog = Blog(
+        title = title,
+        text = text,
+        authorID = authorID,
+        authorName = authorName,
+        date = blogDate,
+        visibility = visibility
+    )
+
+
+    db.session.add(new_blog)
+    db.session.commit()
+
+    # SAVE PICTURE HERE
+    if (request.files):
+        pictures = []
+
+        for photo in request.files.getlist('blogPhotos[]'):
+            photoPath = saveBlogPhoto(photo, user.email, new_blog.blogID)
+            pictures.append(photoPath)
+        
+        pictures = ','.join(pictures)
+    else:
+        pictures = 'NULL'
+
+    blog = Blog.query.filter_by(blogID=new_blog.blogID).first()
+    blog.pictures = pictures
+    db.session.commit()
+
+    return jsonify({"message": "Blog created!", "blogID": new_blog.blogID}), 200
+
+
+@app.route("/blog/details", methods=["POST"])
+def getBlogDetails():
+    id = request.json["id"]
+    blog = Blog.query.filter_by(blogID=id).first()
+
+    if not blog:
+        return jsonify({"message": "Blog not found!"}), 404
+    
+    title = blog.title
+    text = blog.text
+    date = blog.date
+    authorID = blog.authorID
+    authorName = blog.authorName
+    pictures = blog.pictures
+
+    return jsonify({"title": title, 
+                    "text": text,
+                    "date": date,
+                    "authorID": authorID,
+                    "authorName": authorName,
+                    "pictures": pictures,
+                    "message": "Blog details returned!"}), 200
 
 @app.route("/blog/delete_history", methods = ["GET"])
 @jwt_required()
