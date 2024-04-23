@@ -41,6 +41,8 @@ import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 
 function Main() {
   const [events, setEvents] = useState([]);
+  const [featuredEvents, setFeaturedEvents] = useState();
+  const [featuredLoading, setFeaturedLoading] = useState(true);
   const [location, setLocation] = useState("");
   const [startDate, setStartDate] = useState(null);
   const [unixStartDate, setUnixStartDate] = useState("");
@@ -49,7 +51,6 @@ function Main() {
   const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
   const [locationInput, setLocationInput] = useState("West Lafayette, IN, USA");
-  const [userCoords, setUserCoords] = useState(null);
   const [locLoading, setLocLoading] = useState(false);
   const [eventType, setEventType] = useState("Featured");
   const [recommendedEvents, setRecommendedEvents] = useState([]);
@@ -86,6 +87,7 @@ function Main() {
 
   useEffectSkipFirstRender(() => {
     fetchAPIEvents();
+    // fetchAndDisplayEvents();
   }, [location, isFree, sortOn, unixStartDate, category]);
 
   useEffect(() => {
@@ -94,7 +96,6 @@ function Main() {
   }, [startDate]);
 
   useEffect(() => {
-    console.log("hi");
     // Get the recommended events once the backend function is made
     if (sessionStorage.getItem("token")) {
       axios
@@ -113,7 +114,16 @@ function Main() {
           setLoading(false);
         });
     }
+
+    getUserLocation();
   }, []);
+
+  useEffect(() => {
+    if (events.length > 0) {
+      setFeaturedEvents(events[0]);
+      setFeaturedLoading(false);
+    }
+  }, [events]);
 
   const getUserLocation = () => {
     setLocLoading(true);
@@ -199,28 +209,6 @@ function Main() {
     setLocation(place.formatted_address);
     setLocationInput(place.formatted_address);
   }, []);
-
-  // useEffect(() => {
-  //   getIPGeolocation();
-  // }, []);
-
-  // const getIPGeolocation = () => {
-  //   setLocLoading(true);
-  //   fetch("https://ipinfo.io/json?token=f92cb4e0401c19")
-  //     .then((response) => response.json())
-  //     .then((data) => {
-  //       const { city, region, country } = data;
-  //       const formattedAddress = `${city}, ${region}, ${country}`;
-
-  //       setLocation(formattedAddress);
-  //       setLocationInput(formattedAddress);
-  //       setLocLoading(false);
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error getting IP-based location:", error);
-  //       setLocLoading(false);
-  //     });
-  // };
 
   const LocationFilter = () => {
     return (
@@ -330,8 +318,29 @@ function Main() {
   return (
     <div className="w-full h-full">
       <MainNavbar />
-      <div className="w-full h-[360px] bg-light-blue flex justify-center items-center">
-        <span className="font-medium text-3xl">Featured Event + Details</span>
+      <div
+        style={{
+          background: "linear-gradient(to right,#6ecefa, #78faaf)",
+        }}
+        className="w-full h-[360px] bg-light-blue flex justify-center items-center"
+      >
+        {featuredLoading ? (
+          <Stack width="100%" height="100%" alignItems="center">
+            <l-pinwheel
+              size="100"
+              stroke="3.5"
+              speed="0.9"
+              color="black"
+            ></l-pinwheel>
+          </Stack>
+        ) : (
+          <Stack margin="3rem" textAlign="left" alignItems="flex-start">
+            <h1>{featuredEvents.name}</h1>
+            <h3>{featuredEvents.location}</h3>
+            <h3>{dayjs(featuredEvents.start_date).toString()}</h3>
+            <p>{featuredEvents.desc}</p>
+          </Stack>
+        )}
       </div>
       <div className="w-full h-[533px] flex flex-col">
         <div className="flex overflow-x-scroll p-10" style={{ height: "auto" }}>
