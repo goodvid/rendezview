@@ -88,8 +88,11 @@ def link_google_account():
             identity={"email": email, "name": email},
             fresh=timedelta(minutes=60),
         )
+        print(access_token)
+        # if "quiz" in response:
         # need to get user and strengthen validationm for email
         # but for now its ok, couldn't save stuff to database
+
         response = jsonify(
             {"access_token": access_token, "message": "success",
                 "status": 200, "login_method": "google", "quiz": response["quiz"]}
@@ -109,9 +112,13 @@ def link_google_account():
 def signOutFromGoogle():
     # data = request.json
     # print("------logs-------")
-    # print(data)
+    # print("heerrrrrrr")
     # print("------logs-------")
     response = handle_google_api.handle_deauthentication()
+    # print("---------log---------")
+    # print("signing out")
+    # print(response)
+    # print("---------log---------")
     jti = get_jwt()["jti"]
     BLOCKLIST.add(jti)
     if response:

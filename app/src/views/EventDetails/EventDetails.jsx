@@ -379,7 +379,7 @@ function EventDetails() {
           return false;
         }
       })
-      .then(() => {})
+      .then(() => { })
       .catch((error) => {
         console.log("error", error);
         setLoading(false);
@@ -489,8 +489,8 @@ function EventDetails() {
       newFilter === "all"
         ? eventRSVPList
         : eventRSVPList.filter(
-            (item) => item.status.toLowerCase() === newFilter
-          );
+          (item) => item.status.toLowerCase() === newFilter
+        );
 
     setDisplayList(filteredList);
   };
@@ -526,7 +526,7 @@ function EventDetails() {
         } else {
           alert(
             "Can't get RSVP list of an event not added to calendar: " +
-              data.message
+            data.message
           );
           setOpenRSVP(false);
         }
@@ -590,7 +590,7 @@ function EventDetails() {
             <Stack direction="row" alignItems="center" gap="0.5rem">
               <EventDetailsButton
                 startIcon={<EventIcon />}
-                // onClick={}
+              // onClick={}
               >
                 Add to Calendar
               </EventDetailsButton>
@@ -1094,10 +1094,9 @@ function EventDetails() {
                         <ListItem key={index}>
                           <ListItemText
                             primary={item.name}
-                            secondary={`Status: ${
-                              item.status.charAt(0).toUpperCase() +
+                            secondary={`Status: ${item.status.charAt(0).toUpperCase() +
                               item.status.slice(1)
-                            }`}
+                              }`}
                           />
                         </ListItem>
                       ))}

@@ -200,8 +200,9 @@ def handle_authentication():
         credentials = google_api_instance.user_token_exists()
         # prevents re-logging in
         if credentials != False:
+            # since they already have credentials
             user_email = google_api_instance.get_user_email(credentials)
-            return {"flag": True, "credentials": credentials, "email": user_email}
+            return {"flag": True, "credentials": credentials, "email": user_email, "quiz": True}
         else:
             credentials = google_api_instance.authenticate()
             user_email = google_api_instance.get_user_email(credentials)
@@ -228,6 +229,9 @@ def handle_authentication():
 def handle_deauthentication():
     try:
         google_api_instance = GoogleAPI(os.getcwd())
+        # print("Looooooog")
+        # print(google_api_instance.BASE_PATH)
+        # print("Loooooog")
         token_data = google_api_instance.revoke_google_token()
         # if token_data:
         #     # because right now username and email are the same
