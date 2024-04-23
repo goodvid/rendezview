@@ -25,6 +25,7 @@ from sqlalchemy import or_
 from config import ApplicationConfig
 from datetime import (datetime, date)
 from dateutil import parser
+from datetime import timedelta
 import datetime
 
 from apiFetch.yelpAPI import YelpAPI
