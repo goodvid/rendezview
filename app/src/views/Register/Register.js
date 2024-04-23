@@ -14,7 +14,7 @@ function Register() {
   const [message, setMessage] = useState("");
 
   const [displayPic, setDisplayPic] = useState();
-  const [profilePic, setProfilePic] = useState(null);
+  const [profilePic, setProfilePic] = useState([null]);
   const handleProfilePicChange = (event) => {
     if (event) {
       const file = event.target.files[0];
@@ -53,7 +53,7 @@ function Register() {
     }
 
     axios
-      .post("http://127.0.0.1:5000/user/register", formData, {
+      .post("http://localhost:5000/user/register", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
