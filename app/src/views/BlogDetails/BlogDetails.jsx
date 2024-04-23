@@ -119,7 +119,8 @@ function BlogDetails() {
             </Stack>
               
             <Stack>
-                <img src={testImage} style={{ borderRadius: "1rem" }} />
+                <img src={photos} style={{ borderRadius: "1rem" }} />
+                <p> {photos} </p>
             </Stack>
 
             <Stack className="section">

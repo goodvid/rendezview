@@ -14,23 +14,6 @@ function BlogList() {
         navigate("/newblog");
     };
 
-    const [events, setEvents] = useState([]);
-
-    useEffect(() => {
-        console.log(sessionStorage.getItem("token"));
-        axios
-            .get("http://localhost:5000/user_events", {
-                headers: {
-                    Authorization: "Bearer " + sessionStorage.getItem("token"),
-                    "Content-Type": "application/json",
-                },
-            })
-            .then((res) => {
-                console.log(res.data["events"]);
-                setEvents(res.data["events"]);
-            });
-    }, []);
-
     return (
         <div className="w-full h-full p-10">
             <div className="text-left text-3xl font-bold my-5">My Blogs</div>
@@ -48,20 +31,6 @@ function BlogList() {
                 >
                     + New Blog
                 </Button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {events.map((event, i) => {
-                    return (
-                        <Event
-                            id={event.id}
-                            name={event.name}
-                            date={event.time + " " + event.date}
-                            location={event.location}
-                            desc={event.desc}
-                            key={i}
-                        />
-                    );
-                })}
             </div>
         </div>
     );
