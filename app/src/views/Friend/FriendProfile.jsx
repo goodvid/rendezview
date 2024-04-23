@@ -98,6 +98,28 @@ function FriendProfile() {
         setStatus(data["status"]);
       });
   };
+  const handleDenyRequest = () => {
+    fetch("http://localhost:5000/friend/deny_request", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + sessionStorage.getItem("token"),
+        "Content-Type": "application/json",
+
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(id),
+    })
+      .then((res) => {
+        if (res.status == 200) {
+          //setLabel("Added!");
+          
+          return res.json();
+        }
+      })
+      .then((data) => {
+        setStatus("");
+      });
+  };
   const handleDelete = () => {
     // eslint-disable-next-line no-restricted-globals
     if (confirm("are you sure you want to delete this friend?")) {
@@ -246,7 +268,6 @@ function FriendProfile() {
                         <h3>Requested</h3>
                       </>
                     )}
-                    
                   </>
                 )}
                 <Button variant="contained" onClick={handleDelete}>
@@ -259,6 +280,13 @@ function FriendProfile() {
                 <Button variant="contained" onClick={handleAddFriend}>
                   Add Friend
                 </Button>
+                {status == "asked to follow" ? (
+                  <Button variant="contained" onClick={handleDenyRequest}>
+                    Deny Request
+                  </Button>
+                ) : (
+                  <></>
+                )}
               </>
             )}
           </Stack>
