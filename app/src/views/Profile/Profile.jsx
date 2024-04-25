@@ -11,13 +11,12 @@ import {
   Badge,
 } from "@mui/material";
 import {
-  YellowCard,
   BlueCard,
   ReadMoreButton,
   TextIconStack,
-  EditIconButton,
 } from "../../components/StyledComponents/StyledComponents";
 import dayjs from "dayjs";
+import Blog from "../../components/Blog/Blog";
 
 import { useNavigate } from "react-router-dom";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -43,8 +42,42 @@ function Profile() {
   const [userEvents, setUserEvents] = useState([]);
   const [hostRating, setHostRating] = useState(null);
   const [location, setLocation] = useState("");
+  const [tags, setTags] = useState([]);
+
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [pastEvents, setPastEvents] = useState([]);
+  const [blogs, setBlogs] = useState([]);
 
   useEffect(() => {
+    console.log(sessionStorage.getItem("token"));
+
+    getUsername();
+    getProfilePic();
+    getPreferences();
+    getUserEvents();
+    getHostRating();
+    getUserLocation();
+    getBlogs();
+  }, []);
+
+  useEffect(() => {
+    console.log(userEvents);
+    const upcoming = [];
+    const past = [];
+    userEvents.map((event) => {
+      const eventDate = dayjs(event.date);
+      const diff = dayjs().diff(eventDate);
+      if (diff < 0) {
+        upcoming.push(event);
+      } else {
+        past.push(event);
+      }
+    });
+    setPastEvents(past);
+    setUpcomingEvents(upcoming);
+  }, [userEvents]);
+
+  const getUsername = () => {
     axios
       .get("http://localhost:5000/user/getusername", {
         headers: {
@@ -61,7 +94,9 @@ function Profile() {
       .catch((err) => {
         console.log(err);
       });
+  };
 
+  const getProfilePic = () => {
     axios
       .get("http://localhost:5000/user/getprofilepic", {
         headers: {
@@ -76,7 +111,9 @@ function Profile() {
       .catch((err) => {
         console.log(err);
       });
+  };
 
+  const getPreferences = () => {
     axios
       .get("http://localhost:5000/user/getpreferences", {
         headers: {
@@ -92,8 +129,9 @@ function Profile() {
       .catch((err) => {
         console.log(err);
       });
+  };
 
-    console.log(sessionStorage.getItem("token"));
+  const getUserEvents = () => {
     axios
       .get("http://localhost:5000/user_events", {
         headers: {
@@ -106,28 +144,7 @@ function Profile() {
         console.log("userEvents:", res.data["events"]);
         setUserEvents(res.data["events"]);
       });
-
-    getHostRating();
-    getUserLocation();
-  }, []);
-
-  useEffect(() => {
-    console.log(userEvents);
-    const upcoming = [];
-    const past = [];
-    userEvents.map((event) => {
-      const eventDate = dayjs(event.date);
-      const diff = dayjs().diff(eventDate);
-      if (diff < 0) {
-        upcoming.push(event);
-      } else {
-        past.push(event);
-      }
-    });
-    // console.log("pastEvents:", past);
-    setPastEvents(past);
-    setUpcomingEvents(upcoming);
-  }, [userEvents]);
+  };
 
   const getHostRating = () => {
     axios
@@ -138,8 +155,6 @@ function Profile() {
         },
       })
       .then((res) => {
-        // console.log("hostRating object:", res.data);
-        // console.log("hostRating:", res.data.hostRating);
         setHostRating(res.data.hostRating);
       });
   };
@@ -173,39 +188,20 @@ function Profile() {
       });
   };
 
-  const [tags, setTags] = useState([]);
-
-  const [upcomingEvents, setUpcomingEvents] = useState([]);
-  const [pastEvents, setPastEvents] = useState([]);
-  const [blogs, setBlogs] = useState([
-    {
-      id: 1,
-      name: "Event 1",
-      location: "location  2",
-      date: "xx/xx/20xx",
-      contents:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-      pictures: null,
-    },
-    {
-      id: 2,
-      name: "Event 2",
-      date: "xx/xx/20xx",
-      contents:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-      pictures: [concertPhoto, concertPhoto],
-    },
-    {
-      id: 3,
-      name: "Event 3",
-      location: "location  3",
-      date: "xx/xx/20xx",
-      contents:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.",
-      pictures: [concertPhoto],
-    },
-  ]);
-
+  const getBlogs = () => {
+    axios
+      .get("http://localhost:5000/blogs/get_user_blogs", {
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        console.log("response:", res);
+        console.log("blog:", res.data["blogs"]);
+        setBlogs(res.data["blogs"]);
+      });
+  };
   const handleSubmit = () => {
     // eslint-disable-next-line no-restricted-globals
     if (confirm("are you sure you want to delete all data?")) {
@@ -253,10 +249,6 @@ function Profile() {
           console.log("error", error);
         });
     }
-  };
-
-  const handleReadMore = (id) => {
-    return <>//TODO: navigate to blog post</>;
   };
 
   const LeftInfoStack = () => {
@@ -350,7 +342,9 @@ function Profile() {
         <Button variant="contained" onClick={() => navigate("/addfriends")}>
           Add friend
         </Button>
-        <Button variant = "contained" onClick={handleBlogs}>Delete blog history</Button>
+        <Button variant="contained" onClick={handleBlogs}>
+          Delete blog history
+        </Button>
       </Stack>
     );
   };
@@ -415,7 +409,6 @@ function Profile() {
             width: "100%",
           }}
         >
-          {/* <Stack direction="row" gap={2} sx={{ minWidth: "max-content" }}> */}
           <Stack
             direction="row"
             gap={2}
@@ -465,77 +458,26 @@ function Profile() {
             gap={2}
             sx={{ width: "max-content", height: "100%" }}
           >
-            {blogs.map((event) => (
-              <BlogCard
-                key={event.id}
-                id={event.id}
-                name={event.name}
-                date={event.date}
-                contents={event.contents}
-                pictures={event.pictures}
-              />
-            ))}
+            {blogs.length > 0 ? (
+              blogs.map((blog) => (
+                <Blog
+                  key={blog.blogID}
+                  blogID={blog.blogID}
+                  title={blog.title}
+                  text={blog.text}
+                  authorID={blog.authorID}
+                  authorName={blog.authorName}
+                  date={blog.date}
+                  visibility={blog.visibility}
+                  pictures={blog.pictures}
+                />
+              ))
+            ) : (
+              <h3>No blogs</h3>
+            )}
           </Stack>
         </Box>
       </Stack>
-    );
-  };
-
-  const BlogCard = ({ id, name, contents, date, pictures }) => {
-    const readMoreLimit = 200;
-    return (
-      <>
-        <BlueCard variant="outlined">
-          <Stack alignItems="flex-end" marginInline="1rem">
-            <p>{date}</p>
-          </Stack>
-          <Stack
-            padding="1rem"
-            direction="row"
-            style={{ width: "100%", maxWidth: "30rem" }}
-          >
-            <Stack
-              alignItems="flex-start"
-              marginInline="1rem"
-              width="100%"
-              textAlign="left"
-            >
-              <h2>{name}</h2>
-              {contents.length < readMoreLimit ? (
-                <div>
-                  <p>{contents}</p>
-                </div>
-              ) : (
-                <div>
-                  <p>{contents.substring(0, readMoreLimit).concat("...")}</p>
-                  <ReadMoreButton
-                    size="small"
-                    onClick={() => handleReadMore(id)}
-                  >
-                    Read More
-                  </ReadMoreButton>
-                </div>
-              )}
-            </Stack>
-            {pictures ? (
-              <Stack
-                direction="row"
-                gap="1rem"
-                justifyContent="space-start"
-                flexWrap="wrap"
-                width="fit-content"
-                height="100%"
-              >
-                {pictures.map((pic, index) => (
-                  <img src={pic} width="50%" key={index} />
-                ))}
-              </Stack>
-            ) : (
-              <div width="0px"></div>
-            )}
-          </Stack>
-        </BlueCard>
-      </>
     );
   };
 

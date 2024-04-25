@@ -1538,6 +1538,35 @@ def delete_blog():
     
     return jsonify({"message": "deletion successful"}), 200
 
+@app.route("/blogs/get_user_blogs", methods=["GET"])
+@jwt_required()
+def get_user_blogs():
+
+    current_user = get_jwt_identity()
+    # print(current_user)
+
+    user = User.query.filter_by(email=current_user["email"]).first()
+
+    blogs = Blog.query.filter_by(authorID=user.id)
+
+    blog_values = []
+
+    for blog in blogs:
+        # print("check events", event.start_time)
+        values = {
+            "blogID": blog.blogID,
+            "title": blog.title if blog.title else "No Title",
+            "text": blog.text if blog.text else "No Blog Content",
+            "authorID": blog.authorID if blog.authorID else "No Author ID",
+            "authorName": blog.authorName if blog.authorName else "No Author name",
+            "date": blog.date if blog.date else "No date",
+            "visibility": blog.visibility if blog.visibility else "No visibility",
+            "pictures": blog.pictures if blog.pictures else "No pictures"
+        }
+        blog_values.append(values)
+
+    return {"status": "200", "blogs": blog_values}
+
 
 
 
