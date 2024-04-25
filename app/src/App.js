@@ -25,6 +25,7 @@ import FriendProfile from "./views/Friend/FriendProfile";
 import Friends from "./views/Friend/AddFriends";
 import FriendsList from "./views/Friend/FriendList";
 import ProtectedRoute from "./views/withAuth";
+import ChangeLocation from "./views/Settings/ChangeLocation/ChangeLocation";
 
 function App() {
   return (
@@ -117,6 +118,7 @@ function App() {
           />
           <Route path="/resetpassword" element={<ResetPassword />} />
           <Route path="/changeprofilepic" element={<ChangeProfilePicture />} />
+          <Route path="/changeLocation" element={<ChangeLocation />} />
           <Route path="/test" element={<Test />} />
           <Route
             path="/friend/:id"

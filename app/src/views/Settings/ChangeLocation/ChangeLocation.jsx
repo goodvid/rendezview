@@ -1,39 +1,27 @@
-import "../ChangeEmail/ChangeEmail.css";
-import { Avatar, Button, Stack, IconButton, TextField } from "@mui/material/";
+import "./ChangeLocation.css";
+import {
+  Avatar,
+  Button,
+  Stack,
+  IconButton,
+  OutlinedInput,
+} from "@mui/material/";
 import SettingsIcon from "@mui/icons-material/Settings";
 import MainNavbar from "../../../components/MainNavbar/MainNavbar";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, React } from "react";
 import axios from "axios";
+import MapAutocomplete from "react-google-autocomplete";
 
-function ChangeEmail() {
+function ChangeLocation() {
   const navigate = useNavigate();
+  const [locationInput, setLocationInput] = useState("");
+  const [username, setUsername] = useState("");
+  const [profilePic, setProfilePic] = useState("");
 
   const settingsClick = () => {
     navigate("/settings");
   };
-
-  const [email, setEmail] = useState("");
-  const updateEmail = (event) => {
-    if (event != null) {
-      setEmail(event.target.value);
-    }
-  };
-  const [newEmail, setNewEmail] = useState("");
-  const updateNewEmail = (event) => {
-    if (event != null) {
-      setNewEmail(event.target.value);
-    }
-  };
-  const [confirmNewEmail, setconfirmNewEmail] = useState("");
-  const updateConfirmNewEmail = (event) => {
-    if (event != null) {
-      setconfirmNewEmail(event.target.value);
-    }
-  };
-
-  const [username, setUsername] = useState("");
-  const [profilePic, setProfilePic] = useState("");
 
   useEffect(() => {
     axios
@@ -67,53 +55,38 @@ function ChangeEmail() {
       });
   }, []);
 
-  let resp = "";
-
-  const saveClick = (event) => {
-    if (newEmail != confirmNewEmail) {
-      alert("Your emails don't match! Please ensure they are the same.");
-      return;
-    }
-
-    if (!/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(newEmail)) {
-      alert("Your email is invalid. Enter a valid email.");
-      return;
-    }
-
-    console.log(email + newEmail);
-    event.preventDefault();
-
-    // Send to Flask server
-    fetch("http://localhost:5000/user/changeemail", {
+  const saveClick = () => {
+    console.log("loc:", locationInput);
+    fetch("http://localhost:5000/user/set_location", {
       method: "POST",
       headers: {
-        Authorization: "Bearer " + sessionStorage.getItem("token"),
         "Content-Type": "application/json",
+        Authorization: "Bearer " + sessionStorage.getItem("token"),
       },
-      body: JSON.stringify({ email: email, newEmail: newEmail }),
+      body: JSON.stringify({
+        location: locationInput,
+      }),
     })
       .then((response) => {
-        if (response.status === 200) {
-          resp = response;
-          return response.json();
-        } else if (response.status == 401) {
-          alert("That email is taken. Please choose a different email.");
-          return false;
-        } else {
-          alert("Unauthorized.");
-          return false;
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
         }
+        return response.json();
       })
       .then((data) => {
-        if (resp.status == 200) {
-          console.log(data);
-          sessionStorage.setItem("token", data["access_token"]);
-          navigate("/settings");
-        }
+        console.log(data);
+        return data;
       })
       .catch((error) => {
-        console.log("error", error);
+        console.error("Error:", error);
+        throw error;
       });
+
+    navigate("/profile");
+  };
+
+  const handlePlaceSelected = (place) => {
+    setLocationInput(place.formatted_address);
   };
 
   return (
@@ -169,17 +142,21 @@ function ChangeEmail() {
           </Stack>
 
           <Stack direction="column" spacing={2}>
-            <h1 style={{ textAlign: "left" }}>Change Email</h1>
+            <h1 style={{ textAlign: "left" }}>Change Location</h1>
 
             <Stack direction="column" spacing={1}>
-              <h4 style={{ textAlign: "left" }}>Current Email</h4>
-              <TextField onChange={updateEmail} />
-
-              <h4 style={{ textAlign: "left" }}>New Email</h4>
-              <TextField onChange={updateNewEmail} />
-
-              <h4 style={{ textAlign: "left" }}>Confirm New Email</h4>
-              <TextField onChange={updateConfirmNewEmail} />
+              <OutlinedInput
+                className="w-[80%] bg-white h-[45px] rounded-md align-left"
+                color="secondary"
+                inputComponent={({ inputRef, onFocus, onBlur, ...props }) => (
+                  <MapAutocomplete
+                    apiKey="AIzaSyBMp7w0sRedU-xNT_Z5DGFCYPFkHa-QTMg"
+                    {...props}
+                    defaultValue={locationInput}
+                    onPlaceSelected={handlePlaceSelected}
+                  />
+                )}
+              />
             </Stack>
 
             <Button
@@ -189,9 +166,9 @@ function ChangeEmail() {
               disableElevation
               sx={{
                 textTransform: "none",
-                backgroundColor: "#02407F",
                 width: "200px",
                 height: "50px",
+                backgroundColor: "#02407F",
               }}
             >
               Save Changes
@@ -203,4 +180,4 @@ function ChangeEmail() {
   );
 }
 
-export default ChangeEmail;
+export default ChangeLocation;
