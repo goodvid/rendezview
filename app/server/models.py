@@ -33,6 +33,7 @@ class User(UserMixin, db.Model):
     location = db.Column(db.String(50))
     preferences = db.Column(db.String(50))
     calendar = db.Column(db.String(50))
+    groups = db.Column(db.String(50))
 
     def set_password(self, passwrd):
         self.password = generate_password_hash(passwrd)
@@ -71,6 +72,7 @@ class Event(db.Model):
     category = db.Column(db.String(50))
     longitude = db.Column(db.Float)
     latitude = db.Column(db.Float)
+    visibility=db.Column(db.String(50))
 
     type = db.Column(db.String(50))
 
@@ -120,3 +122,8 @@ class Status(db.Model):
     user = db.Column(db.String(5000), db.ForeignKey('user.email'))
     friend = db.Column(db.String(5000), db.ForeignKey('user.email'))
     status = db.Column(db.String(5000))
+
+class Group(db.Model):
+    gid = db.Column(db.Integer, primary_key=True)
+    user = db.Column(db.String(50), db.ForeignKey('user.username'))
+    friends = db.Column(db.String(50))

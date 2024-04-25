@@ -56,6 +56,7 @@ function Main() {
   const [locLoading, setLocLoading] = useState(false);
   const [eventType, setEventType] = useState("Featured");
   const [recommendedEvents, setRecommendedEvents] = useState([]);
+  const [recFriendEvents, setRecFriendEvents] = useState([]);
   pinwheel.register(); // Set loading animation
 
   const iconMapping = {
@@ -156,6 +157,27 @@ function Main() {
         setLocLoading(false);
       });
   };
+
+  useEffect(() => {
+    // Get the recommended events once the backend function is made
+    if (sessionStorage.getItem("token")) {
+      axios
+      .get(`http://localhost:5000/events/get_friend_recs`, {
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        }
+      })
+      .then((response) => {
+        setRecFriendEvents(response.data["recommendations"]);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching API events:", error);
+        setLoading(false);
+      });
+    }
+  }, []);
 
   const fetchAPIEvents = () => {
     console.log("fetching...");
@@ -317,6 +339,9 @@ function Main() {
     setEventType("Recommended");
   };
 
+  const setFriends = () => {
+    setEventType("Friends");
+  }
   const navigate = useNavigate();
   const handleSeeMore = () => {
     const eventLink = "/eventdetails/" + featuredEvents.id;
@@ -379,7 +404,8 @@ function Main() {
         </div>
         <div className="flex flex-row flex-wrap gap-5 pl-10 pt-10">
           <button onClick={setFeatured}>Featured</button> |
-          <button onClick={setRecommended}>Recommended</button>
+          <button onClick={setRecommended}>Recommended</button> |
+          <button onClick={setFriends}>By Friends</button>
           <FilteringTab />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 ">
             {loading ? (
@@ -393,6 +419,23 @@ function Main() {
               </Stack>
             ) : eventType == "Featured" ? (
               events.map((event, i) => {
+                if (event.visibility && event.visibility != "public" && event.visibility != "") {
+                  return <div />
+                }
+                return (
+                  <Event
+                    name={event.name}
+                    date={dayjs(event.start_date).toString()}
+                    location={event.location}
+                    key={i}
+                    id={event.id}
+                    desc={event.desc}
+                  />
+                );
+              })
+            ) : eventType == "Friends" ?
+            (
+              recFriendEvents.map((event, i) => {
                 return (
                   <Event
                     name={event.name}
