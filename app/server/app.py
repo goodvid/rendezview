@@ -418,6 +418,52 @@ def get_recommended():
 
     return {'status': '200', 'recommendations': event_values}
 
+@app.route("/events/get_friend_recs", methods=['GET'])
+@jwt_required()
+def get_friend_recs():
+
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(email=current_user['email']).first()
+
+    query = Status.query.filter(
+        or_(
+            Status.user == user.id,
+            Status.friend == user.id
+        )
+    ).all()
+
+    friends = []
+    for q in query:
+        if (q.status == "friend"):
+            if (str(q.user) == str(user.id)):
+                person = User.query.filter_by(id=q.friend)
+                friends.append(person)
+        if str(q.user) == str(user.id):
+            person = User.query.filter_by(id=q.friend).first()
+            friends.append(person)  
+
+    recommendations = []
+
+    for friend in friends:
+        recommendations += rc_system.select_events_to_reccommend(user=friend)
+
+    event_values = []
+
+    for event_tuple in recommendations:
+        event = event_tuple[0]
+
+        values = {'id': event.eventID,
+                    'name': event.name,
+                    'time': event.start_date,
+                    'location': event.location,
+                    'category': event.category,
+                    'latitude': event.latitude,
+                    'longitude': event.longitude,
+                    'yelpID': event.yelpID,
+                    'desc': event.desc}
+        event_values.append(values)
+
+    return {'status': '200', 'recommendations': event_values}
 
 @app.route('/filtered_events', methods=['GET'])
 def get_filtered_events():
