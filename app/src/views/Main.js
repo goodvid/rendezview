@@ -22,6 +22,8 @@ import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { pinwheel } from "ldrs";
 import MapAutocomplete from "react-google-autocomplete";
 import categories from "./eventCategories.json";
+import { SeeMoreButton } from "../components/StyledComponents/StyledComponents";
+import { useNavigate } from "react-router-dom";
 
 // Icons
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
@@ -315,6 +317,12 @@ function Main() {
     setEventType("Recommended");
   };
 
+  const navigate = useNavigate();
+  const handleSeeMore = () => {
+    const eventLink = "/eventdetails/" + featuredEvents.id;
+    navigate(eventLink);
+  };
+
   return (
     <div className="w-full h-full">
       <MainNavbar />
@@ -339,6 +347,13 @@ function Main() {
             <h3>{featuredEvents.location}</h3>
             <h3>{dayjs(featuredEvents.start_date).toString()}</h3>
             <p>{featuredEvents.desc}</p>
+            <SeeMoreButton
+              textAlign="Center"
+              variant="contained"
+              onClick={handleSeeMore}
+            >
+              See More
+            </SeeMoreButton>
           </Stack>
         )}
       </div>
