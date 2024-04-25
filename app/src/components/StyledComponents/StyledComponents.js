@@ -64,6 +64,17 @@ export const GrayButton = styled(Button)({
   },
 });
 
+export const SeeMoreButton = styled(Button)({
+  backgroundColor: "#013140",
+  paddingInline: "1.5rem",
+  boxShadow: "none",
+  textTransform: "none",
+  "&:hover": {
+    backgroundColor: "#DEDEDE",
+    boxShadow: "none",
+  },
+});
+
 export const EventDetailsButton = styled(Button)({
   paddingInline: "1.5rem",
   boxShadow: "none",

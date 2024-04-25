@@ -11,6 +11,9 @@ import EventDetails from "./views/EventDetails/EventDetails";
 import CreateEvent from "./views/CreateEvent/createEvent";
 import Events from "./views/Events/Events";
 import EditEvent from "./views/EditEvent/EditEvent";
+import CreateBlog from "./views/CreateBlog/createBlog";
+import BlogDetails from "./views/BlogDetails/BlogDetails";
+import Blogs from "./views/Blogs/Blogs";
 import Settings from "./views/Settings/Settings";
 import ChangeUsername from "./views/Settings/ChangeUsername/ChangeUsername";
 import ChangeEmail from "./views/Settings/ChangeEmail/ChangeEmail";
@@ -22,7 +25,11 @@ import FriendProfile from "./views/Friend/FriendProfile";
 import Friends from "./views/Friend/AddFriends";
 import FriendsList from "./views/Friend/FriendList";
 import ProtectedRoute from "./views/withAuth";
+<<<<<<< HEAD
 import CreateGroups from "./views/CreateGroup/createGroup";
+=======
+import ChangeLocation from "./views/Settings/ChangeLocation/ChangeLocation";
+>>>>>>> 0f4bb23c012d5a6d459e25d6f2e60cb0f96a2689
 
 function App() {
   return (
@@ -115,6 +122,7 @@ function App() {
           />
           <Route path="/resetpassword" element={<ResetPassword />} />
           <Route path="/changeprofilepic" element={<ChangeProfilePicture />} />
+          <Route path="/changeLocation" element={<ChangeLocation />} />
           <Route path="/test" element={<Test />} />
           <Route
             path="/friend/:id"
@@ -140,11 +148,28 @@ function App() {
               </ProtectedRoute>
             }
           ></Route>
+<<<<<<< HEAD
           <Route
             path="/creategroups"
             element={
               <ProtectedRoute>
                 <CreateGroups />
+=======
+          <Route path="/blogdetails/:id" element={<BlogDetails />} />
+          <Route
+            path="/newblog"
+            element={
+              <ProtectedRoute>
+                <CreateBlog />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/blogs"
+            element={
+              <ProtectedRoute>
+                <Blogs />
+>>>>>>> 0f4bb23c012d5a6d459e25d6f2e60cb0f96a2689
               </ProtectedRoute>
             }
           />

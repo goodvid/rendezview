@@ -37,22 +37,22 @@ function ChangeEmail() {
 
   useEffect(() => {
     axios
-    .get("http://127.0.0.1:5000/user/getusername", {
-      headers: {
-        Authorization: "Bearer " + sessionStorage.getItem("token"),
-        "Content-Type": "application/json",
-      },
-    })
-    .then((res) => {
-      console.log(res.data["status"]);
-      setUsername(res.data["username"]);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-    
+      .get("http://localhost:5000/user/getusername", {
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        console.log(res.data["status"]);
+        setUsername(res.data["username"]);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
     axios
-      .get("http://127.0.0.1:5000/user/getprofilepic", {
+      .get("http://localhost:5000/user/getprofilepic", {
         headers: {
           Authorization: "Bearer " + sessionStorage.getItem("token"),
           "Content-Type": "application/json",
@@ -65,7 +65,6 @@ function ChangeEmail() {
       .catch((err) => {
         console.log(err);
       });
-      
   }, []);
 
   let resp = "";

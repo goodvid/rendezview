@@ -11,13 +11,12 @@ import {
   Badge,
 } from "@mui/material";
 import {
-  YellowCard,
   BlueCard,
   ReadMoreButton,
   TextIconStack,
-  EditIconButton,
 } from "../../components/StyledComponents/StyledComponents";
 import dayjs from "dayjs";
+import Blog from "../../components/Blog/Blog";
 
 import { useNavigate } from "react-router-dom";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -42,8 +41,43 @@ function Profile() {
   const [groupsNum, setGroupsNum] = useState(0);
   const [userEvents, setUserEvents] = useState([]);
   const [hostRating, setHostRating] = useState(null);
+  const [location, setLocation] = useState("");
+  const [tags, setTags] = useState([]);
+
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [pastEvents, setPastEvents] = useState([]);
+  const [blogs, setBlogs] = useState([]);
 
   useEffect(() => {
+    console.log(sessionStorage.getItem("token"));
+
+    getUsername();
+    getProfilePic();
+    getPreferences();
+    getUserEvents();
+    getHostRating();
+    getUserLocation();
+    getBlogs();
+  }, []);
+
+  useEffect(() => {
+    console.log(userEvents);
+    const upcoming = [];
+    const past = [];
+    userEvents.map((event) => {
+      const eventDate = dayjs(event.date);
+      const diff = dayjs().diff(eventDate);
+      if (diff < 0) {
+        upcoming.push(event);
+      } else {
+        past.push(event);
+      }
+    });
+    setPastEvents(past);
+    setUpcomingEvents(upcoming);
+  }, [userEvents]);
+
+  const getUsername = () => {
     axios
       .get("http://localhost:5000/user/getusername", {
         headers: {
@@ -60,7 +94,9 @@ function Profile() {
       .catch((err) => {
         console.log(err);
       });
+  };
 
+  const getProfilePic = () => {
     axios
       .get("http://localhost:5000/user/getprofilepic", {
         headers: {
@@ -75,7 +111,9 @@ function Profile() {
       .catch((err) => {
         console.log(err);
       });
+  };
 
+  const getPreferences = () => {
     axios
       .get("http://localhost:5000/user/getpreferences", {
         headers: {
@@ -91,8 +129,9 @@ function Profile() {
       .catch((err) => {
         console.log(err);
       });
+  };
 
-    console.log(sessionStorage.getItem("token"));
+  const getUserEvents = () => {
     axios
       .get("http://localhost:5000/user_events", {
         headers: {
@@ -101,30 +140,11 @@ function Profile() {
         },
       })
       .then((res) => {
+        console.log("response:", res);
         console.log("userEvents:", res.data["events"]);
         setUserEvents(res.data["events"]);
       });
-
-    getHostRating();
-  }, []);
-
-  useEffect(() => {
-    console.log(userEvents);
-    const upcoming = [];
-    const past = [];
-    userEvents.map((event) => {
-      const eventDate = dayjs(event.date);
-      const diff = dayjs().diff(eventDate);
-      if (diff < 0) {
-        upcoming.push(event);
-      } else {
-        past.push(event);
-      }
-    });
-    // console.log("pastEvents:", past);
-    setPastEvents(past);
-    setUpcomingEvents(upcoming);
-  }, [userEvents]);
+  };
 
   const getHostRating = () => {
     axios
@@ -135,45 +155,53 @@ function Profile() {
         },
       })
       .then((res) => {
-        // console.log("hostRating object:", res.data);
-        // console.log("hostRating:", res.data.hostRating);
         setHostRating(res.data.hostRating);
       });
   };
 
-  const [tags, setTags] = useState([]);
+  const getUserLocation = () => {
+    // setLoading(true);
+    fetch("http://localhost:5000/user/get_location", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + sessionStorage.getItem("token"),
+      },
+    })
+      .then((response) => {
+        if (response.status != 200) {
+          console.log("not logged in");
+          return;
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("location:", data.location);
+        if (data.location) {
+          setLocation(data.location);
+        }
+        // setLoading(false);
+      })
+      .catch((error) => {
+        console.log("error", error);
+        // setLoading(false);
+      });
+  };
 
-  const [upcomingEvents, setUpcomingEvents] = useState([]);
-  const [pastEvents, setPastEvents] = useState([]);
-  const [blogs, setBlogs] = useState([
-    {
-      id: 1,
-      name: "Event 1",
-      location: "location  2",
-      date: "xx/xx/20xx",
-      contents:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-      pictures: null,
-    },
-    {
-      id: 2,
-      name: "Event 2",
-      date: "xx/xx/20xx",
-      contents:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-      pictures: [concertPhoto, concertPhoto],
-    },
-    {
-      id: 3,
-      name: "Event 3",
-      location: "location  3",
-      date: "xx/xx/20xx",
-      contents:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.",
-      pictures: [concertPhoto],
-    },
-  ]);
-
+  const getBlogs = () => {
+    axios
+      .get("http://localhost:5000/blogs/get_user_blogs", {
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        console.log("response:", res);
+        console.log("blog:", res.data["blogs"]);
+        setBlogs(res.data["blogs"]);
+      });
+  };
   const handleSubmit = () => {
     // eslint-disable-next-line no-restricted-globals
     if (confirm("are you sure you want to delete all data?")) {
@@ -198,9 +226,29 @@ function Profile() {
         });
     }
   };
-
-  const handleReadMore = (id) => {
-    return <>//TODO: navigate to blog post</>;
+  const handleBlogs = () => {
+    // eslint-disable-next-line no-restricted-globals
+    if (confirm("are you sure you want to delete all blog history?")) {
+      fetch("http://localhost:5000/blog/delete_history", {
+        method: "GET",
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => {
+          if (response.status === 200) {
+            return response.json();
+          } else {
+            alert("error");
+            return false;
+          }
+        })
+        .then((data) => {})
+        .catch((error) => {
+          console.log("error", error);
+        });
+    }
   };
 
   const LeftInfoStack = () => {
@@ -245,27 +293,22 @@ function Profile() {
         {/* Display Name */}
         <TextIconStack>
           <h1>{displayName}</h1>
-          {/* 
-          <IconButton
-            sx={{ color: "white" }}
-            aria-label="edit display name"
-            size="large"
-          >
-            <EditIcon fontSize="inherit" />
-          </IconButton> 
-          */}
         </TextIconStack>
 
-        <TextIconStack>
-          <ThumbUpIcon />
-          <h3>{hostRating}%</h3>
-        </TextIconStack>
+        {hostRating && (
+          <TextIconStack>
+            <ThumbUpIcon />
+            <h3>{hostRating}%</h3>
+          </TextIconStack>
+        )}
 
         {/* Location, Friends, Groups */}
-        <TextIconStack>
-          <NearMeIcon style={{ color: "red" }} />
-          <h3>Location</h3>
-        </TextIconStack>
+        {location && (
+          <TextIconStack>
+            <NearMeIcon style={{ color: "red" }} />
+            <h3>{location}</h3>
+          </TextIconStack>
+        )}
         <h3>
           <a href="/profile/friends">{friendsNum} FRIENDS</a> • {groupsNum}{" "}
           GROUPS
@@ -299,8 +342,13 @@ function Profile() {
         <Button variant="contained" onClick={() => navigate("/addfriends")}>
           Add friend
         </Button>
+<<<<<<< HEAD
         <Button variant="contained" onClick={() => navigate("/creategroups")}>
           Create Group
+=======
+        <Button variant="contained" onClick={handleBlogs}>
+          Delete blog history
+>>>>>>> 0f4bb23c012d5a6d459e25d6f2e60cb0f96a2689
         </Button>
       </Stack>
     );
@@ -333,18 +381,22 @@ function Profile() {
             gap={2}
             sx={{ minWidth: "max-content", marginBlock: "0.5rem" }}
           >
-            {upcomingEvents.map((event, i) => {
-              return (
-                <ProfileEvent
-                  name={event.name}
-                  date={event.date}
-                  location={event.location}
-                  key={i}
-                  id={event.id}
-                  desc={event.desc}
-                />
-              );
-            })}
+            {upcomingEvents.length > 0 ? (
+              upcomingEvents.map((event, i) => {
+                return (
+                  <ProfileEvent
+                    name={event.name}
+                    date={event.date}
+                    location={event.location}
+                    key={i}
+                    id={event.id}
+                    desc={event.desc}
+                  />
+                );
+              })
+            ) : (
+              <h3>No upcoming events</h3>
+            )}
           </Stack>
         </Box>
       </Stack>
@@ -362,7 +414,6 @@ function Profile() {
             width: "100%",
           }}
         >
-          {/* <Stack direction="row" gap={2} sx={{ minWidth: "max-content" }}> */}
           <Stack
             direction="row"
             gap={2}
@@ -373,19 +424,23 @@ function Profile() {
               minWidth: "max-content",
             }}
           >
-            {pastEvents.map((event, i) => {
-              return (
-                <ProfileEvent
-                  name={event.name}
-                  date={event.date}
-                  location={event.location}
-                  key={i}
-                  id={event.id}
-                  desc={event.desc}
-                  rating={event.rating}
-                />
-              );
-            })}
+            {pastEvents.length > 0 ? (
+              pastEvents.map((event, i) => {
+                return (
+                  <ProfileEvent
+                    name={event.name}
+                    date={event.date}
+                    location={event.location}
+                    key={i}
+                    id={event.id}
+                    desc={event.desc}
+                    rating={event.rating}
+                  />
+                );
+              })
+            ) : (
+              <h3>No past events</h3>
+            )}
           </Stack>
         </Box>
       </Stack>
@@ -408,77 +463,26 @@ function Profile() {
             gap={2}
             sx={{ width: "max-content", height: "100%" }}
           >
-            {blogs.map((event) => (
-              <BlogCard
-                key={event.id}
-                id={event.id}
-                name={event.name}
-                date={event.date}
-                contents={event.contents}
-                pictures={event.pictures}
-              />
-            ))}
+            {blogs.length > 0 ? (
+              blogs.map((blog) => (
+                <Blog
+                  key={blog.blogID}
+                  blogID={blog.blogID}
+                  title={blog.title}
+                  text={blog.text}
+                  authorID={blog.authorID}
+                  authorName={blog.authorName}
+                  date={blog.date}
+                  visibility={blog.visibility}
+                  pictures={blog.pictures}
+                />
+              ))
+            ) : (
+              <h3>No blogs</h3>
+            )}
           </Stack>
         </Box>
       </Stack>
-    );
-  };
-
-  const BlogCard = ({ id, name, contents, date, pictures }) => {
-    const readMoreLimit = 200;
-    return (
-      <>
-        <BlueCard variant="outlined">
-          <Stack alignItems="flex-end" marginInline="1rem">
-            <p>{date}</p>
-          </Stack>
-          <Stack
-            padding="1rem"
-            direction="row"
-            style={{ width: "100%", maxWidth: "30rem" }}
-          >
-            <Stack
-              alignItems="flex-start"
-              marginInline="1rem"
-              width="100%"
-              textAlign="left"
-            >
-              <h2>{name}</h2>
-              {contents.length < readMoreLimit ? (
-                <div>
-                  <p>{contents}</p>
-                </div>
-              ) : (
-                <div>
-                  <p>{contents.substring(0, readMoreLimit).concat("...")}</p>
-                  <ReadMoreButton
-                    size="small"
-                    onClick={() => handleReadMore(id)}
-                  >
-                    Read More
-                  </ReadMoreButton>
-                </div>
-              )}
-            </Stack>
-            {pictures ? (
-              <Stack
-                direction="row"
-                gap="1rem"
-                justifyContent="space-start"
-                flexWrap="wrap"
-                width="fit-content"
-                height="100%"
-              >
-                {pictures.map((pic, index) => (
-                  <img src={pic} width="50%" key={index} />
-                ))}
-              </Stack>
-            ) : (
-              <div width="0px"></div>
-            )}
-          </Stack>
-        </BlueCard>
-      </>
     );
   };
 

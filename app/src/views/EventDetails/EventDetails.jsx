@@ -11,6 +11,8 @@ import { pinwheel } from "ldrs";
 import categories from "../eventCategories.json";
 import Event from "../../components/Event/Event";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 
 import {
   Stack,
@@ -84,6 +86,9 @@ function EventDetails() {
   });
 
   const navigate = useNavigate();
+
+  dayjs.extend(utc);
+  dayjs.extend(timezone);
 
   useEffect(() => {
     fetchEventObject();
@@ -263,7 +268,7 @@ function EventDetails() {
       },
     })
       .then((response) => {
-        if (resp.status != 200) {
+        if (response.status != 200) {
           console.log("not logged in");
           return;
         }
@@ -382,7 +387,7 @@ function EventDetails() {
           return false;
         }
       })
-      .then(() => {})
+      .then(() => { })
       .catch((error) => {
         console.log("error", error);
         setLoading(false);
@@ -492,8 +497,8 @@ function EventDetails() {
       newFilter === "all"
         ? eventRSVPList
         : eventRSVPList.filter(
-            (item) => item.status.toLowerCase() === newFilter
-          );
+          (item) => item.status.toLowerCase() === newFilter
+        );
 
     setDisplayList(filteredList);
   };
@@ -529,7 +534,7 @@ function EventDetails() {
         } else {
           alert(
             "Can't get RSVP list of an event not added to calendar: " +
-              data.message
+            data.message
           );
           setOpenRSVP(false);
         }
@@ -593,7 +598,7 @@ function EventDetails() {
             <Stack direction="row" alignItems="center" gap="0.5rem">
               <EventDetailsButton
                 startIcon={<EventIcon />}
-                // onClick={}
+              // onClick={}
               >
                 Add to Calendar
               </EventDetailsButton>
@@ -902,7 +907,7 @@ function EventDetails() {
               <Event
                 id={event.id}
                 name={event.name}
-                date={event.time + " " + event.date}
+                date={dayjs(event.time).toString()}
                 location={event.location}
                 desc={event.desc}
                 key={i}
@@ -958,7 +963,7 @@ function EventDetails() {
                   <h1>{eventName}</h1>
 
                   <h3 style={{ color: "#818181" }}>
-                    {date} {time}
+                    {dayjs(date).tz("America/New_York").toString()}
                   </h3>
                 </Stack>
                 <Stack
@@ -1069,13 +1074,13 @@ function EventDetails() {
                 >
                   See RSVP List
                 </GrayButton>
-                <GrayButton
+                {/* <GrayButton
                   textAlign="Center"
                   variant="contained"
                   onClick={dummyCall}
                 >
                   Dummy Call
-                </GrayButton>
+                </GrayButton> */}
                 <Dialog open={openRSVP} onClose={handleCloseRSVPDialog}>
                   <DialogTitle>RSVP List</DialogTitle>
                   <DialogContent>
@@ -1108,10 +1113,9 @@ function EventDetails() {
                         <ListItem key={index}>
                           <ListItemText
                             primary={item.name}
-                            secondary={`Status: ${
-                              item.status.charAt(0).toUpperCase() +
+                            secondary={`Status: ${item.status.charAt(0).toUpperCase() +
                               item.status.slice(1)
-                            }`}
+                              }`}
                           />
                         </ListItem>
                       ))}
