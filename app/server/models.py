@@ -72,6 +72,7 @@ class Event(db.Model):
     category = db.Column(db.String(50))
     longitude = db.Column(db.Float)
     latitude = db.Column(db.Float)
+    visibility=db.Column(db.String(50))
 
     type = db.Column(db.String(50))
 

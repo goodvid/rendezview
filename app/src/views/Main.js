@@ -339,6 +339,9 @@ function Main() {
               </Stack>
             ) : eventType == "Featured" ? (
               events.map((event, i) => {
+                if (event.visibility && event.visibility != "public" && event.visibility != "") {
+                  return <div />
+                }
                 return (
                   <Event
                     name={event.name}

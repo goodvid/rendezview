@@ -188,6 +188,16 @@ def create_group():
 
     return {'status': '200'}
 
+@app.route("/set_visibility", methods=["POST"])
+def set_visibility():
+    data = request.json
+    event = Event.query.filter_by(eventID=data['eventID']).first()
+
+    event.visibility = data['visibility']
+    db.session.commit()
+
+    return {'status': '200'}
+
 @app.route("/user/changepassword", methods=["POST"])
 @jwt_required()
 def changepassword():
@@ -435,7 +445,8 @@ def get_filtered_events():
                     'longitude': event.longitude,
                     'yelpID': event.yelpID,
                     'hostName': event.hostName,
-                    'desc': event.desc}
+                    'desc': event.desc,
+                    'visibility': event.visibility}
 
         if event.yelpID is None:  # Filter user_events
             passes_filters = True

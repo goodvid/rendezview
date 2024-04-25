@@ -44,6 +44,9 @@ import {
   GrayButton,
   EventDetailsButton,
 } from "../../components/StyledComponents/StyledComponents";
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import Diversity3Icon from '@mui/icons-material/Diversity3';
 
 function EventDetails() {
   // TODO: replace hard coded names
@@ -911,6 +914,17 @@ function EventDetails() {
     );
   };
 
+  const setVisibility = (visibility) => {
+    axios
+      .post("http://localhost:5000/set_visibility", {
+        'eventID': eventID,
+        'visibility': visibility,
+      })
+      .then((res) => {
+        console.log(res.data);
+      });
+  }
+
   return (
     <div
       style={{
@@ -1157,6 +1171,29 @@ function EventDetails() {
                     ) : (
                       <p>(Event not rated)</p>
                     )}
+                    {userID == eventObject.userID ? (
+                      <div>
+                        <Button
+                        sx={{ marginLeft: '400px', width: 'auto'}}
+                        onClick={() => setVisibility("public")}
+                        >
+                          <VisibilityIcon className="w-auto"></VisibilityIcon>
+                        </Button>
+                        <Button
+                        sx={{ width: 'auto'}}
+                        onClick={() => setVisibility("friends")}
+                        >
+                          <Diversity3Icon className="w-auto"/>
+                        </Button>
+                        <Button
+                        sx={{ width: 'auto'}}
+                        onClick={() => setVisibility("private")}
+                        >
+                          <VisibilityOffIcon className="w-auto"/>
+                        </Button>
+                      </div>
+                    ) : (<div />)
+                    }
                   </Stack>
                 ) : (
                   <div />
