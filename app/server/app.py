@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, session
+from flask import Flask, request, jsonify, session, redirect
 from flask_session import Session
 from models import db  # Importing the db instance and models
 from flask_cors import CORS, cross_origin
@@ -56,26 +56,48 @@ def index():
     return "Hello, World!"
 
 
+@app.route("/auth/google/callback")
+def google_auth_callback():
+    # ... code to handle the Google response and exchange code for tokens ...
+
+    # Instead of redirecting, return a page with JavaScript to close the window
+    return '''
+    <html>
+    <body>
+    <script>
+    // Check if this page is opened in a popup window
+    if (window.opener) {
+        // Send a message to the opener window
+        window.opener.postMessage('authentication successful', '*');
+        // Close the popup
+        window.close();
+    }
+    </script>
+    </body>
+    </html>
+    '''
+
+
 @app.route("/authenticate", methods=["GET"])
 def link_google_account():
     response = handle_google_api.handle_authentication()
     print(response)
     if response["flag"]:
         email = response["email"]
+
         # access_token = create_access_token(identity=email, username=email)
         access_token = create_access_token(
             identity={"email": email, "name": email},
             fresh=timedelta(minutes=60),
         )
+        print(access_token)
+        # if "quiz" in response:
         # need to get user and strengthen validationm for email
         # but for now its ok, couldn't save stuff to database
+
         response = jsonify(
-            {
-                "access_token": access_token,
-                "message": "success",
-                "status": 200,
-                "login_method": "google",
-            }
+            {"access_token": access_token, "message": "success",
+                "status": 200, "login_method": "google", "quiz": response["quiz"]}
         )
         # Specify the status code explicitly if needed, though 'status' within the JSON is also informative
         response.status_code = 200
@@ -92,9 +114,13 @@ def link_google_account():
 def signOutFromGoogle():
     # data = request.json
     # print("------logs-------")
-    # print(data)
+    # print("heerrrrrrr")
     # print("------logs-------")
     response = handle_google_api.handle_deauthentication()
+    # print("---------log---------")
+    # print("signing out")
+    # print(response)
+    # print("---------log---------")
     jti = get_jwt()["jti"]
     BLOCKLIST.add(jti)
     if response:
@@ -391,7 +417,6 @@ def get_events():
 
     return {"status": "200", "events": event_values}
 
-
 @app.route("/events/get_recommended", methods=['GET'])
 @jwt_required()
 def get_recommended():
@@ -409,14 +434,14 @@ def get_recommended():
         event = event_tuple[0]
 
         values = {'id': event.eventID,
-                    'name': event.name,
-                    'time': event.start_date,
-                    'location': event.location,
-                    'category': event.category,
-                    'latitude': event.latitude,
-                    'longitude': event.longitude,
-                    'yelpID': event.yelpID,
-                    'desc': event.desc}
+                  'name': event.name,
+                  'time': event.start_date,
+                  'location': event.location,
+                  'category': event.category,
+                  'latitude': event.latitude,
+                  'longitude': event.longitude,
+                  'yelpID': event.yelpID,
+                  'desc': event.desc}
         event_values.append(values)
 
     return {'status': '200', 'recommendations': event_values}
@@ -871,6 +896,7 @@ def get_friends():
         return {"status": 404}
     return {"status": 200, "names": names, "requests": requests}
 
+
 @app.route('/friend/deny_request', methods=['POST'])
 @jwt_required()
 def deny_request():
@@ -881,14 +907,15 @@ def deny_request():
 
     friend = User.query.filter_by(id=data).first()
 
-    relationship = Status.query.filter_by(user = friend.id, friend = curr.id).first()
+    relationship = Status.query.filter_by(
+        user=friend.id, friend=curr.id).first()
 
     if relationship:
         db.session.delete(relationship)
         db.session.commit()
         print("deleted here")
     else:
-        return {"status":"400", "message":"friend not found"}
+        return {"status": "400", "message": "friend not found"}
     return {"status": "200"}
 
 
@@ -1304,6 +1331,8 @@ def add_event_to_calendar():
         response = handle_google_api.add_to_calendar(event=event)
         if response["status"] == 200:
             return jsonify({"status": 200, "message": "Success"}), 200
+        elif response["status"] == 100:
+            return jsonify({"status": 400, "message": "This conflicts with another event!"}), 400
         else:
             return (
                 jsonify(
@@ -1445,7 +1474,8 @@ def saveBlogPhoto(blog_photo, email, blogNum):
     picture_path = os.path.join(picture_path, picture)
 
     blog_photo.save(picture_path)
-    picture_path = picture_path[slice(picture_path.find(r'\blogs'), None)].replace('\\', '/')
+    picture_path = picture_path[slice(
+        picture_path.find(r'\blogs'), None)].replace('\\', '/')
     return picture_path
 
 
@@ -1456,11 +1486,11 @@ def createBlog():
     user = User.query.filter_by(email=current_user["email"]).first()
 
     form = jsonify({
-        "blogName": request.form['blogName'], 
+        "blogName": request.form['blogName'],
         "blogContent": request.form['blogContent'],
         "blogType": request.form['blogType']
     })
-    
+
     title = form.json["blogName"]
     text = form.json["blogContent"]
     authorID = user.id
@@ -1468,16 +1498,14 @@ def createBlog():
     blogDate = date.today().strftime('%B %d, %Y')
     visibility = form.json["blogType"]
 
-
     new_blog = Blog(
-        title = title,
-        text = text,
-        authorID = authorID,
-        authorName = authorName,
-        date = blogDate,
-        visibility = visibility
+        title=title,
+        text=text,
+        authorID=authorID,
+        authorName=authorName,
+        date=blogDate,
+        visibility=visibility
     )
-
 
     db.session.add(new_blog)
     db.session.commit()
@@ -1489,7 +1517,7 @@ def createBlog():
         for photo in request.files.getlist('blogPhotos[]'):
             photoPath = saveBlogPhoto(photo, user.email, new_blog.blogID)
             pictures.append(photoPath)
-        
+
         pictures = ','.join(pictures)
     else:
         pictures = 'NULL'
@@ -1508,7 +1536,7 @@ def getBlogDetails():
 
     if not blog:
         return jsonify({"message": "Blog not found!"}), 404
-    
+
     title = blog.title
     text = blog.text
     date = blog.date
@@ -1516,7 +1544,7 @@ def getBlogDetails():
     authorName = blog.authorName
     pictures = blog.pictures
 
-    return jsonify({"title": title, 
+    return jsonify({"title": title,
                     "text": text,
                     "date": date,
                     "authorID": authorID,
@@ -1524,18 +1552,19 @@ def getBlogDetails():
                     "pictures": pictures,
                     "message": "Blog details returned!"}), 200
 
-@app.route("/blog/delete_history", methods = ["GET"])
+
+@app.route("/blog/delete_history", methods=["GET"])
 @jwt_required()
 def delete_blog():
     user = get_jwt_identity()
-    
+
     curr = User.query.filter_by(email=user["email"]).first()
-    
+
     curr.blogs.clear()
-    
+
     db.session.commit()
-    #db.session.update()
-    
+    # db.session.update()
+
     return jsonify({"message": "deletion successful"}), 200
 
 @app.route("/blogs/get_user_blogs", methods=["GET"])

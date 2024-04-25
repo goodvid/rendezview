@@ -21,6 +21,7 @@ function Login() {
     });
   };
 
+
   const handle_authentication = () => {
     axios
       .get("http://localhost:5000/authenticate")
@@ -34,7 +35,14 @@ function Login() {
           }
           sessionStorage.setItem("token", res.data.access_token);
           console.log("token", sessionStorage.getItem("token"));
-          navigate("/"); // Adjust '/success-route' as needed
+          if ("quiz" in res.data) {
+            if (res.data.quiz === true) {
+              navigate("/");
+            } else {
+              navigate("/quiz");
+            }
+          }
+
         } else {
           // Handle non-success status here, if any
           console.log(
