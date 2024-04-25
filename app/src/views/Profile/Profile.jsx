@@ -192,7 +192,7 @@ function Profile() {
             return false;
           }
         })
-        .then((data) => {})
+        .then((data) => { })
         .catch((error) => {
           console.log("error", error);
         });
@@ -216,7 +216,7 @@ function Profile() {
             return false;
           }
         })
-        .then((data) => {})
+        .then((data) => { })
         .catch((error) => {
           console.log("error", error);
         });
@@ -323,7 +323,10 @@ function Profile() {
         <Button variant="contained" onClick={() => navigate("/addfriends")}>
           Add friend
         </Button>
-        <Button variant = "contained" onClick={handleBlogs}>Delete blog history</Button>
+        <Button variant="contained" onClick={() => navigate("/creategroups")}>
+          Create Group
+        </Button>
+        <Button variant="contained" onClick={handleBlogs}>Delete blog history</Button>
       </Stack>
     );
   };

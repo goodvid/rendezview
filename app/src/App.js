@@ -25,6 +25,7 @@ import FriendProfile from "./views/Friend/FriendProfile";
 import Friends from "./views/Friend/AddFriends";
 import FriendsList from "./views/Friend/FriendList";
 import ProtectedRoute from "./views/withAuth";
+import CreateGroups from "./views/CreateGroup/createGroup";
 
 function App() {
   return (
@@ -156,6 +157,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Blogs />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/creategroups"
+            element={
+              <ProtectedRoute>
+                <CreateGroups />
               </ProtectedRoute>
             }
           />

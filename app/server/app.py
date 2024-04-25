@@ -2,7 +2,7 @@ from flask import Flask,  request, jsonify, session, redirect
 from flask_session import Session
 from models import db  # Importing the db instance and models
 from flask_cors import CORS, cross_origin
-from models import User, Event, EventRating, Status, Blog
+from models import User, Event, EventRating, Status, Group, Blog
 from types import SimpleNamespace
 from dateutil import parser
 from sqlalchemy.exc import SQLAlchemyError
@@ -182,6 +182,58 @@ def changeusername():
         return jsonify({"message": "Duplicate username not allowed."}), 401
 
     return jsonify({"message": "Username changed successfully"}), 200
+
+
+@app.route("/create_group", methods=['POST'])
+@jwt_required()
+def create_group():
+    current_user = get_jwt_identity()
+    data = request.json
+    print(data)
+
+    groupStr = data['groupStr']
+
+    user = User.query.filter_by(email=current_user["email"]).first()
+
+    new_group = Group(
+        user=user.username,
+        friends=groupStr
+    )
+
+    db.session.add(new_group)
+    db.session.commit()
+
+    group = Group.query.filter_by(
+        user=user.username).order_by(Group.gid.desc()).first()
+
+    if (user.groups == ""):
+        user.groups = user.groups + str(group.gid)
+    else:
+        user.groups = user.groups + "," + str(group.gid)
+    db.session.commit()
+
+    friends = groupStr.split(',')
+
+    for friend_name in friends:
+        friend = User.query.filter_by(username=friend_name).first()
+        if (friend.groups == ""):
+            friend.groups = friend.groups + str(group.gid)
+        else:
+            friend.groups = friend.groups + "," + str(group.gid)
+        db.session.commit()
+
+    return {'status': '200'}
+
+
+@app.route("/set_visibility", methods=["POST"])
+def set_visibility():
+    data = request.json
+    event = Event.query.filter_by(eventID=data['eventID']).first()
+
+    event.visibility = data['visibility']
+    db.session.commit()
+
+    return {'status': '200'}
 
 
 @app.route("/user/changepassword", methods=["POST"])
@@ -437,7 +489,8 @@ def get_filtered_events():
                   'longitude': event.longitude,
                   'yelpID': event.yelpID,
                   'hostName': event.hostName,
-                  'desc': event.desc}
+                  'desc': event.desc,
+                  'visibility': event.visibility}
 
         if event.yelpID is None:  # Filter user_events
             passes_filters = True
