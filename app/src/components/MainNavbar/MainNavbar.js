@@ -11,7 +11,11 @@ function MainNavbar() {
     var login_method = sessionStorage.getItem("login_method");
     if (login_method && (login_method === "google")) {
       axios
-        .get("http://localhost:5000/delinkGoogle")
+        .get("http://localhost:5000/delinkGoogle", {
+          headers: {
+            Authorization: "Bearer " + sessionStorage.getItem("token")
+          }
+        })
         .then((res) => {
           if (res.data.status === 200) {
             sessionStorage.removeItem("token");

@@ -1,6 +1,6 @@
 import * as React from "react";
 import "./Settings.css";
-import { Avatar, Button, Stack, IconButton, requirePropFactory } from "@mui/material/";
+import { Avatar, Button, Stack, IconButton } from "@mui/material/";
 import SettingsIcon from "@mui/icons-material/Settings";
 import CloseIcon from "@mui/icons-material/Close";
 import MainNavbar from "../../components/MainNavbar/MainNavbar";
@@ -33,10 +33,8 @@ function Settings() {
       .catch((err) => {
         console.log(err);
       });
-
-    
-      axios
-      .get("http://127.0.0.1:5000/user/getprofilepic", {
+    axios
+      .get("http://localhost:5000/user/getprofilepic", {
         headers: {
           Authorization: "Bearer " + sessionStorage.getItem("token"),
           "Content-Type": "application/json",
@@ -49,7 +47,6 @@ function Settings() {
       .catch((err) => {
         console.log(err);
       });
-
   }, []);
 
   const changeUsernameClick = () => {
@@ -66,6 +63,10 @@ function Settings() {
 
   const changeProfilePicClick = () => {
     navigate("/changeprofilepic");
+  };
+
+  const changeLocationClick = () => {
+    navigate("/changeLocation");
   };
 
   // Delete Account
@@ -85,7 +86,7 @@ function Settings() {
     event.preventDefault();
 
     // Send to Flask server
-    fetch("http://127.0.0.1:5000/user/deleteprofilepic", {
+    fetch("http://localhost:5000/user/deleteprofilepic", {
       method: "GET",
       headers: {
         Authorization: "Bearer " + sessionStorage.getItem("token"),
@@ -249,7 +250,21 @@ function Settings() {
               >
                 Delete Profile Picture
               </Button>
-              
+              <Button
+                variant="contained"
+                disableElevation
+                sx={{
+                  textTransform: "none",
+                  width: "200px",
+                  height: "50px",
+                  backgroundColor: "#D1EEFF",
+                  color: "black",
+                  "&:hover": { backgroundColor: "#8bd4ff", color: "black" },
+                }}
+                onClick={changeLocationClick}
+              >
+                Change Location
+              </Button>
             </Stack>
           </Stack>
 

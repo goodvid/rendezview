@@ -11,6 +11,8 @@ import { pinwheel } from "ldrs";
 import categories from "../eventCategories.json";
 import Event from "../../components/Event/Event";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 
 import {
   Stack,
@@ -44,6 +46,9 @@ import {
   GrayButton,
   EventDetailsButton,
 } from "../../components/StyledComponents/StyledComponents";
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import Diversity3Icon from '@mui/icons-material/Diversity3';
 
 function EventDetails() {
   // TODO: replace hard coded names
@@ -81,6 +86,9 @@ function EventDetails() {
   });
 
   const navigate = useNavigate();
+
+  dayjs.extend(utc);
+  dayjs.extend(timezone);
 
   useEffect(() => {
     fetchEventObject();
@@ -260,7 +268,7 @@ function EventDetails() {
       },
     })
       .then((response) => {
-        if (resp.status != 200) {
+        if (response.status != 200) {
           console.log("not logged in");
           return;
         }
@@ -379,7 +387,7 @@ function EventDetails() {
           return false;
         }
       })
-      .then(() => {})
+      .then(() => { })
       .catch((error) => {
         console.log("error", error);
         setLoading(false);
@@ -489,8 +497,8 @@ function EventDetails() {
       newFilter === "all"
         ? eventRSVPList
         : eventRSVPList.filter(
-            (item) => item.status.toLowerCase() === newFilter
-          );
+          (item) => item.status.toLowerCase() === newFilter
+        );
 
     setDisplayList(filteredList);
   };
@@ -526,7 +534,7 @@ function EventDetails() {
         } else {
           alert(
             "Can't get RSVP list of an event not added to calendar: " +
-              data.message
+            data.message
           );
           setOpenRSVP(false);
         }
@@ -590,7 +598,7 @@ function EventDetails() {
             <Stack direction="row" alignItems="center" gap="0.5rem">
               <EventDetailsButton
                 startIcon={<EventIcon />}
-                // onClick={}
+              // onClick={}
               >
                 Add to Calendar
               </EventDetailsButton>
@@ -899,7 +907,7 @@ function EventDetails() {
               <Event
                 id={event.id}
                 name={event.name}
-                date={event.time + " " + event.date}
+                date={dayjs(event.time).toString()}
                 location={event.location}
                 desc={event.desc}
                 key={i}
@@ -910,6 +918,17 @@ function EventDetails() {
       </Stack>
     );
   };
+
+  const setVisibility = (visibility) => {
+    axios
+      .post("http://localhost:5000/set_visibility", {
+        'eventID': eventID,
+        'visibility': visibility,
+      })
+      .then((res) => {
+        console.log(res.data);
+      });
+  }
 
   return (
     <div
@@ -944,7 +963,7 @@ function EventDetails() {
                   <h1>{eventName}</h1>
 
                   <h3 style={{ color: "#818181" }}>
-                    {date} {time}
+                    {dayjs(date).tz("America/New_York").toString()}
                   </h3>
                 </Stack>
                 <Stack
@@ -1055,13 +1074,13 @@ function EventDetails() {
                 >
                   See RSVP List
                 </GrayButton>
-                <GrayButton
+                {/* <GrayButton
                   textAlign="Center"
                   variant="contained"
                   onClick={dummyCall}
                 >
                   Dummy Call
-                </GrayButton>
+                </GrayButton> */}
                 <Dialog open={openRSVP} onClose={handleCloseRSVPDialog}>
                   <DialogTitle>RSVP List</DialogTitle>
                   <DialogContent>
@@ -1094,10 +1113,9 @@ function EventDetails() {
                         <ListItem key={index}>
                           <ListItemText
                             primary={item.name}
-                            secondary={`Status: ${
-                              item.status.charAt(0).toUpperCase() +
+                            secondary={`Status: ${item.status.charAt(0).toUpperCase() +
                               item.status.slice(1)
-                            }`}
+                              }`}
                           />
                         </ListItem>
                       ))}
@@ -1157,6 +1175,29 @@ function EventDetails() {
                     ) : (
                       <p>(Event not rated)</p>
                     )}
+                    {userID == eventObject.userID ? (
+                      <div>
+                        <Button
+                        sx={{ marginLeft: '400px', width: 'auto'}}
+                        onClick={() => setVisibility("public")}
+                        >
+                          <VisibilityIcon className="w-auto"></VisibilityIcon>
+                        </Button>
+                        <Button
+                        sx={{ width: 'auto'}}
+                        onClick={() => setVisibility("friends")}
+                        >
+                          <Diversity3Icon className="w-auto"/>
+                        </Button>
+                        <Button
+                        sx={{ width: 'auto'}}
+                        onClick={() => setVisibility("private")}
+                        >
+                          <VisibilityOffIcon className="w-auto"/>
+                        </Button>
+                      </div>
+                    ) : (<div />)
+                    }
                   </Stack>
                 ) : (
                   <div />

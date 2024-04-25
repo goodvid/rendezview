@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Stack, Badge, IconButton, Avatar } from "@mui/material";
+import {
+  Stack,
+  Badge,
+  IconButton,
+  Avatar,
+  Snackbar,
+  Alert,
+} from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import { Form, useNavigate } from "react-router-dom";
 import "./Register.css";
@@ -13,8 +20,15 @@ function Register() {
   const [flag, setFlag] = useState(0);
   const [message, setMessage] = useState("");
 
+  const [locationInput, setLocationInput] = useState("");
+  const [location, setLocation] = useState("");
+  const [locLoading, setLocLoading] = useState(false);
+
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMsg, setAlertMsg] = useState("");
+
   const [displayPic, setDisplayPic] = useState();
-  const [profilePic, setProfilePic] = useState(null);
+  const [profilePic, setProfilePic] = useState([null]);
   const handleProfilePicChange = (event) => {
     if (event) {
       const file = event.target.files[0];
@@ -51,9 +65,10 @@ function Register() {
     if (profilePic) {
       formData.append("profilePicture", profilePic);
     }
+    formData.append("location", location);
 
     axios
-      .post("http://127.0.0.1:5000/user/register", formData, {
+      .post("http://localhost:5000/user/register", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -75,7 +90,9 @@ function Register() {
         }
       })
       .catch((err) => {
-        console.log(err);
+        console.log("err:", err);
+        setAlertMsg(err.response.data.message);
+        handleAlertClick();
       });
     setEmail("");
     setPassword("");
@@ -84,6 +101,68 @@ function Register() {
     Array.from(document.querySelectorAll("input")).forEach(
       (input) => (input.value = "")
     );
+  };
+
+  useEffect(() => {
+    getIPGeolocation();
+  }, []);
+
+  useEffect(() => {
+    getGoogleFormattedLocation();
+  }, [location]);
+
+  const getGoogleFormattedLocation = () => {
+    const params = new URLSearchParams({
+      address: location,
+      key: "AIzaSyBMp7w0sRedU-xNT_Z5DGFCYPFkHa-QTMg",
+    });
+
+    fetch(
+      `https://maps.googleapis.com/maps/api/geocode/json?${params.toString()}`
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("formatted:", data.results[0].formatted_address);
+        const formattedAddress = data.results[0].formatted_address;
+
+        setLocation(formattedAddress);
+        setLocationInput(formattedAddress);
+        setLocLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error getting google formatted address:", error);
+        setLocLoading(false);
+      });
+  };
+
+  const getIPGeolocation = () => {
+    setLocLoading(true);
+    fetch("https://ipinfo.io/json?token=f92cb4e0401c19")
+      .then((response) => response.json())
+      .then((data) => {
+        const { city, region, country } = data;
+        const formattedAddress = `${city}, ${region}, ${country}`;
+
+        setLocation(formattedAddress);
+        setLocationInput(formattedAddress);
+        setLocLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error getting IP-based location:", error);
+        setLocLoading(false);
+      });
+  };
+
+  const handleAlertClick = () => {
+    setAlertOpen(true);
+  };
+
+  const handleAlertClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setAlertOpen(false);
   };
 
   return (
@@ -178,6 +257,20 @@ function Register() {
           <Link id="log-in" to="/login" className="text-login-blue font-bold">
             Log In
           </Link>
+          <Snackbar
+            open={alertOpen}
+            autoHideDuration={5000}
+            onClose={handleAlertClose}
+          >
+            <Alert
+              onClose={handleAlertClose}
+              variant="filled"
+              severity="error"
+              sx={{ width: "100%" }}
+            >
+              {alertMsg}
+            </Alert>
+          </Snackbar>
         </div>
       </div>
     </div>
