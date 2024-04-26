@@ -26,18 +26,26 @@ def select_events_to_reccommend(user):
     # for event in events:
     #     event_dict[event.id] = event
     # setup end -------
-    preference_lst = prefrences.split(",")
-    scored_events = []
-    for event_option in events:
-        similarity_score = calculate_similarity(
-            event_option.category, user_location, preference_lst)
-        scored_events.append((event_option, similarity_score))
+    recommended_events = []
+    if prefrences:
+        preference_lst = prefrences.split(",")
+        scored_events = []
+        for event_option in events:
+            similarity_score = calculate_similarity(
+                event_option.category, user_location, preference_lst)
+            scored_events.append((event_option, similarity_score))
 
-    scored_events.sort(key=lambda x: x[1], reverse=True)
-    # the number 5 or 10 can be adjusted
-    recommended_events = scored_events[0:10]
+        scored_events.sort(key=lambda x: x[1], reverse=True)
+        # the number 5 or 10 can be adjusted
+        recommended_events = scored_events[0:10]
+        selected_events = []
 
-    return recommended_events
+        for event_option, _ in recommended_events:
+            selected_events.append(event_option)
+            print(
+                f"Event Name: {event_option.name}, Category: {event_option.category}")
+
+    return selected_events
 
 
 if __name__ == '__main__':

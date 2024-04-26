@@ -1,5 +1,6 @@
 import React from "react";
 import axios from "axios";
+import { Stack } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import MainNavbar from "../../components/MainNavbar/MainNavbar";
@@ -13,9 +14,9 @@ function BlogList() {
     const [blogs, setBlogs] = useState([]);
     const [publicBlogs, setPublicBlogs] = useState([]);
 
-    const createBlogClick = () => {
-        navigate("/newblog");
-    };
+  const createBlogClick = () => {
+    navigate("/newblog");
+  };
 
     useEffect(() => {
         console.log(sessionStorage.getItem("token"));
@@ -97,20 +98,20 @@ function BlogList() {
 }
 
 function Blogs() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        if (!sessionStorage.getItem("token")) {
-            navigate("/login");
-        }
-    }, []);
+  useEffect(() => {
+    if (!sessionStorage.getItem("token")) {
+      navigate("/login");
+    }
+  }, []);
 
-    return (
-        <div className="w-full h-full">
-            <MainNavbar />
-            {sessionStorage.getItem("token") ? <BlogList /> : <div />}
-        </div>
-    );
+  return (
+    <div className="w-full h-full">
+      <MainNavbar />
+      {sessionStorage.getItem("token") ? <BlogList /> : <div />}
+    </div>
+  );
 }
 
 export default Blogs;

@@ -72,7 +72,9 @@ def add_to_calendar(event):
                 summary=event_title, start_date=event_start_date, start_time=event_start_time, time_zone=event_time_zone)
             google_event_tuple = google_api_instance.add_event(
                 creds=credentials, event=google_event)
-            if not google_event_tuple:
+            if google_event_tuple == "conflict":
+                return {"flag": False, "status": 100, "message": "You have a conflicting event at this time!"}
+            elif not google_event_tuple:
                 print("here")
                 return {"flag": False, "status": 400, "message": "Event was not added successfully"}
             else:
@@ -193,26 +195,32 @@ def get_rsvp_list(event):
 
 
 def handle_authentication():
-    # print("Invoked Function!!!")
     try:
         google_api_instance = GoogleAPI(os.getcwd())
         credentials = google_api_instance.user_token_exists()
         # prevents re-logging in
         if credentials != False:
+            # since they already have credentials
             user_email = google_api_instance.get_user_email(credentials)
-            return {"flag": True, "credentials": credentials, "email": user_email}
+            return {"flag": True, "credentials": credentials, "email": user_email, "quiz": True}
         else:
             credentials = google_api_instance.authenticate()
             user_email = google_api_instance.get_user_email(credentials)
             google_api_instance.save_credentials_and_email(
                 credentials, user_email)
+
+            possible_user = User.query.filter_by(email=user_email).first()
+            if possible_user:
+                return {"flag": True, "credentials": credentials, "email": user_email, "quiz": True}
+
+            # but if the user does not exist then we create the user and add it to the data base
             # Add the new user
             new_user = User(email=user_email,
                             username=user_email, password="N/A")
             db.session.add(new_user)
             db.session.commit()
             # probably need another function here to actually save it to the database
-            return {"flag": True, "credentials": credentials, "email": user_email}
+            return {"flag": True, "credentials": credentials, "email": user_email, "quiz": False}
     except Exception as e:
         print(e)
         return {"flag": False}
@@ -220,13 +228,17 @@ def handle_authentication():
 
 def handle_deauthentication():
     try:
-        google_api_instance = GoogleAPI()
+        google_api_instance = GoogleAPI(os.getcwd())
+        # print("Looooooog")
+        # print(google_api_instance.BASE_PATH)
+        # print("Loooooog")
         token_data = google_api_instance.revoke_google_token()
-        if token_data:
-            # because right now username and email are the same
-            email = token_data["account"]
-            User.query.filter_by(email=email).delete()
-            db.session.commit()
+        # if token_data:
+        #     # because right now username and email are the same
+        #     # modify to not delete from database potentially?
+        #     email = token_data["account"]
+        #     User.query.filter_by(email=email).delete()
+        #     db.session.commit()
         return True
     except Exception as e:
         print(e)

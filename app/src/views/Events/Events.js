@@ -62,7 +62,7 @@ function EventList() {
             <Event
               id={event.id}
               name={event.name}
-              date={event.time + " " + event.date}
+              date={event.date}
               location={event.location}
               desc={event.desc}
               key={i}
