@@ -116,9 +116,10 @@ function Main() {
           console.error("Error fetching API events:", error);
           setLoading(false);
         });
+      getUserLocation();
     }
 
-    getUserLocation();
+
   }, []);
 
   useEffect(() => {
@@ -162,20 +163,20 @@ function Main() {
     // Get the recommended events once the backend function is made
     if (sessionStorage.getItem("token")) {
       axios
-      .get(`http://localhost:5000/events/get_friend_recs`, {
-        headers: {
-          Authorization: "Bearer " + sessionStorage.getItem("token"),
-          "Content-Type": "application/json",
-        }
-      })
-      .then((response) => {
-        setRecFriendEvents(response.data["recommendations"]);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching API events:", error);
-        setLoading(false);
-      });
+        .get(`http://localhost:5000/events/get_friend_recs`, {
+          headers: {
+            Authorization: "Bearer " + sessionStorage.getItem("token"),
+            "Content-Type": "application/json",
+          }
+        })
+        .then((response) => {
+          setRecFriendEvents(response.data["recommendations"]);
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.error("Error fetching API events:", error);
+          setLoading(false);
+        });
     }
   }, []);
 
@@ -434,33 +435,33 @@ function Main() {
                 );
               })
             ) : eventType == "Friends" ?
-            (
-              recFriendEvents.map((event, i) => {
-                return (
-                  <Event
-                    name={event.name}
-                    date={dayjs(event.start_date).toString()}
-                    location={event.location}
-                    key={i}
-                    id={event.id}
-                    desc={event.desc}
-                  />
-                );
-              })
-            ) : (
-              recommendedEvents.map((event, i) => {
-                return (
-                  <Event
-                    name={event.name}
-                    date={dayjs(event.start_date).toString()}
-                    location={event.location}
-                    key={i}
-                    id={event.id}
-                    desc={event.desc}
-                  />
-                );
-              })
-            )}
+              (
+                recFriendEvents.map((event, i) => {
+                  return (
+                    <Event
+                      name={event.name}
+                      date={dayjs(event.start_date).toString()}
+                      location={event.location}
+                      key={i}
+                      id={event.id}
+                      desc={event.desc}
+                    />
+                  );
+                })
+              ) : (
+                recommendedEvents.map((event, i) => {
+                  return (
+                    <Event
+                      name={event.name}
+                      date={dayjs(event.start_date).toString()}
+                      location={event.location}
+                      key={i}
+                      id={event.id}
+                      desc={event.desc}
+                    />
+                  );
+                })
+              )}
           </div>
         </div>
       </div>
