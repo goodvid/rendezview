@@ -13,7 +13,7 @@ function GroupList() {
   useEffect(() => {
     console.log(sessionStorage.getItem("token"));
     axios
-      .get("http://localhost:5000/group/get_groups", {
+      .get("http://localhost:5000/group/get_user_groups", {
         headers: {
           Authorization: "Bearer " + sessionStorage.getItem("token"),
           "Content-Type": "application/json",
@@ -25,6 +25,23 @@ function GroupList() {
       });
   }, []);
 
+  const leaveGroup = (gid) =>{
+    fetch("http://localhost:5000/group/leave_group", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + sessionStorage.getItem("token"),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(gid),
+    }).then((response) => response.json())
+        .then((data) => {
+          console.log(data)
+
+        });
+
+
+  }
+
   return (
     <div className="w-full h-full p-10">
       <div className="flex flex-row items-center">
@@ -34,8 +51,15 @@ function GroupList() {
       <div className="w-full h-[80%] flex flex-col items-center gap-5">
         {groups.map((group, i) => {
           return (
-            <div className="w-[90%] h-[100px] outline outline-1 rounded-md flex justify-start items-center pl-10" key={i}>
-                <div className="text-2xl">{group['friends']}</div>
+            <div
+              className="w-[90%] h-[100px] outline outline-1 rounded-md flex justify-between items-center pl-10 pr-4"
+              key={i}
+              onClick={()=>{navigate(`/groupdetails/${group["gid"]}`)}}
+            >
+              <div className="text-2xl">{group["friends"]}</div>
+              <Button onClick={() => leaveGroup(group["gid"])}>
+                leave group
+              </Button>
             </div>
           );
         })}

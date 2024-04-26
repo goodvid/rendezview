@@ -33,7 +33,7 @@ class User(UserMixin, db.Model):
     location = db.Column(db.String(50))
     preferences = db.Column(db.String(50))
     calendar = db.Column(db.String(50))
-    groups = db.Column(db.String(50))
+    groups = db.Column(db.String(100))
 
     def set_password(self, passwrd):
         self.password = generate_password_hash(passwrd)
@@ -53,7 +53,11 @@ class User(UserMixin, db.Model):
     def get_id(self):
         return str(self.id)
 
-
+class Group(db.Model):
+    gid = db.Column(db.Integer, primary_key=True)
+    user = db.Column(db.String(50), db.ForeignKey("user.username"))
+    friends = db.Column(db.String(50))
+    
 class Event(db.Model):
     userID = db.Column(db.Integer, db.ForeignKey("user.id"))
     eventID = db.Column(db.Integer, primary_key=True)
@@ -124,7 +128,3 @@ class Status(db.Model):
     friend = db.Column(db.String(5000), db.ForeignKey('user.email'))
     status = db.Column(db.String(5000))
 
-class Group(db.Model):
-    gid = db.Column(db.Integer, primary_key=True)
-    user = db.Column(db.String(50), db.ForeignKey('user.username'))
-    friends = db.Column(db.String(50))
