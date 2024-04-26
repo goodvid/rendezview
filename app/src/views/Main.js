@@ -367,7 +367,7 @@ function Main() {
             ></l-pinwheel>
           </Stack>
         ) : (
-          <Stack margin="3rem" textAlign="left" alignItems="flex-start">
+          <Stack margin="3rem" textalign="left" alignItems="flex-start">
             <h1>{featuredEvents.name}</h1>
             <h3>{featuredEvents.location}</h3>
             <h3>{dayjs(featuredEvents.start_date).toString()}</h3>
