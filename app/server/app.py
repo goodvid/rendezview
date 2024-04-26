@@ -227,6 +227,9 @@ def create_group():
     group = Group.query.filter_by(
         user=user.username).order_by(Group.gid.desc()).first()
 
+    if (not user.groups):
+        user.groups = ""
+
     if (user.groups == ""):
         user.groups = user.groups + str(group.gid)
     else:
@@ -237,6 +240,8 @@ def create_group():
 
     for friend_name in friends:
         friend = User.query.filter_by(username=friend_name).first()
+        if (not friend.groups):
+            friend.groups = ""
         if (friend.groups == ""):
             friend.groups = friend.groups + str(group.gid)
         else:

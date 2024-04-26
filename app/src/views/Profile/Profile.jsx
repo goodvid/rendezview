@@ -220,7 +220,7 @@ function Profile() {
             return false;
           }
         })
-        .then((data) => { })
+        .then((data) => {})
         .catch((error) => {
           console.log("error", error);
         });
@@ -244,7 +244,7 @@ function Profile() {
             return false;
           }
         })
-        .then((data) => { })
+        .then((data) => {})
         .catch((error) => {
           console.log("error", error);
         });
@@ -344,7 +344,9 @@ function Profile() {
         <Button variant="contained" onClick={() => navigate("/creategroups")}>
           Create Group
         </Button>
-        <Button variant="contained" onClick={handleBlogs}>Delete blog history</Button>
+        <Button variant="contained" onClick={handleBlogs}>
+          Delete blog history
+        </Button>
       </Stack>
     );
   };
@@ -471,7 +473,7 @@ function Profile() {
                   name={blog.title}
                   date={blog.date}
                   author={blog.authorName}
-                  desc={blog.pictures}
+                  desc={blog.text}
                 />
               ))
             ) : (
