@@ -5,10 +5,15 @@ import testImage from "../../media/testImage.jpeg";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { pinwheel } from "ldrs";
-import { Stack, Button, Avatar } from "@mui/material";
+import { Stack, Button, IconButton } from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import { RedButton, GrayButton } from "../../components/StyledComponents/StyledComponents";
 import Edit from "@mui/icons-material/Edit";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import CloseIcon from "@mui/icons-material/Close";
 
 function BlogDetails() {
   pinwheel.register(); // loading animation
@@ -26,6 +31,15 @@ function BlogDetails() {
   const [photos, setPhotos] = useState("");
 
   const [username, setUsername] = useState("");
+
+  // Delete Blog
+  const [deleteOpen, setDeleteOpen] = React.useState(false);
+  const handleDeleteOpen = () => {
+    setDeleteOpen(true);
+  };
+  const handleDeleteClose = () => {
+    setDeleteOpen(false);
+  };
 
   const navigate = useNavigate();
 
@@ -150,9 +164,51 @@ function BlogDetails() {
                   <GrayButton textAlign="left" variant="contained" justifyContent="center" style={{margin: 8, height: "30%"}} onClick={editBlogClick}>
                       Edit Blog
                   </GrayButton>
-                  <RedButton textAlign="left" variant="contained" style={{margin: 8, height: "30%"}} onClick={deleteBlogClick}>
+                  <RedButton textAlign="left" variant="contained" style={{margin: 8, height: "30%"}} onClick={handleDeleteOpen}>
                       Delete Blog
                   </RedButton> 
+                  <Dialog onClose={handleDeleteClose} open={deleteOpen}>
+                    <DialogTitle
+                      sx={{
+                        m: 2,
+                        p: 2,
+                        paddingBottom: 0,
+                        width: "500px",
+                        color: "red",
+                      }}
+                    >
+                      {" "}
+                      Delete Blog?
+                    </DialogTitle>
+                    <IconButton
+                      onClick={handleDeleteClose}
+                      sx={{ position: "absolute", right: 20, top: 25 }}
+                    >
+                      <CloseIcon />
+                    </IconButton>
+                    <DialogContent sx={{ marginLeft: 1, paddingBottom: 0 }}>
+                      Are you sure you'd like to delete your blog?{" "}
+                    </DialogContent>
+                    <DialogContent sx={{ marginLeft: 1 }}>
+                      Deleting your blog is permanent.
+                    </DialogContent>
+                    <DialogActions>
+                      <Button
+                        className="DeleteButton2"
+                        variant="contained"
+                        sx={{
+                          p: 2,
+                          backgroundColor: "red",
+                          color: "white",
+                          "&:hover": { backgroundColor: "red", color: "white" },
+                        }}
+                        autoFocus
+                        onClick={deleteBlogClick}
+                      >
+                        Delete Blog
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
               </Stack> 
               : <div />)}
           </Stack>
