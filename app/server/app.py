@@ -23,7 +23,7 @@ from flask_jwt_extended import (create_access_token,
 )
 from sqlalchemy import or_
 from config import ApplicationConfig
-from datetime import (datetime, date)
+from datetime import (datetime, date, timedelta)
 from dateutil import parser
 import datetime
 
@@ -1336,6 +1336,60 @@ def createBlog():
     return jsonify({"message": "Blog created!", "blogID": new_blog.blogID}), 200
 
 
+def deleteBlogPhotos(email, blogID):
+    blog = Blog.query.filter_by(blogID=blogID).first()
+
+    if (blog.pictures and "blogs" in blog.pictures):
+        for pic in blog.pictures.split(","):
+            abspath = os.path.abspath(os.path.join(os.getcwd(), os.pardir, 'public' + pic))
+            os.remove(abspath)
+        blog.pictures = ""
+        db.session.commit()
+
+    return ""
+
+
+@app.route("/blog/edit", methods=["POST"])
+@jwt_required()
+def editBlog():    
+    form = jsonify({
+        "blogID": request.form['blogID'],
+        "blogName": request.form['blogName'], 
+        "blogContent": request.form['blogContent'],
+        "blogType": request.form['blogType']
+    })
+
+    id = form.json['blogID']
+    blog = Blog.query.filter_by(blogID=id).first()
+    
+    blog.title = form.json["blogName"] if len(form.json["blogName"]) >= 1 else blog.title
+    blog.text = form.json["blogContent"] if len(form.json["blogContent"]) >= 1 else blog.text    
+    blog.date = date.today().strftime('%B %d, %Y')
+    blog.visibility = form.json["blogType"] if len(form.json["blogType"]) >= 1 else blog.visibility    
+
+    db.session.commit()
+
+    current_user = get_jwt_identity()
+
+    if (request.files):
+        deleteBlogPhotos(current_user["email"], id)
+
+        pictures = []
+
+        for photo in request.files.getlist('blogPhotos[]'):
+            photoPath = saveBlogPhoto(photo, current_user["email"], id)
+            pictures.append(photoPath)
+        
+        pictures = ','.join(pictures)
+    else:
+        pictures = blog.pictures
+
+    blog.pictures = pictures
+    db.session.commit()
+
+    return jsonify({"message": "Blog edited!"}), 200
+
+
 @app.route("/blog/details", methods=["POST"])
 def getBlogDetails():
     id = request.json["id"]
@@ -1344,19 +1398,23 @@ def getBlogDetails():
     if not blog:
         return jsonify({"message": "Blog not found!"}), 404
     
+    id = blog.blogID
     title = blog.title
     text = blog.text
     date = blog.date
     authorID = blog.authorID
     authorName = blog.authorName
+    visibility = blog.visibility
     pictures = blog.pictures
 
-    return jsonify({"title": title, 
+    return jsonify({"id": id,
+                    "title": title, 
                     "text": text,
                     "date": date,
                     "authorID": authorID,
                     "authorName": authorName,
                     "pictures": pictures,
+                    "visibility": visibility,
                     "message": "Blog details returned!"}), 200
 
 @app.route("/blog/delete_history", methods = ["GET"])

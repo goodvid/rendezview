@@ -17,6 +17,7 @@ function BlogDetails() {
   let id = useParams();
   let resp = false;
 
+  const [blogID, setBlogID] = useState(0);
   const [blogTitle, setBlogTitle] = useState("");
   const [blogText, setBlogText] = useState("");
   const [authorID, setAuthorID] = useState("");
@@ -62,6 +63,7 @@ function BlogDetails() {
       .then((data) => {
         if (resp.status === 200) {
             setLoading(false);
+            setBlogID(data.id);
             setBlogTitle(data.title);
             setBlogText(data.text);
             setAuthorID(data.authorID);
@@ -85,12 +87,12 @@ function BlogDetails() {
       });
 
     navigate("/events");
-  };
-
-  const editEvent = () => {
-    sessionStorage.setItem("cur_event", JSON.stringify(eventObject));
-    navigate(`/edit_event/${eventObject.eventID}`);
   };*/}
+
+  const editBlogClick = () => {
+    // sessionStorage.setItem("cur_event", JSON.stringify(eventObject));
+    navigate(`/editblog/${blogID}`);
+  };
 
   const checkOwner = () => {   
     console.log(authorName);
@@ -131,11 +133,11 @@ function BlogDetails() {
 
             {checkOwner() && (sessionStorage.getItem("token") ? 
               <Stack direction="row" justifyContent="flex-end" >
-                  <GrayButton textAlign="left" variant="contained" justifyContent="center" style={{margin: 8, height: "30%"}} >
-                      Edit Event
+                  <GrayButton textAlign="left" variant="contained" justifyContent="center" style={{margin: 8, height: "30%"}} onClick={editBlogClick}>
+                      Edit Blog
                   </GrayButton>
                   <RedButton textAlign="left" variant="contained" style={{margin: 8, height: "30%"}}>
-                      Delete Event
+                      Delete Blog
                   </RedButton> 
               </Stack> 
               : <div />)}
