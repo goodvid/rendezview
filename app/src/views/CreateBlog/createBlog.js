@@ -62,8 +62,6 @@ function CreateBlog() {
       }
     }
 
-    console.log("FORM DATA: ", formData.getAll("blogPhotos[]"));
-
     fetch("http://localhost:5000/blog/create", {
       method: "POST",
       headers: {

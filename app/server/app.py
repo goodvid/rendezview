@@ -930,7 +930,6 @@ def create_event():
     db.session.commit()
     return jsonify({"message": "event set", "eventID": new_event.eventID}), 200
 
-
 @app.route("/events/api", methods=["POST", "GET"])
 def fetch_api_events():
     # Uncomment the next line to dynamically set the location based on query parameter

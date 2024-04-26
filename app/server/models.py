@@ -73,6 +73,7 @@ class Event(db.Model):
     latitude = db.Column(db.Float)
 
     type = db.Column(db.String(50))
+    pictures = db.Column(db.String(500))
 
     def as_dict(self):
         return {

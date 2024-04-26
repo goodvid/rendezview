@@ -72,6 +72,8 @@ function CreateEvent() {
     setEventPhotos(photos);
   };
 
+  const [eventID, setEventID] = useState("");
+
   const handleSubmit = () => {
     // event.preventDefault();
     fetch("http://localhost:5000/event/create", {
@@ -91,12 +93,12 @@ function CreateEvent() {
         }
       })
       .then((data) => {
-        console.log(data, "adafewrg");
         navigate(`/eventdetails/${data.eventID}`);
       })
       .catch((error) => {
         console.log("error", error);
       });
+      
   };
 
   const handleEventType = (type) => {
