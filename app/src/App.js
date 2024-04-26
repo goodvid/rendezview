@@ -28,6 +28,7 @@ import ProtectedRoute from "./views/withAuth";
 import CreateGroups from "./views/CreateGroup/createGroup";
 import ChangeLocation from "./views/Settings/ChangeLocation/ChangeLocation";
 import Groups from "./views/Groups/Groups";
+import GroupDetails from "./views/Groups/GroupDetails";
 
 function App() {
   return (
@@ -151,7 +152,9 @@ function App() {
             element={
               <ProtectedRoute>
                 <CreateGroups />
-              </ProtectedRoute>} />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/blogdetails/:id" element={<BlogDetails />} />
           <Route
             path="/newblog"
@@ -171,7 +174,20 @@ function App() {
           />
           <Route
             path="/groups"
-            element={<Groups />} />
+            element={
+              <ProtectedRoute>
+                <Groups />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/groupdetails/:id"
+            element={
+              <ProtectedRoute>
+                <GroupDetails></GroupDetails>
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </div>

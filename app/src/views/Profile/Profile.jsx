@@ -310,8 +310,7 @@ function Profile() {
           </TextIconStack>
         )}
         <h3>
-          <a href="/profile/friends">{friendsNum} FRIENDS</a> • {groupsNum}{" "}
-          GROUPS
+          <a href="/profile/friends">{friendsNum} FRIENDS</a> 
         </h3>
 
         {/* User Tags */}

@@ -541,21 +541,30 @@ def get_friend_recs():
 
     return {'status': '200', 'recommendations': event_values}
 
+
+@app.route("/group/leave_group", methods=["GET", "POST"])
 @jwt_required()
-@app.route('/group/leave_group', methods=['GET'])
 def leave_group():
     
-    group_num = request.json["gid"]
+    group_num = request.json
+    print("group num", group_num)
     curr = User.query.filter_by(email=get_jwt_identity()['email']).first()
     
     group = Group.query.filter_by(gid=group_num).first()
     
     if group.user == curr.id:
+        print('group here')
         db.session.delete(group)
+        print(curr)
     else:
+        print('group there')
         members = group.friends
-        members.remove(str(curr.id))
+        members.replace(str(curr.id) + ",","")
         group.friends = members
+    user_groups = curr.groups
+    user_groups = user_groups.replace(str(group.gid) + ",", "")
+    curr.groups = user_groups
+    print( curr.groups, group.friends, user_groups, group.gid)
     db.session.commit()
     
     return {'status':200, 'msg': "left group"}
@@ -583,43 +592,30 @@ def add_members():
     db.session.commit()
 
 
+@app.route("/group/remove_member", methods=["GET", "POST"])
 @jwt_required()
-@app.route("/group/remove_members", methods=["GET", "POST"])
-def remove_members():
+def remove_member():
     req = request.json
 
     friend = req["friend"]
     gid = req["gid"]
 
-    group = Group.query.filter_by(gid=gid)
+    group = Group.query.filter_by(gid=gid).first()
     
-    if gid != User.query.filter_by(email=get_jwt_identity()["email"]).first().id:
-        return {"status": "401", "msg": "cannot manage this group"}
+    
 
     members = group.friends
 
-    members.remove("," + friend)
-
+    print("here now", members, type(members))
+    #members = members.remove("," + friend)
+    members = members.replace( User.query.filter_by(id=friend).first().username + ",","")
+    print(members)
     group.friends = members
 
     db.session.commit()
+    
+    return{"msg": "removed", "status":"200"}
 
-
-@jwt_required()
-@app.route("/group/get_groups", methods=["POST"])
-def get_groups():
-    user = User.query.filter_by(email=get_jwt_identity()["email"]).first()
-    
-    groups = user.groups
-    
-    gs = []
-    
-    for g in groups:
-        group  = Group.query.filter_by(gid=int(g)).first()
-        
-        gs.append({"user": group.user, "friends": group.friends})
-    
-    return {"status":200, "groups": gs}
 
 @jwt_required()
 @app.route("/group/view_members", methods=["POST"])
@@ -715,21 +711,47 @@ def get_filtered_events():
         "user_events": user_events,
     }
 
-@app.route("/group/get_groups", methods=["GET"])
+@app.route("/group/get_user_groups", methods=["GET"])
 @jwt_required()
 def get_groups():
     user = User.query.filter_by(email=get_jwt_identity()["email"]).first()
-    
+
     groups = user.groups.split(',')
-    
+
     gs = []
-    
+
     for g in groups:
         group  = Group.query.filter_by(gid=int(g)).first()
-        
-        gs.append({"user": group.user, "friends": group.friends})
-    
+
+        gs.append({"gid":group.gid, "user": group.user, "friends": group.friends})
+
     return {"status":200, "groups": gs}
+
+
+@app.route("/group/get_group", methods=["GET","POST"])
+
+def get_group():
+    #user = User.query.filter_by(email=get_jwt_identity()["email"]).first()
+
+    group = Group.query.filter_by(gid=request.json).first()
+    
+    friends = []
+    
+    members = group.friends.split(",")
+    
+    user = User.query.filter_by(username=group.user).first().id
+    
+    
+    
+    
+    for m in members:
+        
+        fid = User.query.filter_by(username=m).first().id
+        
+        friends.append([fid,m])
+
+    return {"status": 200, "members":friends, "user": user}
+
 
 @app.route("/edit", methods=["POST"])
 def edit_event():
@@ -1802,13 +1824,11 @@ def get_user_blogs():
     return {"status": "200", "blogs": blog_values}
 
 
-
-
 @app.route("/check_user", methods=["POST", "GET"])
 @jwt_required()
 def hello():
     user = get_jwt_identity()
-    return jsonify(logged_in=user), 200
+    return jsonify(logged_in=user), 200, user['id']
 
 
 if __name__ == "__main__":
