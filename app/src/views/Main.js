@@ -22,6 +22,8 @@ import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { pinwheel } from "ldrs";
 import MapAutocomplete from "react-google-autocomplete";
 import categories from "./eventCategories.json";
+import { SeeMoreButton } from "../components/StyledComponents/StyledComponents";
+import { useNavigate } from "react-router-dom";
 
 // Icons
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
@@ -41,6 +43,8 @@ import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 
 function Main() {
   const [events, setEvents] = useState([]);
+  const [featuredEvents, setFeaturedEvents] = useState();
+  const [featuredLoading, setFeaturedLoading] = useState(true);
   const [location, setLocation] = useState("");
   const [startDate, setStartDate] = useState(null);
   const [unixStartDate, setUnixStartDate] = useState("");
@@ -48,11 +52,11 @@ function Main() {
   const [sortOn, setSortOn] = useState("time_start");
   const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
-  const [locationInput, setLocationInput] = useState("");
-  const [userCoords, setUserCoords] = useState(null);
+  const [locationInput, setLocationInput] = useState("West Lafayette, IN, USA");
   const [locLoading, setLocLoading] = useState(false);
   const [eventType, setEventType] = useState("Featured");
   const [recommendedEvents, setRecommendedEvents] = useState([]);
+  const [recFriendEvents, setRecFriendEvents] = useState([]);
   pinwheel.register(); // Set loading animation
 
   const iconMapping = {
@@ -86,25 +90,86 @@ function Main() {
 
   useEffectSkipFirstRender(() => {
     fetchAPIEvents();
+    // fetchAndDisplayEvents();
   }, [location, isFree, sortOn, unixStartDate, category]);
 
   useEffect(() => {
     setUnixStartDate(dayjs(startDate).unix());
+    // console.log("startDate:", dayjs(startDate).unix());
   }, [startDate]);
 
   useEffect(() => {
-    console.log('hi')
     // Get the recommended events once the backend function is made
     if (sessionStorage.getItem("token")) {
       axios
-      .get(`http://localhost:5000/events/get_recommended`, {
+        .get(`http://localhost:5000/events/get_recommended`, {
+          headers: {
+            Authorization: "Bearer " + sessionStorage.getItem("token"),
+            "Content-Type": "application/json",
+          },
+        })
+        .then((response) => {
+          setRecommendedEvents(response.data["recommendations"]);
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.error("Error fetching API events:", error);
+          setLoading(false);
+        });
+    }
+
+    getUserLocation();
+  }, []);
+
+  useEffect(() => {
+    if (events.length > 0) {
+      setFeaturedEvents(events[0]);
+      setFeaturedLoading(false);
+    }
+  }, [events]);
+
+  const getUserLocation = () => {
+    setLocLoading(true);
+    fetch("http://localhost:5000/user/get_location", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + sessionStorage.getItem("token"),
+      },
+    })
+      .then((response) => {
+        if (response.status != 200) {
+          console.log("not logged in");
+          return;
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("location:", data.location);
+        if (data.location) {
+          setLocation(data.location);
+          setLocationInput(data.location);
+        }
+        setLocLoading(false);
+      })
+      .catch((error) => {
+        console.log("error", error);
+        setLocLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    // Get the recommended events once the backend function is made
+    if (sessionStorage.getItem("token")) {
+      axios
+      .get(`http://localhost:5000/events/get_friend_recs`, {
         headers: {
           Authorization: "Bearer " + sessionStorage.getItem("token"),
           "Content-Type": "application/json",
         }
       })
       .then((response) => {
-        setRecommendedEvents(response.data["recommendations"]);
+        setRecFriendEvents(response.data["recommendations"]);
         setLoading(false);
       })
       .catch((error) => {
@@ -168,28 +233,6 @@ function Main() {
     setLocation(place.formatted_address);
     setLocationInput(place.formatted_address);
   }, []);
-
-  useEffect(() => {
-    getIPGeolocation();
-  }, []);
-
-  const getIPGeolocation = () => {
-    setLocLoading(true);
-    fetch("https://ipinfo.io/json?token=f92cb4e0401c19")
-      .then((response) => response.json())
-      .then((data) => {
-        const { city, region, country } = data;
-        const formattedAddress = `${city}, ${region}, ${country}`;
-
-        setLocation(formattedAddress);
-        setLocationInput(formattedAddress);
-        setLocLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error getting IP-based location:", error);
-        setLocLoading(false);
-      });
-  };
 
   const LocationFilter = () => {
     return (
@@ -296,14 +339,50 @@ function Main() {
     setEventType("Recommended");
   };
 
+  const setFriends = () => {
+    setEventType("Friends");
+  }
+  const navigate = useNavigate();
+  const handleSeeMore = () => {
+    const eventLink = "/eventdetails/" + featuredEvents.id;
+    navigate(eventLink);
+  };
+
   return (
     <div className="w-full h-full">
       <MainNavbar />
-      <div className="w-full h-[360px] bg-light-blue flex justify-center items-center">
-        <span className="font-medium text-3xl">Featured Event + Details</span>
+      <div
+        style={{
+          background: "linear-gradient(to right,#6ecefa, #78faaf)",
+        }}
+        className="w-full h-[360px] bg-light-blue flex justify-center items-center"
+      >
+        {featuredLoading ? (
+          <Stack width="100%" height="100%" alignItems="center">
+            <l-pinwheel
+              size="100"
+              stroke="3.5"
+              speed="0.9"
+              color="black"
+            ></l-pinwheel>
+          </Stack>
+        ) : (
+          <Stack margin="3rem" textAlign="left" alignItems="flex-start">
+            <h1>{featuredEvents.name}</h1>
+            <h3>{featuredEvents.location}</h3>
+            <h3>{dayjs(featuredEvents.start_date).toString()}</h3>
+            <p>{featuredEvents.desc}</p>
+            <SeeMoreButton
+              textAlign="Center"
+              variant="contained"
+              onClick={handleSeeMore}
+            >
+              See More
+            </SeeMoreButton>
+          </Stack>
+        )}
       </div>
       <div className="w-full h-[533px] flex flex-col">
-        <span className="text-xl">Categories</span>
         <div className="flex overflow-x-scroll p-10" style={{ height: "auto" }}>
           <Stack direction="row" gap={2} sx={{ minWidth: "max-content" }}>
             {categories.map((item, index) => (
@@ -325,7 +404,8 @@ function Main() {
         </div>
         <div className="flex flex-row flex-wrap gap-5 pl-10 pt-10">
           <button onClick={setFeatured}>Featured</button> |
-          <button onClick={setRecommended}>Recommended</button>
+          <button onClick={setRecommended}>Recommended</button> |
+          <button onClick={setFriends}>By Friends</button>
           <FilteringTab />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 ">
             {loading ? (
@@ -342,6 +422,20 @@ function Main() {
                 if (event.visibility && event.visibility != "public" && event.visibility != "") {
                   return <div />
                 }
+                return (
+                  <Event
+                    name={event.name}
+                    date={dayjs(event.start_date).toString()}
+                    location={event.location}
+                    key={i}
+                    id={event.id}
+                    desc={event.desc}
+                  />
+                );
+              })
+            ) : eventType == "Friends" ?
+            (
+              recFriendEvents.map((event, i) => {
                 return (
                   <Event
                     name={event.name}

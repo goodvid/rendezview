@@ -26,6 +26,7 @@ import Friends from "./views/Friend/AddFriends";
 import FriendsList from "./views/Friend/FriendList";
 import ProtectedRoute from "./views/withAuth";
 import CreateGroups from "./views/CreateGroup/createGroup";
+import ChangeLocation from "./views/Settings/ChangeLocation/ChangeLocation";
 
 function App() {
   return (
@@ -118,6 +119,7 @@ function App() {
           />
           <Route path="/resetpassword" element={<ResetPassword />} />
           <Route path="/changeprofilepic" element={<ChangeProfilePicture />} />
+          <Route path="/changeLocation" element={<ChangeLocation />} />
           <Route path="/test" element={<Test />} />
           <Route
             path="/friend/:id"
@@ -143,6 +145,13 @@ function App() {
               </ProtectedRoute>
             }
           ></Route>
+          <Route
+            path="/creategroups"
+            element={
+              <ProtectedRoute>
+                <CreateGroups />
+              </ProtectedRoute>}
+          />
           <Route path="/blogdetails/:id" element={<BlogDetails />} />
           <Route
             path="/newblog"

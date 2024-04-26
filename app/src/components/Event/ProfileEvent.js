@@ -31,7 +31,7 @@ function ProfileEvent({ id, name, date, location, desc, rating }) {
         <div className="flex flex-col gap-3">
           <div className="flex flex-row gap-3">
             <AccessTimeIcon sx={{ color: "#1C3659" }} />
-            <p className="text-left">{date}</p>
+            <p className="text-left">{dayjs(date).toString()}</p>
           </div>
           <div className="flex flex-row gap-3">
             <LocationOnIcon sx={{ color: "#1C3659" }} />
