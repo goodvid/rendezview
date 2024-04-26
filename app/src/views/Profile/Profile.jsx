@@ -310,8 +310,7 @@ function Profile() {
           </TextIconStack>
         )}
         <h3>
-          <a href="/profile/friends">{friendsNum} FRIENDS</a> • {groupsNum}{" "}
-          GROUPS
+          <a href="/profile/friends">{friendsNum} FRIENDS</a> 
         </h3>
 
         {/* User Tags */}
@@ -341,6 +340,9 @@ function Profile() {
         </Button>
         <Button variant="contained" onClick={() => navigate("/addfriends")}>
           Add friend
+        </Button>
+        <Button variant="contained" onClick={() => navigate("/creategroups")}>
+          Create Group
         </Button>
         <Button variant="contained" onClick={handleBlogs}>
           Delete blog history
