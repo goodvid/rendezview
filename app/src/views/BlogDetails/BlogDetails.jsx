@@ -77,20 +77,34 @@ function BlogDetails() {
       });
   }, []);
 
-  {/*const deleteEvent = () => {
-    axios
-      .post("http://localhost:5000/delete_event", {
-        event: eventObject,
+  const deleteBlogClick = () => {
+    fetch("http://localhost:5000/blog/delete", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(id),
       })
-      .then((res) => {
-        console.log(res.data);
+      .then((response) => {
+        if (response.status === 401) {
+          alert("unauthorized");
+          return response.json();
+        } else if (response.status == 200) {
+          return response.json();
+        }
+      })
+      .then((data) => {
+        console.log(data);
+        navigate("/blogs");
+      })
+      .catch((error) => {
+        console.log("error", error);
       });
 
-    navigate("/events");
-  };*/}
+  };
 
   const editBlogClick = () => {
-    // sessionStorage.setItem("cur_event", JSON.stringify(eventObject));
     navigate(`/editblog/${blogID}`);
   };
 
@@ -136,7 +150,7 @@ function BlogDetails() {
                   <GrayButton textAlign="left" variant="contained" justifyContent="center" style={{margin: 8, height: "30%"}} onClick={editBlogClick}>
                       Edit Blog
                   </GrayButton>
-                  <RedButton textAlign="left" variant="contained" style={{margin: 8, height: "30%"}}>
+                  <RedButton textAlign="left" variant="contained" style={{margin: 8, height: "30%"}} onClick={deleteBlogClick}>
                       Delete Blog
                   </RedButton> 
               </Stack> 

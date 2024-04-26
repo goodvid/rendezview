@@ -1343,6 +1343,11 @@ def deleteBlogPhotos(email, blogID):
         for pic in blog.pictures.split(","):
             abspath = os.path.abspath(os.path.join(os.getcwd(), os.pardir, 'public' + pic))
             os.remove(abspath)
+        
+        folder = os.path.abspath(os.path.join(os.path.dirname(
+        __file__), os.pardir, r"public\blogs\\", blogID + "-" + email))
+        os.rmdir(folder)
+
         blog.pictures = ""
         db.session.commit()
 
@@ -1388,6 +1393,19 @@ def editBlog():
     db.session.commit()
 
     return jsonify({"message": "Blog edited!"}), 200
+
+@app.route("/blog/delete", methods=["POST"])
+@jwt_required()
+def deleteBlog():
+    id = request.json["id"]
+    current_user = get_jwt_identity()
+    
+    deleteBlogPhotos(current_user["email"], id)
+    Blog.query.filter_by(blogID=id).delete()
+
+    db.session.commit()
+
+    return jsonify({"message": "Blog deleted successfully"}), 200
 
 
 @app.route("/blog/details", methods=["POST"])
