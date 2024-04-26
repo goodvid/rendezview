@@ -28,7 +28,7 @@ function BlogDetails() {
   const [authorID, setAuthorID] = useState("");
   const [authorName, setAuthorName] = useState("");
   const [date, setDate] = useState("");
-  const [photos, setPhotos] = useState("");
+  const [photos, setPhotos] = useState([]);
 
   const [username, setUsername] = useState("");
 
@@ -61,6 +61,8 @@ function BlogDetails() {
   }, []);
 
   useEffect(() => {  
+    let pictures = "";
+
     setLoading(true);
     fetch("http://localhost:5000/blog/details", {
         method: "POST",
@@ -83,7 +85,8 @@ function BlogDetails() {
             setAuthorID(data.authorID);
             setAuthorName(data.authorName);
             setDate(data.date);
-            setPhotos(data.pictures);
+            pictures = data.pictures;
+            setPhotos(pictures.split(","));
         }
       })
       .catch((err) => {
@@ -149,8 +152,11 @@ function BlogDetails() {
             </Stack>
               
             <Stack>
-                <img src={photos} style={{ borderRadius: "1rem" }} />
-                <p> {photos} </p>
+              <Stack direction="row" gap={2} sx={{overflowX: "auto", paddingBottom: 1}}>
+                {photos.map((img, i) => (
+                    <img src={img} style={{height: "400px", paddingRight: "20px"}}/>
+                ))}
+              </Stack>
             </Stack>
 
             <Stack className="section">
