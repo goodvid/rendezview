@@ -68,6 +68,7 @@ function MainNavbar() {
       <Link to="/profile" className="text-white">
         Profile
       </Link>
+      <Link to="/groups" className="text-white">Groups</Link>
 
       {sessionStorage.getItem("token") ? (
         <div className="w-[150px] ml-[500px]">

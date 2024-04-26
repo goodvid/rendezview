@@ -81,6 +81,7 @@ class Event(db.Model):
     visibility = db.Column(db.String(50))
 
     type = db.Column(db.String(50))
+    pictures = db.Column(db.String(500))
 
     def as_dict(self):
         return {

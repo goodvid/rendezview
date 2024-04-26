@@ -508,8 +508,7 @@ def get_recommended():
 
     event_values = []
 
-    for event_tuple in recommendations:
-        event = event_tuple[0]
+    for event in recommendations:
 
         values = {'id': event.eventID,
                   'name': event.name,
@@ -543,7 +542,7 @@ def get_friend_recs():
     for q in query:
         if (q.status == "friend"):
             if (str(q.user) == str(user.id)):
-                person = User.query.filter_by(id=q.friend)
+                person = User.query.filter_by(id=q.friend).first()
                 friends.append(person)
         if str(q.user) == str(user.id):
             person = User.query.filter_by(id=q.friend).first()
@@ -556,8 +555,8 @@ def get_friend_recs():
 
     event_values = []
 
-    for event_tuple in recommendations:
-        event = event_tuple[0]
+    for event in recommendations:
+        # event = event_tuple[0]
 
         values = {'id': event.eventID,
                   'name': event.name,
@@ -573,21 +572,29 @@ def get_friend_recs():
     return {'status': '200', 'recommendations': event_values}
 
 
+@app.route("/group/leave_group", methods=["GET", "POST"])
 @jwt_required()
-@app.route('/group/leave_group', methods=['GET'])
 def leave_group():
 
-    group_num = request.json["gid"]
+    group_num = request.json
+    print("group num", group_num)
     curr = User.query.filter_by(email=get_jwt_identity()['email']).first()
 
     group = Group.query.filter_by(gid=group_num).first()
 
     if group.user == curr.id:
+        print('group here')
         db.session.delete(group)
+        print(curr)
     else:
+        print('group there')
         members = group.friends
-        members.remove(str(curr.id))
+        members.replace(str(curr.id) + ",", "")
         group.friends = members
+    user_groups = curr.groups
+    user_groups = user_groups.replace(str(group.gid) + ",", "")
+    curr.groups = user_groups
+    print(curr.groups, group.friends, user_groups, group.gid)
     db.session.commit()
 
     return {'status': 200, 'msg': "left group"}
@@ -615,23 +622,23 @@ def add_members():
     db.session.commit()
 
 
+@app.route("/group/remove_member", methods=["GET", "POST"])
 @jwt_required()
-@app.route("/group/remove_members", methods=["GET", "POST"])
-def remove_members():
+def remove_member():
     req = request.json
 
     friend = req["friend"]
     gid = req["gid"]
 
-    group = Group.query.filter_by(gid=gid)
-
-    if gid != User.query.filter_by(email=get_jwt_identity()["email"]).first().id:
-        return {"status": "401", "msg": "cannot manage this group"}
+    group = Group.query.filter_by(gid=gid).first()
 
     members = group.friends
 
-    members.remove("," + friend)
-
+    print("here now", members, type(members))
+    # members = members.remove("," + friend)
+    members = members.replace(User.query.filter_by(
+        id=friend).first().username + ",", "")
+    print(members)
     group.friends = members
 
     db.session.commit()
@@ -748,6 +755,45 @@ def get_filtered_events():
         "fetched_events": fetched_events,
         "user_events": user_events,
     }
+
+
+@app.route("/group/get_user_groups", methods=["GET"])
+@jwt_required()
+def get_groups():
+    user = User.query.filter_by(email=get_jwt_identity()["email"]).first()
+
+    groups = user.groups.split(',')
+
+    gs = []
+
+    for g in groups:
+        group = Group.query.filter_by(gid=int(g)).first()
+
+        gs.append({"gid": group.gid, "user": group.user,
+                  "friends": group.friends})
+
+    return {"status": 200, "groups": gs}
+
+
+@app.route("/group/get_group", methods=["GET", "POST"])
+def get_group():
+    # user = User.query.filter_by(email=get_jwt_identity()["email"]).first()
+
+    group = Group.query.filter_by(gid=request.json).first()
+
+    friends = []
+
+    members = group.friends.split(",")
+
+    user = User.query.filter_by(username=group.user).first().id
+
+    for m in members:
+
+        fid = User.query.filter_by(username=m).first().id
+
+        friends.append([fid, m])
+
+    return {"status": 200, "members": friends, "user": user}
 
 
 @app.route("/edit", methods=["POST"])
@@ -1762,6 +1808,83 @@ def createBlog():
     return jsonify({"message": "Blog created!", "blogID": new_blog.blogID}), 200
 
 
+def deleteBlogPhotos(email, blogID):
+    blog = Blog.query.filter_by(blogID=blogID).first()
+
+    if (blog.pictures and "blogs" in blog.pictures):
+        for pic in blog.pictures.split(","):
+            abspath = os.path.abspath(os.path.join(
+                os.getcwd(), os.pardir, 'public' + pic))
+            os.remove(abspath)
+
+        folder = os.path.abspath(os.path.join(os.path.dirname(
+            __file__), os.pardir, r"public\blogs\\", blogID + "-" + email))
+        os.rmdir(folder)
+
+        blog.pictures = ""
+        db.session.commit()
+
+    return ""
+
+
+@app.route("/blog/edit", methods=["POST"])
+@jwt_required()
+def editBlog():
+    form = jsonify({
+        "blogID": request.form['blogID'],
+        "blogName": request.form['blogName'],
+        "blogContent": request.form['blogContent'],
+        "blogType": request.form['blogType']
+    })
+
+    id = form.json['blogID']
+    blog = Blog.query.filter_by(blogID=id).first()
+
+    blog.title = form.json["blogName"] if len(
+        form.json["blogName"]) >= 1 else blog.title
+    blog.text = form.json["blogContent"] if len(
+        form.json["blogContent"]) >= 1 else blog.text
+    blog.date = date.today().strftime('%B %d, %Y')
+    blog.visibility = form.json["blogType"] if len(
+        form.json["blogType"]) >= 1 else blog.visibility
+
+    db.session.commit()
+
+    current_user = get_jwt_identity()
+
+    if (request.files):
+        deleteBlogPhotos(current_user["email"], id)
+
+        pictures = []
+
+        for photo in request.files.getlist('blogPhotos[]'):
+            photoPath = saveBlogPhoto(photo, current_user["email"], id)
+            pictures.append(photoPath)
+
+        pictures = ','.join(pictures)
+    else:
+        pictures = blog.pictures
+
+    blog.pictures = pictures
+    db.session.commit()
+
+    return jsonify({"message": "Blog edited!"}), 200
+
+
+@app.route("/blog/delete", methods=["POST"])
+@jwt_required()
+def deleteBlog():
+    id = request.json["id"]
+    current_user = get_jwt_identity()
+
+    deleteBlogPhotos(current_user["email"], id)
+    Blog.query.filter_by(blogID=id).delete()
+
+    db.session.commit()
+
+    return jsonify({"message": "Blog deleted successfully"}), 200
+
+
 @app.route("/blog/details", methods=["POST"])
 def getBlogDetails():
     id = request.json["id"]
@@ -1770,20 +1893,63 @@ def getBlogDetails():
     if not blog:
         return jsonify({"message": "Blog not found!"}), 404
 
+    id = blog.blogID
     title = blog.title
     text = blog.text
     date = blog.date
     authorID = blog.authorID
     authorName = blog.authorName
+    visibility = blog.visibility
     pictures = blog.pictures
 
-    return jsonify({"title": title,
+    return jsonify({"id": id,
+                    "title": title,
                     "text": text,
                     "date": date,
                     "authorID": authorID,
                     "authorName": authorName,
                     "pictures": pictures,
+                    "visibility": visibility,
                     "message": "Blog details returned!"}), 200
+
+
+@app.route('/blog/user_blogs', methods=['GET'])
+@jwt_required()
+def getUserBlogs():
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(email=current_user['email']).first()
+    blogs = Blog.query.filter_by(authorID=user.id)
+
+    blog_values = []
+
+    for blog in blogs:
+        values = {'id': blog.blogID,
+                  'title': blog.title,
+                  'author': blog.authorName,
+                  'content': blog.text,
+                  'date': blog.date}
+        print("VALUE: ", values)
+        blog_values.append(values)
+
+    return {'status': '200', 'blogs': blog_values}
+
+
+@app.route('/blog/public_blogs', methods=['GET'])
+@jwt_required()
+def getPublicBlogs():
+    blogs = Blog.query.filter_by(visibility="Public")
+
+    blog_values = []
+
+    for blog in blogs:
+        values = {'id': blog.blogID,
+                  'title': blog.title,
+                  'author': blog.authorName,
+                  'content': blog.text,
+                  'date': blog.date}
+        blog_values.append(values)
+
+    return {'status': '200', 'blogs': blog_values}
 
 
 @app.route("/blog/delete_history", methods=["GET"])
@@ -1835,7 +2001,7 @@ def get_user_blogs():
 @jwt_required()
 def hello():
     user = get_jwt_identity()
-    return jsonify(logged_in=user), 200
+    return jsonify(logged_in=user), 200, user['id']
 
 
 if __name__ == "__main__":

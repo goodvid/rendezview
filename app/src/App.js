@@ -12,6 +12,7 @@ import CreateEvent from "./views/CreateEvent/createEvent";
 import Events from "./views/Events/Events";
 import EditEvent from "./views/EditEvent/EditEvent";
 import CreateBlog from "./views/CreateBlog/createBlog";
+import EditBlog from "./views/EditBlog/EditBlog";
 import BlogDetails from "./views/BlogDetails/BlogDetails";
 import Blogs from "./views/Blogs/Blogs";
 import Settings from "./views/Settings/Settings";
@@ -27,6 +28,8 @@ import FriendsList from "./views/Friend/FriendList";
 import ProtectedRoute from "./views/withAuth";
 import CreateGroups from "./views/CreateGroup/createGroup";
 import ChangeLocation from "./views/Settings/ChangeLocation/ChangeLocation";
+import Groups from "./views/Groups/Groups";
+import GroupDetails from "./views/Groups/GroupDetails";
 
 function App() {
   return (
@@ -150,7 +153,8 @@ function App() {
             element={
               <ProtectedRoute>
                 <CreateGroups />
-              </ProtectedRoute>}
+              </ProtectedRoute>
+            }
           />
           <Route path="/blogdetails/:id" element={<BlogDetails />} />
           <Route
@@ -170,10 +174,26 @@ function App() {
             }
           />
           <Route
-            path="/creategroups"
+            path="/editblog/:id"
             element={
               <ProtectedRoute>
-                <CreateGroups />
+                <EditBlog />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/groups"
+            element={
+              <ProtectedRoute>
+                <Groups />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/groupdetails/:id"
+            element={
+              <ProtectedRoute>
+                <GroupDetails></GroupDetails>
               </ProtectedRoute>
             }
           />
