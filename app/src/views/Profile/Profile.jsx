@@ -342,13 +342,8 @@ function Profile() {
         <Button variant="contained" onClick={() => navigate("/addfriends")}>
           Add friend
         </Button>
-<<<<<<< HEAD
-        <Button variant="contained" onClick={() => navigate("/creategroups")}>
-          Create Group
-=======
         <Button variant="contained" onClick={handleBlogs}>
           Delete blog history
->>>>>>> 0f4bb23c012d5a6d459e25d6f2e60cb0f96a2689
         </Button>
       </Stack>
     );
