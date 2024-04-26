@@ -174,7 +174,8 @@ def changeusername():
     print(request.json)
 
     user = User.query.filter_by(email=current_user["email"]).first()
-    duplicate = User.query.filter_by(username=request.json["newUsername"]).first()
+    duplicate = User.query.filter_by(
+        username=request.json["newUsername"]).first()
     if not duplicate:
         user.username = request.json["newUsername"]
         db.session.commit()
@@ -182,6 +183,7 @@ def changeusername():
         return jsonify({"message": "Duplicate username not allowed."}), 401
 
     return jsonify({"message": "Username changed successfully"}), 200
+
 
 @app.route("/create_group", methods=['POST'])
 @jwt_required()
@@ -202,7 +204,8 @@ def create_group():
     db.session.add(new_group)
     db.session.commit()
 
-    group = Group.query.filter_by(user=user.username).order_by(Group.gid.desc()).first()
+    group = Group.query.filter_by(
+        user=user.username).order_by(Group.gid.desc()).first()
 
     if (user.groups == ""):
         user.groups = user.groups + str(group.gid)
@@ -222,6 +225,7 @@ def create_group():
 
     return {'status': '200'}
 
+
 @app.route("/set_visibility", methods=["POST"])
 def set_visibility():
     data = request.json
@@ -231,6 +235,7 @@ def set_visibility():
     db.session.commit()
 
     return {'status': '200'}
+
 
 @app.route("/user/changepassword", methods=["POST"])
 @jwt_required()
@@ -302,7 +307,8 @@ def get_status():
 
     current_email = current_user["email"]
 
-    status = Status.query.filter_by(user=current_email, friend=other_email).first()
+    status = Status.query.filter_by(
+        user=current_email, friend=other_email).first()
 
     if status:
         return {"status": "200", "cur_status": status.status}
@@ -323,13 +329,15 @@ def set_status():
 
     current_email = u.id
 
-    status = Status.query.filter_by(user=current_email, friend=other_email).first()
+    status = Status.query.filter_by(
+        user=current_email, friend=other_email).first()
 
     if status != None:
         status.status = status_data
         db.session.commit()
     else:
-        new_status = Status(user=current_email, friend=other_email, status=status_data)
+        new_status = Status(user=current_email,
+                            friend=other_email, status=status_data)
         print(new_status.status)
         db.session.add(new_status)
         db.session.commit()
@@ -345,7 +353,8 @@ def resetpassword():
     user = User.query.filter_by(email=request.json["email"]).first()
     if user == None:
         return (
-            jsonify({"message": "This email does not belong to an existing account."}),
+            jsonify(
+                {"message": "This email does not belong to an existing account."}),
             400,
         )
 
@@ -465,6 +474,7 @@ def get_events():
 
     return {"status": "200", "events": event_values}
 
+
 @app.route("/events/get_recommended", methods=['GET'])
 @jwt_required()
 def get_recommended():
@@ -493,6 +503,7 @@ def get_recommended():
 
     return {'status': '200', 'recommendations': event_values}
 
+
 @app.route("/events/get_friend_recs", methods=['GET'])
 @jwt_required()
 def get_friend_recs():
@@ -515,7 +526,7 @@ def get_friend_recs():
                 friends.append(person)
         if str(q.user) == str(user.id):
             person = User.query.filter_by(id=q.friend).first()
-            friends.append(person)  
+            friends.append(person)
 
     recommendations = []
 
@@ -528,14 +539,14 @@ def get_friend_recs():
         # event = event_tuple[0]
 
         values = {'id': event.eventID,
-                    'name': event.name,
-                    'time': event.start_date,
-                    'location': event.location,
-                    'category': event.category,
-                    'latitude': event.latitude,
-                    'longitude': event.longitude,
-                    'yelpID': event.yelpID,
-                    'desc': event.desc}
+                  'name': event.name,
+                  'time': event.start_date,
+                  'location': event.location,
+                  'category': event.category,
+                  'latitude': event.latitude,
+                  'longitude': event.longitude,
+                  'yelpID': event.yelpID,
+                  'desc': event.desc}
         event_values.append(values)
 
     return {'status': '200', 'recommendations': event_values}
@@ -544,13 +555,13 @@ def get_friend_recs():
 @app.route("/group/leave_group", methods=["GET", "POST"])
 @jwt_required()
 def leave_group():
-    
+
     group_num = request.json
     print("group num", group_num)
     curr = User.query.filter_by(email=get_jwt_identity()['email']).first()
-    
+
     group = Group.query.filter_by(gid=group_num).first()
-    
+
     if group.user == curr.id:
         print('group here')
         db.session.delete(group)
@@ -558,19 +569,19 @@ def leave_group():
     else:
         print('group there')
         members = group.friends
-        members.replace(str(curr.id) + ",","")
+        members.replace(str(curr.id) + ",", "")
         group.friends = members
     user_groups = curr.groups
     user_groups = user_groups.replace(str(group.gid) + ",", "")
     curr.groups = user_groups
-    print( curr.groups, group.friends, user_groups, group.gid)
+    print(curr.groups, group.friends, user_groups, group.gid)
     db.session.commit()
-    
-    return {'status':200, 'msg': "left group"}
+
+    return {'status': 200, 'msg': "left group"}
 
 
 @jwt_required()
-@app.route('/group/add_members', methods = ["GET", "POST"])
+@app.route('/group/add_members', methods=["GET", "POST"])
 def add_members():
     req = request.json
 
@@ -600,20 +611,19 @@ def remove_member():
     gid = req["gid"]
 
     group = Group.query.filter_by(gid=gid).first()
-    
-    
 
     members = group.friends
 
     print("here now", members, type(members))
-    #members = members.remove("," + friend)
-    members = members.replace( User.query.filter_by(id=friend).first().username + ",","")
+    # members = members.remove("," + friend)
+    members = members.replace(User.query.filter_by(
+        id=friend).first().username + ",", "")
     print(members)
     group.friends = members
 
     db.session.commit()
-    
-    return{"msg": "removed", "status":"200"}
+
+    return {"msg": "removed", "status": "200"}
 
 
 @jwt_required()
@@ -630,12 +640,13 @@ def view_members():
         members.append(
             {"id": member, "name": User.query.filter_by(id=member).first().id}
         )
-    return {'status':200, 'members': members}
+    return {'status': 200, 'members': members}
 
 
 @app.route('/filtered_events', methods=['GET'])
 def get_filtered_events():
-    loc = request.args.get("location", default="West Lafayette, IN, USA", type=str)
+    loc = request.args.get(
+        "location", default="West Lafayette, IN, USA", type=str)
     sort_on = request.args.get("sort_on", default=None, type=str)
     start_date = request.args.get("start_date", default=None, type=str)
     is_free = request.args.get("is_free", default=None, type=str)
@@ -656,16 +667,16 @@ def get_filtered_events():
     filters = [loc, sort_on, start_date, is_free, category]
     for event in events:
         values = {'id': event.eventID,
-                    'name': event.name,
-                    'start_date': event.start_date,
-                    'location': event.location,
-                    'category': event.category,
-                    'latitude': event.latitude,
-                    'longitude': event.longitude,
-                    'yelpID': event.yelpID,
-                    'hostName': event.hostName,
-                    'desc': event.desc,
-                    'visibility': event.visibility}
+                  'name': event.name,
+                  'start_date': event.start_date,
+                  'location': event.location,
+                  'category': event.category,
+                  'latitude': event.latitude,
+                  'longitude': event.longitude,
+                  'yelpID': event.yelpID,
+                  'hostName': event.hostName,
+                  'desc': event.desc,
+                  'visibility': event.visibility}
 
         if values["yelpID"] is None:  # Filter user_events
             passes_filters = True
@@ -710,6 +721,7 @@ def get_filtered_events():
         "user_events": user_events,
     }
 
+
 @app.route("/group/get_user_groups", methods=["GET"])
 @jwt_required()
 def get_groups():
@@ -720,36 +732,33 @@ def get_groups():
     gs = []
 
     for g in groups:
-        group  = Group.query.filter_by(gid=int(g)).first()
+        group = Group.query.filter_by(gid=int(g)).first()
 
-        gs.append({"gid":group.gid, "user": group.user, "friends": group.friends})
+        gs.append({"gid": group.gid, "user": group.user,
+                  "friends": group.friends})
 
-    return {"status":200, "groups": gs}
+    return {"status": 200, "groups": gs}
 
 
-@app.route("/group/get_group", methods=["GET","POST"])
-
+@app.route("/group/get_group", methods=["GET", "POST"])
 def get_group():
-    #user = User.query.filter_by(email=get_jwt_identity()["email"]).first()
+    # user = User.query.filter_by(email=get_jwt_identity()["email"]).first()
 
     group = Group.query.filter_by(gid=request.json).first()
-    
-    friends = []
-    
-    members = group.friends.split(",")
-    
-    user = User.query.filter_by(username=group.user).first().id
-    
-    
-    
-    
-    for m in members:
-        
-        fid = User.query.filter_by(username=m).first().id
-        
-        friends.append([fid,m])
 
-    return {"status": 200, "members":friends, "user": user}
+    friends = []
+
+    members = group.friends.split(",")
+
+    user = User.query.filter_by(username=group.user).first().id
+
+    for m in members:
+
+        fid = User.query.filter_by(username=m).first().id
+
+        friends.append([fid, m])
+
+    return {"status": 200, "members": friends, "user": user}
 
 
 @app.route("/edit", methods=["POST"])
@@ -761,10 +770,12 @@ def edit_event():
     event = Event.query.filter_by(eventID=data["eventID"]["id"]).first()
 
     event.name = (
-        request.json["eventName"] if len(request.json["eventName"]) >= 1 else event.name
+        request.json["eventName"] if len(
+            request.json["eventName"]) >= 1 else event.name
     )
     event.desc = (
-        request.json["eventDesc"] if len(request.json["eventDesc"]) >= 1 else event.desc
+        request.json["eventDesc"] if len(
+            request.json["eventDesc"]) >= 1 else event.desc
     )
     event.hostName = (
         request.json["hostName"]
@@ -782,13 +793,16 @@ def edit_event():
         else event.start_date
     )
     event.end_time = (
-        request.json["endTime"] if len(request.json["endTime"]) >= 1 else event.end_time
+        request.json["endTime"] if len(
+            request.json["endTime"]) >= 1 else event.end_time
     )
     event.category = (
-        request.json["tags"] if len(request.json["tags"]) >= 1 else event.category
+        request.json["tags"] if len(
+            request.json["tags"]) >= 1 else event.category
     )
     event.type = (
-        request.json["eventType"] if len(request.json["eventType"]) >= 1 else event.type
+        request.json["eventType"] if len(
+            request.json["eventType"]) >= 1 else event.type
     )
     event.location = (
         request.json["location"]
@@ -996,7 +1010,8 @@ def get_users():
     user = User.query.filter_by(email=current_user["email"]).first()
 
     # query = db.session.query(User.username).all()
-    query = db.session.query(User).filter(User.username.like("%" + name + "%")).all()
+    query = db.session.query(User).filter(
+        User.username.like("%" + name + "%")).all()
 
     names = []
     for q in query:
@@ -1236,6 +1251,7 @@ def create_event():
     db.session.commit()
     return jsonify({"message": "event set", "eventID": new_event.eventID}), 200
 
+
 @app.route("/events/api", methods=["POST", "GET"])
 def fetch_api_events():
     # Uncomment the next line to dynamically set the location based on query parameter
@@ -1461,11 +1477,13 @@ def get_avg_rating():
     if yelp_id:
         ratingFrom = "yelpID"
         existingEntries = EventRating.query.filter_by(yelpID=yelp_id).all()
-        posEntries = EventRating.query.filter_by(yelpID=yelp_id, rating=1).all()
+        posEntries = EventRating.query.filter_by(
+            yelpID=yelp_id, rating=1).all()
     else:
         ratingFrom = "eventID"
         existingEntries = EventRating.query.filter_by(eventID=event_id).all()
-        posEntries = EventRating.query.filter_by(eventID=event_id, rating=1).all()
+        posEntries = EventRating.query.filter_by(
+            eventID=event_id, rating=1).all()
 
     # Calculate everage rating
     if existingEntries:
@@ -1635,7 +1653,8 @@ def get_rsvp_status():
             # get the payload
             rsvp_status = response["data"]
             return (
-                jsonify({"status": 200, "message": "Success", "data": rsvp_status}),
+                jsonify({"status": 200, "message": "Success",
+                        "data": rsvp_status}),
                 200,
             )
         else:
@@ -1759,11 +1778,12 @@ def deleteBlogPhotos(email, blogID):
 
     if (blog.pictures and "blogs" in blog.pictures):
         for pic in blog.pictures.split(","):
-            abspath = os.path.abspath(os.path.join(os.getcwd(), os.pardir, 'public' + pic))
+            abspath = os.path.abspath(os.path.join(
+                os.getcwd(), os.pardir, 'public' + pic))
             os.remove(abspath)
-        
+
         folder = os.path.abspath(os.path.join(os.path.dirname(
-        __file__), os.pardir, r"public\blogs\\", blogID + "-" + email))
+            __file__), os.pardir, r"public\blogs\\", blogID + "-" + email))
         os.rmdir(folder)
 
         blog.pictures = ""
@@ -1774,21 +1794,24 @@ def deleteBlogPhotos(email, blogID):
 
 @app.route("/blog/edit", methods=["POST"])
 @jwt_required()
-def editBlog():    
+def editBlog():
     form = jsonify({
         "blogID": request.form['blogID'],
-        "blogName": request.form['blogName'], 
+        "blogName": request.form['blogName'],
         "blogContent": request.form['blogContent'],
         "blogType": request.form['blogType']
     })
 
     id = form.json['blogID']
     blog = Blog.query.filter_by(blogID=id).first()
-    
-    blog.title = form.json["blogName"] if len(form.json["blogName"]) >= 1 else blog.title
-    blog.text = form.json["blogContent"] if len(form.json["blogContent"]) >= 1 else blog.text    
+
+    blog.title = form.json["blogName"] if len(
+        form.json["blogName"]) >= 1 else blog.title
+    blog.text = form.json["blogContent"] if len(
+        form.json["blogContent"]) >= 1 else blog.text
     blog.date = date.today().strftime('%B %d, %Y')
-    blog.visibility = form.json["blogType"] if len(form.json["blogType"]) >= 1 else blog.visibility    
+    blog.visibility = form.json["blogType"] if len(
+        form.json["blogType"]) >= 1 else blog.visibility
 
     db.session.commit()
 
@@ -1802,7 +1825,7 @@ def editBlog():
         for photo in request.files.getlist('blogPhotos[]'):
             photoPath = saveBlogPhoto(photo, current_user["email"], id)
             pictures.append(photoPath)
-        
+
         pictures = ','.join(pictures)
     else:
         pictures = blog.pictures
@@ -1812,12 +1835,13 @@ def editBlog():
 
     return jsonify({"message": "Blog edited!"}), 200
 
+
 @app.route("/blog/delete", methods=["POST"])
 @jwt_required()
 def deleteBlog():
     id = request.json["id"]
     current_user = get_jwt_identity()
-    
+
     deleteBlogPhotos(current_user["email"], id)
     Blog.query.filter_by(blogID=id).delete()
 
@@ -1853,6 +1877,7 @@ def getBlogDetails():
                     "visibility": visibility,
                     "message": "Blog details returned!"}), 200
 
+
 @app.route('/blog/user_blogs', methods=['GET'])
 @jwt_required()
 def getUserBlogs():
@@ -1872,6 +1897,7 @@ def getUserBlogs():
         blog_values.append(values)
 
     return {'status': '200', 'blogs': blog_values}
+
 
 @app.route('/blog/public_blogs', methods=['GET'])
 @jwt_required()
@@ -1904,6 +1930,7 @@ def delete_blog():
     # db.session.update()
 
     return jsonify({"message": "deletion successful"}), 200
+
 
 @app.route("/blogs/get_user_blogs", methods=["GET"])
 @jwt_required()
