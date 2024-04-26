@@ -606,6 +606,22 @@ def remove_members():
 
 
 @jwt_required()
+@app.route("/group/get_groups", methods=["POST"])
+def get_groups():
+    user = User.query.filter_by(email=get_jwt_identity()["email"]).first()
+    
+    groups = user.groups
+    
+    gs = []
+    
+    for g in groups:
+        group  = Group.query.filter_by(gid=int(g)).first()
+        
+        gs.append({"user": group.user, "friends": group.friends})
+    
+    return {"status":200, "groups": gs}
+
+@jwt_required()
 @app.route("/group/view_members", methods=["POST"])
 def view_members():
     gid = request.json["gid"]
