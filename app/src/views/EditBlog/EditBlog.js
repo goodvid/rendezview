@@ -1,15 +1,25 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import Navbar from "../../components/Navbar/Navbar";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import { Stack } from "@mui/material";
 //import { withAuth } from "../withAuth";
 
-function CreateBlog() {
+function EditBlog() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+
   const [selected, setSelected] = useState("");
-  const [blogData, setBlogData] = useState({
+  const [blogID, setBlogID] = useState("");
+  const [currentBlogData, setCurrentBlogData] = useState({
+    blogName: "",
+    blogContent: "",
+    blogType: "",
+    blogPhotos: ""
+  });
+  const [initialType, setInitialType] = useState(true);
+  const [editedBlogData, setEditedBlogData] = useState({
     blogName: "",
     blogContent: "",
     blogType: "",
@@ -17,16 +27,55 @@ function CreateBlog() {
   });
 
   useEffect(() => {
-    console.log(blogData);
-  }, [blogData]);
+    console.log("EDITED BLOG: ", editedBlogData);
+  }, [editedBlogData]);
+
+  let id = useParams();
+  let resp = false;
+
+  useEffect(() => {
+    setLoading(true);
+    let previews = [];
+
+    fetch("http://localhost:5000/blog/details", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(id),
+      })
+      .then((response) => {
+        resp = response;
+        return response.json();
+      })
+      .then((data) => {
+        if (resp.status === 200) {
+            setLoading(false);
+            setBlogID(data.id);
+            currentBlogData.blogName = data.title;
+            currentBlogData.blogContent = data.text;
+            currentBlogData.blogType = data.visibility;
+            currentBlogData.blogPhotos = data.pictures;
+
+            previews.push(currentBlogData.blogPhotos.split(","));
+            setImagePreviews(previews);
+            console.log("PREVIEWS: ", imagePreviews);
+            console.log("CURRENT DATA: ", currentBlogData);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
 
   const handleChange = (event) => {
     // Update the inputData state when form fields change
-    setBlogData({
-      ...blogData,
+    setEditedBlogData({
+      ...editedBlogData,
       [event.target.name]: event.target.value,
     });
-    console.log(blogData, event.target);
+    console.log(editedBlogData, event.target);
   };
 
   const [imagePreviews, setImagePreviews] = useState([]);
@@ -53,16 +102,17 @@ function CreateBlog() {
 
   const handleSubmit = () => {
     let formData = new FormData();
-    formData.append("blogName", blogData.blogName);
-    formData.append("blogContent", blogData.blogContent);
-    formData.append("blogType", blogData.blogType);
+    formData.append("blogID", blogID);
+    formData.append("blogName", editedBlogData.blogName);
+    formData.append("blogContent", editedBlogData.blogContent);
+    formData.append("blogType", editedBlogData.blogType);
     if (blogPhotos) {
       for (let i = 0; i < blogPhotos.length; i++) {
         formData.append("blogPhotos[]", blogPhotos[i]);
       }
     }
 
-    fetch("http://localhost:5000/blog/create", {
+    fetch("http://localhost:5000/blog/edit", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + sessionStorage.getItem("token"),
@@ -79,7 +129,7 @@ function CreateBlog() {
       })
       .then((data) => {
         console.log(data);
-        navigate(`/blogdetails/${data.blogID}`);
+        navigate(`/blogdetails/${blogID}`);
       })
       .catch((error) => {
         console.log("error", error);
@@ -87,16 +137,20 @@ function CreateBlog() {
   };
 
   const handleBlogType = (type) => {
+    if (initialType == true) {
+        setInitialType(false);
+        currentBlogData.blogType = "";
+    }
     if (selected == type) {
       setSelected("");
-      setBlogData({
-        ...blogData,
+      setEditedBlogData({
+        ...editedBlogData,
         ["blogType"]: "",
       });
     } else {
       setSelected(type);
-      setBlogData({
-        ...blogData,
+      setEditedBlogData({
+        ...editedBlogData,
         ["blogType"]: type,
       });
     }
@@ -105,8 +159,11 @@ function CreateBlog() {
   return (
     <div className="w-full h-full">
       <Navbar />
+      {loading ? (
+        <Stack width="100%" height="100%" alignItems="center"><l-pinwheel size="100" stroke="3.5" speed="0.9" color="black"></l-pinwheel></Stack>
+      ) : (
       <div className="m-[5%] flex flex-col gap-4">
-        <div className="text-4xl font-bold text-left mb-[3%]">New Blog</div>
+        <div className="text-4xl font-bold text-left mb-[3%]">Edit Blog</div>
 
         <div className="flex flex-row gap-1">
           <div className="text-l  text-left "> Blog Title</div>
@@ -115,6 +172,7 @@ function CreateBlog() {
         <input
           name="blogName"
           onChange={handleChange}
+          defaultValue={currentBlogData.blogName}
           className="w-full h-[45px] border-login-blue outline rounded-md align-left pl-2"
         ></input>
 
@@ -126,6 +184,7 @@ function CreateBlog() {
           name="blogContent"
           rows={4}
           onChange={handleChange}
+          defaultValue={currentBlogData.blogContent}
           className="w-full h-[300px] border-login-blue outline rounded-md align-left pl-2 pt-2"
         ></textarea>
 
@@ -139,7 +198,7 @@ function CreateBlog() {
             value="Private"
             onClick={() => handleBlogType("Private")}
             class={`${
-              selected === "Private" ? "bg-[#A1CFFF4D]" : "bg-transparent"
+              currentBlogData.blogType === "Private" || selected === "Private" ? "bg-[#A1CFFF4D]" : "bg-transparent"
             } border-2 border-[#02407F] hover:bg-[#A1CFFF4D] text-[#02407F] font-bold py-4 px-10 rounded-lg`}
           >
             Private
@@ -149,7 +208,7 @@ function CreateBlog() {
             value="Friends Only"
             onClick={() => handleBlogType("Friends Only")}
             class={`${
-              selected === "Friends Only" ? "bg-[#A1CFFF4D]" : "bg-transparent"
+                currentBlogData.blogType === "Friends Only" || selected === "Friends Only" ? "bg-[#A1CFFF4D]" : "bg-transparent"
             } border-2 border-[#02407F] hover:bg-[#A1CFFF4D] text-[#02407F] font-bold py-4 px-10 rounded-lg`}
           >
             Friends Only
@@ -159,7 +218,7 @@ function CreateBlog() {
             value="Public"
             onClick={() => handleBlogType("Public")}
             class={`${
-              selected === "Public" ? "bg-[#A1CFFF4D]" : "bg-transparent"
+                currentBlogData.blogType === "Public" || selected === "Public" ? "bg-[#A1CFFF4D]" : "bg-transparent"
             } border-2 border-[#02407F] hover:bg-[#A1CFFF4D] text-[#02407F] font-bold py-4 px-10 rounded-lg`}
           >
             Public
@@ -189,12 +248,13 @@ function CreateBlog() {
           onClick={handleSubmit}
           class="w-[20%] h-[60px] bg-[#02407F] mt-5 text-white font-bold  rounded-xl"
         >
-          Publish
+          Edit
         </button>
 
         <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"></hr>
       </div>
+      )}
     </div>
   );
 }
-export default CreateBlog;
+export default EditBlog;

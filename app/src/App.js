@@ -12,6 +12,7 @@ import CreateEvent from "./views/CreateEvent/createEvent";
 import Events from "./views/Events/Events";
 import EditEvent from "./views/EditEvent/EditEvent";
 import CreateBlog from "./views/CreateBlog/createBlog";
+import EditBlog from "./views/EditBlog/EditBlog";
 import BlogDetails from "./views/BlogDetails/BlogDetails";
 import Blogs from "./views/Blogs/Blogs";
 import Settings from "./views/Settings/Settings";
@@ -169,6 +170,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Blogs />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/editblog/:id"
+            element={
+              <ProtectedRoute>
+                <EditBlog />
               </ProtectedRoute>
             }
           />
