@@ -1435,6 +1435,43 @@ def getBlogDetails():
                     "visibility": visibility,
                     "message": "Blog details returned!"}), 200
 
+@app.route('/blog/user_blogs', methods=['GET'])
+@jwt_required()
+def getUserBlogs():
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(email=current_user['email']).first()
+    blogs = Blog.query.filter_by(authorID=user.id)
+
+    blog_values = []
+
+    for blog in blogs:
+        values = {'id': blog.blogID,
+                  'title': blog.title,
+                  'author': blog.authorName,
+                  'content': blog.text,
+                  'date': blog.date}
+        print("VALUE: ", values)
+        blog_values.append(values)
+
+    return {'status': '200', 'blogs': blog_values}
+
+@app.route('/blog/public_blogs', methods=['GET'])
+@jwt_required()
+def getPublicBlogs():
+    blogs = Blog.query.filter_by(visibility="Public")
+
+    blog_values = []
+
+    for blog in blogs:
+        values = {'id': blog.blogID,
+                  'title': blog.title,
+                  'author': blog.authorName,
+                  'content': blog.text,
+                  'date': blog.date}
+        blog_values.append(values)
+
+    return {'status': '200', 'blogs': blog_values}
+
 @app.route("/blog/delete_history", methods = ["GET"])
 @jwt_required()
 def delete_blog():
