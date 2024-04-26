@@ -478,8 +478,7 @@ def get_recommended():
 
     event_values = []
 
-    for event_tuple in recommendations:
-        event = event_tuple[0]
+    for event in recommendations:
 
         values = {'id': event.eventID,
                   'name': event.name,
@@ -512,7 +511,7 @@ def get_friend_recs():
     for q in query:
         if (q.status == "friend"):
             if (str(q.user) == str(user.id)):
-                person = User.query.filter_by(id=q.friend)
+                person = User.query.filter_by(id=q.friend).first()
                 friends.append(person)
         if str(q.user) == str(user.id):
             person = User.query.filter_by(id=q.friend).first()
@@ -525,8 +524,8 @@ def get_friend_recs():
 
     event_values = []
 
-    for event_tuple in recommendations:
-        event = event_tuple[0]
+    for event in recommendations:
+        # event = event_tuple[0]
 
         values = {'id': event.eventID,
                     'name': event.name,
