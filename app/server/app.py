@@ -198,10 +198,10 @@ def send_group_invites():
     print("-----------logs------------")
     print(eventid)
     event = Event.query.filter_by(eventID=eventid).first()
-    print("-----------logs------------")
     email = current_user['email']
     response = handle_google_api.get_group_list(email, event)
     print(response)
+    print("-----------logs------------")
     return {'status': 200}, 200
 
 

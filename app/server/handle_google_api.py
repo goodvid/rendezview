@@ -5,6 +5,9 @@ import os
 from geopy.geocoders import Nominatim
 from timezonefinder import TimezoneFinder
 from pprint import pprint
+import traceback
+from datetime import datetime, timedelta
+import re
 
 
 '''
@@ -23,6 +26,15 @@ def get_group_list(email, event):
     group = Group.query.filter_by(user=email).first()
     friends = group.friends
     friend_lst = friends.split(",")
+    pattern = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+    for friend in friend_lst:
+        if re.match(friend, pattern):
+            continue
+        else:
+            print({'status': 400, 'message': f'This email is invalid: {friend}'})
+
+    # print('heereeee')
+    print(email, friend_lst, event)
     response = add_event_with_people(event=event, email_lst=friend_lst)
 
     # print(friends)
@@ -55,12 +67,21 @@ def add_to_calendar(event):
         event_title = f"{event_name} - {event_description}"
         # for now I will just make the end_date the same
         # as the start date ---------
-        date_time_str = event.start_date
+        # date_time_str = event.start_date
         # ------- Time stuff --------
-        itemlst = date_time_str.split(" ")
-        timelst = itemlst[1].split("-")
+        # itemlst = date_time_str.split(" ")
+        # timelst = itemlst[1].split("-")
+        # event_start_date = itemlst[0]
+        # event_start_time = timelst[0]
+        datetime_str = event.start_date.split(
+            'T')[0] + 'T' + event.start_date.split('T')[1].split('-')[0]
+        print("xx --------- xx")
+        # print(datetime_str)
+        itemlst = datetime_str.split("T")
+        # print(itemlst)
         event_start_date = itemlst[0]
-        event_start_time = timelst[0]
+        event_start_time = itemlst[1]
+
         # ------- End Time stuff --------
         event_location = event.location
         event_time_zone = find_time_zone(event_location)
@@ -85,7 +106,11 @@ def add_to_calendar(event):
                 if not status:
                     return {"flag": False, "status": 400, "message": "Event was not updated successfully"}
             google_event = google_api_instance.create_event_dict_v2(
-                summary=event_title, start_date=event_start_date, start_time=event_start_time, time_zone=event_time_zone)
+                summary=event_title,
+                start_date=event_start_date,
+                start_time=event_start_time,
+                time_zone=event_time_zone
+            )
             google_event_tuple = google_api_instance.add_event(
                 creds=credentials, event=google_event)
             if google_event_tuple == "conflict":
@@ -136,53 +161,121 @@ def add_event_with_people(event, email_lst):
     try:
         google_api_instance = GoogleAPI(os.getcwd())
         credentials = google_api_instance.user_token_exists()
-        if credentials == False:
-            # user is not authenticated with google so
-            # this feature is not allowed hence we return false
+        if not credentials:
             return {"flag": False, "status": 400, "message": "User authentication failed"}
 
+        print(repr(event))
         event_name = event.name
         event_description = event.desc
         event_title = f"{event_name} - {event_description}"
-        # for now I will just make the end_date the same
-        # as the start date ---------
-        date_time_str = event.start_date
-        # ------- Time stuff --------
-        itemlst = date_time_str.split(" ")
-        timelst = itemlst[1].split("-")
+
+        # Simplified datetime parsing ignoring the timezone
+        datetime_str = event.start_date.split(
+            'T')[0] + 'T' + event.start_date.split('T')[1].split('-')[0]
+        print("xx --------- xx")
+        # print(datetime_str)
+        itemlst = datetime_str.split("T")
+        # print(itemlst)
         event_start_date = itemlst[0]
-        event_start_time = timelst[0]
-        # ------- End Time stuff --------
+        event_start_time = itemlst[1]
+        # event_time_zone = event.location
+        print("xx --------- xx")
+        # dt_format = "%Y-%m-%dT%H:%M:%S"
+        # start_datetime = datetime.strptime(datetime_str, dt_format)
+
+        # # Calculate end datetime to last for 24 hours
+        # end_datetime = start_datetime + timedelta(hours=24)
+
         event_location = event.location
         event_time_zone = find_time_zone(event_location)
         event_in_db = Event.query.filter_by(eventID=event.eventID).first()
+
         if event_in_db:
-            # google event tuple is like -> (event_result, event_id)
             googleID = event_in_db.googleID
             if googleID:
-                # otherwise already in calendar so we will remove it and create a new one
                 status = google_api_instance.remove_event(
                     creds=credentials, event_id=googleID)
                 if not status:
                     return {"flag": False, "status": 400, "message": "Event was not updated successfully"}
+
             google_event = google_api_instance.create_event_dict_v2(
-                summary=event_title, start_date=event_start_date, start_time=event_start_time, time_zone=event_time_zone)
+                summary=event_title,
+                start_date=event_start_date,
+                start_time=event_start_time,
+                time_zone=event_time_zone
+            )
             google_event_tuple = google_api_instance.add_event_with_attendees(
                 creds=credentials, event=google_event, attendee_emails=email_lst)
-            print("-------debug-------")
-            pprint(google_event_tuple)
-            print("-------debug-------")
+
             if not google_event_tuple:
-                print("here")
                 return {"flag": False, "status": 400, "message": "Event was not added successfully"}
+
             event_in_db.googleID = google_event_tuple[1]
             db.session.commit()
             return {"flag": True, "status": 200, "message": "Event updated successfully with Google ID"}
         else:
             return {"flag": False, "status": 404, "message": "Event not found in database"}
+
     except Exception as e:
-        print(e)
-        return {"flag": False, "status": 400}
+        traceback.print_exc()
+        return {"flag": False, "status": 400, "message": f"An error occurred: {str(e)}"}
+
+# def add_event_with_people(event, email_lst):
+#     try:
+#         google_api_instance = GoogleAPI(os.getcwd())
+#         credentials = google_api_instance.user_token_exists()
+#         if credentials == False:
+#             # user is not authenticated with google so
+#             # this feature is not allowed hence we return false
+#             return {"flag": False, "status": 400, "message": "User authentication failed"}
+
+#         event_name = event.name
+#         event_description = event.desc
+#         event_title = f"{event_name} - {event_description}"
+#         # for now I will just make the end_date the same
+#         # as the start date ---------
+#         date_time_str = event.start_date
+#         # ------- Time stuff --------
+#         itemlst = date_time_str.split(" ")
+#         print(date_time_str)
+#         timelst = itemlst[1].split(":")
+#         event_start_date = itemlst[0]
+#         event_start_time = timelst[0]
+#         # ------- End Time stuff --------
+#         event_location = event.location
+#         event_time_zone = find_time_zone(event_location)
+#         event_in_db = Event.query.filter_by(eventID=event.eventID).first()
+#         print("x------------x")
+#         print("ajsdjasdhajsdh")
+#         if event_in_db:
+#             # google event tuple is like -> (event_result, event_id)
+#             googleID = event_in_db.googleID
+#             if googleID:
+#                 # otherwise already in calendar so we will remove it and create a new one
+#                 status = google_api_instance.remove_event(
+#                     creds=credentials, event_id=googleID)
+#                 if not status:
+#                     return {"flag": False, "status": 400, "message": "Event was not updated successfully"}
+#             google_event = google_api_instance.create_event_dict_v2(
+#                 summary=event_title, start_date=event_start_date, start_time=event_start_time, time_zone=event_time_zone)
+#             google_event_tuple = google_api_instance.add_event_with_attendees(
+#                 creds=credentials, event=google_event, attendee_emails=email_lst)
+#             print("-------debug-------")
+#             pprint(google_event_tuple)
+#             print("-------debug-------")
+#             if not google_event_tuple:
+#                 print("here")
+#                 return {"flag": False, "status": 400, "message": "Event was not added successfully"}
+#             event_in_db.googleID = google_event_tuple[1]
+#             db.session.commit()
+#             return {"flag": True, "status": 200, "message": "Event updated successfully with Google ID"}
+#         else:
+#             return {"flag": False, "status": 404, "message": "Event not found in database"}
+#     except Exception as e:
+#         print("-----------error---------")
+#         # print()
+#         traceback.print_exc()
+#         return {"flag": False, "status": 400}
 
 
 def get_rsvp_list(event):

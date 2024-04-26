@@ -131,9 +131,3 @@ class Status(db.Model):
     user = db.Column(db.String(5000), db.ForeignKey('user.email'))
     friend = db.Column(db.String(5000), db.ForeignKey('user.email'))
     status = db.Column(db.String(5000))
-
-
-class Group(db.Model):
-    gid = db.Column(db.Integer, primary_key=True)
-    user = db.Column(db.String(50), db.ForeignKey('user.username'))
-    friends = db.Column(db.String(50))

@@ -473,9 +473,19 @@ function EventDetails() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(user_info),
-    }).catch((error) => {
-      console.error("Error:", error);
-    });
+    }).then((response) => response.json())
+      .then((data) => {
+        if (data.status === 200) {
+          alert("Successfully sent to group");
+          setIsAddedToCalendar(true);
+        } else {
+          alert("Error Sending to group: " + data.message);
+          setIsAddedToCalendar(false);
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
   };
 
   const dummyRSVPList = [
@@ -1079,7 +1089,7 @@ function EventDetails() {
                   variant="contained"
                   onClick={dummyCall}
                 >
-                  Dummy Call
+                  Send To Group
                 </GrayButton>
                 <Dialog open={openRSVP} onClose={handleCloseRSVPDialog}>
                   <DialogTitle>RSVP List</DialogTitle>
