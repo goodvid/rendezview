@@ -460,14 +460,14 @@ function EventDetails() {
 
   const dummyCall = (event) => {
     // Figure out how to get userID
-    const user_id = { userID: userID };
-    fetch("http://localhost:5000/events/dummyCall", {
+    const user_info = { userID: userID, eventID: eventObject.eventID };
+    fetch("http://localhost:5000/send_group_invites", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + sessionStorage.getItem("token"),
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(user_id),
+      body: JSON.stringify(user_info),
     }).catch((error) => {
       console.error("Error:", error);
     });
@@ -1069,13 +1069,13 @@ function EventDetails() {
                 >
                   See RSVP List
                 </GrayButton>
-                {/* <GrayButton
+                <GrayButton
                   textAlign="Center"
                   variant="contained"
                   onClick={dummyCall}
                 >
                   Dummy Call
-                </GrayButton> */}
+                </GrayButton>
                 <Dialog open={openRSVP} onClose={handleCloseRSVPDialog}>
                   <DialogTitle>RSVP List</DialogTitle>
                   <DialogContent>
@@ -1173,22 +1173,22 @@ function EventDetails() {
                     {userID == eventObject.userID ? (
                       <div>
                         <Button
-                        sx={{ marginLeft: '400px', width: 'auto'}}
-                        onClick={() => setVisibility("public")}
+                          sx={{ marginLeft: '400px', width: 'auto' }}
+                          onClick={() => setVisibility("public")}
                         >
                           <VisibilityIcon className="w-auto"></VisibilityIcon>
                         </Button>
                         <Button
-                        sx={{ width: 'auto'}}
-                        onClick={() => setVisibility("friends")}
+                          sx={{ width: 'auto' }}
+                          onClick={() => setVisibility("friends")}
                         >
-                          <Diversity3Icon className="w-auto"/>
+                          <Diversity3Icon className="w-auto" />
                         </Button>
                         <Button
-                        sx={{ width: 'auto'}}
-                        onClick={() => setVisibility("private")}
+                          sx={{ width: 'auto' }}
+                          onClick={() => setVisibility("private")}
                         >
-                          <VisibilityOffIcon className="w-auto"/>
+                          <VisibilityOffIcon className="w-auto" />
                         </Button>
                       </div>
                     ) : (<div />)

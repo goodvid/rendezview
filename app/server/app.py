@@ -184,6 +184,25 @@ def changeusername():
     return jsonify({"message": "Username changed successfully"}), 200
 
 
+@app.route("/send_group_invites", methods=['POST'])
+@jwt_required()
+def send_group_invites():
+    # print("-----------logs------------")
+    # print("Invoked!")
+    # print("-----------logs------------")
+    current_user = get_jwt_identity()
+    data = request.json
+    eventid = data['eventID']
+    print("-----------logs------------")
+    print(eventid)
+    event = Event.query.filter_by(eventID=eventid).first()
+    print("-----------logs------------")
+    email = current_user['email']
+    response = handle_google_api.get_group_list(email, event)
+    print(response)
+    return {'status': 200}, 200
+
+
 @app.route("/create_group", methods=['POST'])
 @jwt_required()
 def create_group():

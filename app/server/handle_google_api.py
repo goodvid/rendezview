@@ -1,6 +1,6 @@
 from apiFetch.googleAPI import GoogleAPI
 from models import db
-from models import User, Event
+from models import User, Event, Group
 import os
 from geopy.geocoders import Nominatim
 from timezonefinder import TimezoneFinder
@@ -12,6 +12,22 @@ Note: Need to figure out how I can have my code remember that an event was alrea
 when I added to the database. I am trying to use useEffect and stuff but it isn't working
 so figure this out tomorrow. And also the reccommendation stuff. 
 '''
+
+
+# returns a list of emails
+def get_group_list(email, event):
+    print("-----------logs------------")
+    # user = User.query.filter_by(email=email).first()
+    # user_email = user.email
+    # print(user_email)
+    group = Group.query.filter_by(user=email).first()
+    friends = group.friends
+    friend_lst = friends.split(",")
+    response = add_event_with_people(event=event, email_lst=friend_lst)
+
+    # print(friends)
+    print("-----------logs------------")
+    return response
 
 
 def find_time_zone(address):
