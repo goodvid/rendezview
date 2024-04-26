@@ -84,6 +84,8 @@ function CreateEvent() {
     setEventPhotos(photos);
   };
 
+  const [eventID, setEventID] = useState("");
+
   const handleSubmit = () => {
     // event.preventDefault();
     fetch("http://localhost:5000/event/create", {
@@ -108,6 +110,7 @@ function CreateEvent() {
       .catch((error) => {
         console.log("error", error);
       });
+      
   };
 
   const handleEventType = (type) => {

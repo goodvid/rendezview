@@ -5,10 +5,15 @@ import testImage from "../../media/testImage.jpeg";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { pinwheel } from "ldrs";
-import { Stack, Button, Avatar } from "@mui/material";
+import { Stack, Button, IconButton } from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import { RedButton, GrayButton } from "../../components/StyledComponents/StyledComponents";
 import Edit from "@mui/icons-material/Edit";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import CloseIcon from "@mui/icons-material/Close";
 
 function BlogDetails() {
   pinwheel.register(); // loading animation
@@ -17,14 +22,24 @@ function BlogDetails() {
   let id = useParams();
   let resp = false;
 
+  const [blogID, setBlogID] = useState(0);
   const [blogTitle, setBlogTitle] = useState("");
   const [blogText, setBlogText] = useState("");
   const [authorID, setAuthorID] = useState("");
   const [authorName, setAuthorName] = useState("");
   const [date, setDate] = useState("");
-  const [photos, setPhotos] = useState("");
+  const [photos, setPhotos] = useState([]);
 
   const [username, setUsername] = useState("");
+
+  // Delete Blog
+  const [deleteOpen, setDeleteOpen] = React.useState(false);
+  const handleDeleteOpen = () => {
+    setDeleteOpen(true);
+  };
+  const handleDeleteClose = () => {
+    setDeleteOpen(false);
+  };
 
   const navigate = useNavigate();
 
@@ -46,6 +61,8 @@ function BlogDetails() {
   }, []);
 
   useEffect(() => {  
+    let pictures = "";
+
     setLoading(true);
     fetch("http://localhost:5000/blog/details", {
         method: "POST",
@@ -62,12 +79,14 @@ function BlogDetails() {
       .then((data) => {
         if (resp.status === 200) {
             setLoading(false);
+            setBlogID(data.id);
             setBlogTitle(data.title);
             setBlogText(data.text);
             setAuthorID(data.authorID);
             setAuthorName(data.authorName);
             setDate(data.date);
-            setPhotos(data.pictures);
+            pictures = data.pictures;
+            setPhotos(pictures.split(","));
         }
       })
       .catch((err) => {
@@ -75,22 +94,36 @@ function BlogDetails() {
       });
   }, []);
 
-  {/*const deleteEvent = () => {
-    axios
-      .post("http://localhost:5000/delete_event", {
-        event: eventObject,
+  const deleteBlogClick = () => {
+    fetch("http://localhost:5000/blog/delete", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(id),
       })
-      .then((res) => {
-        console.log(res.data);
+      .then((response) => {
+        if (response.status === 401) {
+          alert("unauthorized");
+          return response.json();
+        } else if (response.status == 200) {
+          return response.json();
+        }
+      })
+      .then((data) => {
+        console.log(data);
+        navigate("/blogs");
+      })
+      .catch((error) => {
+        console.log("error", error);
       });
 
-    navigate("/events");
   };
 
-  const editEvent = () => {
-    sessionStorage.setItem("cur_event", JSON.stringify(eventObject));
-    navigate(`/edit_event/${eventObject.eventID}`);
-  };*/}
+  const editBlogClick = () => {
+    navigate(`/editblog/${blogID}`);
+  };
 
   const checkOwner = () => {   
     console.log(authorName);
@@ -119,8 +152,11 @@ function BlogDetails() {
             </Stack>
               
             <Stack>
-                <img src={photos} style={{ borderRadius: "1rem" }} />
-                <p> {photos} </p>
+              <Stack direction="row" gap={2} sx={{overflowX: "auto", paddingBottom: 1}}>
+                {photos.map((img, i) => (
+                    <img src={img} style={{height: "400px", paddingRight: "20px"}}/>
+                ))}
+              </Stack>
             </Stack>
 
             <Stack className="section">
@@ -131,12 +167,54 @@ function BlogDetails() {
 
             {checkOwner() && (sessionStorage.getItem("token") ? 
               <Stack direction="row" justifyContent="flex-end" >
-                  <GrayButton textAlign="left" variant="contained" justifyContent="center" style={{margin: 8, height: "30%"}} >
-                      Edit Event
+                  <GrayButton textAlign="left" variant="contained" justifyContent="center" style={{margin: 8, height: "30%"}} onClick={editBlogClick}>
+                      Edit Blog
                   </GrayButton>
-                  <RedButton textAlign="left" variant="contained" style={{margin: 8, height: "30%"}}>
-                      Delete Event
+                  <RedButton textAlign="left" variant="contained" style={{margin: 8, height: "30%"}} onClick={handleDeleteOpen}>
+                      Delete Blog
                   </RedButton> 
+                  <Dialog onClose={handleDeleteClose} open={deleteOpen}>
+                    <DialogTitle
+                      sx={{
+                        m: 2,
+                        p: 2,
+                        paddingBottom: 0,
+                        width: "500px",
+                        color: "red",
+                      }}
+                    >
+                      {" "}
+                      Delete Blog?
+                    </DialogTitle>
+                    <IconButton
+                      onClick={handleDeleteClose}
+                      sx={{ position: "absolute", right: 20, top: 25 }}
+                    >
+                      <CloseIcon />
+                    </IconButton>
+                    <DialogContent sx={{ marginLeft: 1, paddingBottom: 0 }}>
+                      Are you sure you'd like to delete your blog?{" "}
+                    </DialogContent>
+                    <DialogContent sx={{ marginLeft: 1 }}>
+                      Deleting your blog is permanent.
+                    </DialogContent>
+                    <DialogActions>
+                      <Button
+                        className="DeleteButton2"
+                        variant="contained"
+                        sx={{
+                          p: 2,
+                          backgroundColor: "red",
+                          color: "white",
+                          "&:hover": { backgroundColor: "red", color: "white" },
+                        }}
+                        autoFocus
+                        onClick={deleteBlogClick}
+                      >
+                        Delete Blog
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
               </Stack> 
               : <div />)}
           </Stack>
