@@ -715,6 +715,21 @@ def get_filtered_events():
         "user_events": user_events,
     }
 
+@app.route("/group/get_groups", methods=["GET"])
+@jwt_required()
+def get_groups():
+    user = User.query.filter_by(email=get_jwt_identity()["email"]).first()
+    
+    groups = user.groups.split(',')
+    
+    gs = []
+    
+    for g in groups:
+        group  = Group.query.filter_by(gid=int(g)).first()
+        
+        gs.append({"user": group.user, "friends": group.friends})
+    
+    return {"status":200, "groups": gs}
 
 @app.route("/edit", methods=["POST"])
 def edit_event():
