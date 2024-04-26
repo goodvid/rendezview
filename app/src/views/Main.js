@@ -118,8 +118,6 @@ function Main() {
         });
       getUserLocation();
     }
-
-
   }, []);
 
   useEffect(() => {
@@ -167,7 +165,7 @@ function Main() {
           headers: {
             Authorization: "Bearer " + sessionStorage.getItem("token"),
             "Content-Type": "application/json",
-          }
+          },
         })
         .then((response) => {
           setRecFriendEvents(response.data["recommendations"]);
@@ -342,7 +340,7 @@ function Main() {
 
   const setFriends = () => {
     setEventType("Friends");
-  }
+  };
   const navigate = useNavigate();
   const handleSeeMore = () => {
     const eventLink = "/eventdetails/" + featuredEvents.id;
@@ -420,8 +418,12 @@ function Main() {
               </Stack>
             ) : eventType == "Featured" ? (
               events.map((event, i) => {
-                if (event.visibility && event.visibility != "public" && event.visibility != "") {
-                  return <div />
+                if (
+                  event.visibility &&
+                  event.visibility != "public" &&
+                  event.visibility != ""
+                ) {
+                  return <div />;
                 }
                 return (
                   <Event
@@ -434,34 +436,33 @@ function Main() {
                   />
                 );
               })
-            ) : eventType == "Friends" ?
-              (
-                recFriendEvents.map((event, i) => {
-                  return (
-                    <Event
-                      name={event.name}
-                      date={dayjs(event.start_date).toString()}
-                      location={event.location}
-                      key={i}
-                      id={event.id}
-                      desc={event.desc}
-                    />
-                  );
-                })
-              ) : (
-                recommendedEvents.map((event, i) => {
-                  return (
-                    <Event
-                      name={event.name}
-                      date={dayjs(event.start_date).toString()}
-                      location={event.location}
-                      key={i}
-                      id={event.id}
-                      desc={event.desc}
-                    />
-                  );
-                })
-              )}
+            ) : eventType == "Friends" ? (
+              recFriendEvents.map((event, i) => {
+                return (
+                  <Event
+                    name={event.name}
+                    date={dayjs(event.start_date).toString()}
+                    location={event.location}
+                    key={i}
+                    id={event.id}
+                    desc={event.desc}
+                  />
+                );
+              })
+            ) : (
+              recommendedEvents.map((event, i) => {
+                return (
+                  <Event
+                    name={event.name}
+                    date={dayjs(event.start_date).toString()}
+                    location={event.location}
+                    key={i}
+                    id={event.id}
+                    desc={event.desc}
+                  />
+                );
+              })
+            )}
           </div>
         </div>
       </div>

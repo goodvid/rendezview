@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import { ReadMoreButton} from "../../components/StyledComponents/StyledComponents";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import { ReadMoreButton } from "../../components/StyledComponents/StyledComponents";
 import { useNavigate } from "react-router-dom";
 
 function Blog({ id, name, date, author, desc }) {
@@ -10,7 +10,7 @@ function Blog({ id, name, date, author, desc }) {
   const eventLink = "/blogdetails/" + id;
 
   const readMoreLimit = 200;
-  
+
   return (
     <button
       onClick={() => navigate(eventLink)}
@@ -20,7 +20,7 @@ function Blog({ id, name, date, author, desc }) {
       <div className="w-full flex flex-col p-[1rem] gap-5">
         <h3 className="text-left font-bold">{name}</h3>
         <div className="flex flex-col gap-3">
-        <div className="flex flex-row gap-3">
+          <div className="flex flex-row gap-3">
             <AccountCircleIcon sx={{ color: "#1C3659" }} />
             <p className="text-left">{author}</p>
           </div>
@@ -29,7 +29,7 @@ function Blog({ id, name, date, author, desc }) {
             <p className="text-left">{date}</p>
           </div>
           <div className="flex flex-row mt-1">
-            <p className="text-left font-normal">
+            {/* <p className="text-left font-normal">
               {desc.length < readMoreLimit ? (
                   <div>
                     <p>{desc}</p>
@@ -45,7 +45,7 @@ function Blog({ id, name, date, author, desc }) {
                     </ReadMoreButton>
                   </div>
                 )}
-            </p>
+            </p> */}
           </div>
         </div>
       </div>

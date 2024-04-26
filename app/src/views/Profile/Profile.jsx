@@ -310,7 +310,7 @@ function Profile() {
           </TextIconStack>
         )}
         <h3>
-          <a href="/profile/friends">{friendsNum} FRIENDS</a> 
+          <a href="/profile/friends">{friendsNum} FRIENDS</a>
         </h3>
 
         {/* User Tags */}
@@ -442,6 +442,10 @@ function Profile() {
     );
   };
 
+  useEffect(() => {
+    console.log(blogs);
+  }, [blogs]);
+
   const Blogs = () => {
     return (
       <Stack className="profile-components">
@@ -458,18 +462,16 @@ function Profile() {
             gap={2}
             sx={{ width: "max-content", height: "100%" }}
           >
+            {/* id, name, date, author, desc  */}
             {blogs.length > 0 ? (
               blogs.map((blog) => (
                 <Blog
-                  key={blog.blogID}
-                  blogID={blog.blogID}
-                  title={blog.title}
-                  text={blog.text}
-                  authorID={blog.authorID}
-                  authorName={blog.authorName}
+                  key={blog.id}
+                  id={blog.blogID}
+                  name={blog.title}
                   date={blog.date}
-                  visibility={blog.visibility}
-                  pictures={blog.pictures}
+                  author={blog.authorName}
+                  desc={blog.pictures}
                 />
               ))
             ) : (
