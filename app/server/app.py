@@ -202,7 +202,7 @@ def send_group_invites():
     response = handle_google_api.get_group_list(email, event)
     print(response)
     print("-----------logs------------")
-    return {'status': 200}, 200
+    return response
 
 
 @app.route("/create_group", methods=['POST'])
